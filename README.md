@@ -6,7 +6,7 @@ Split from *Dashboard Cuaca Aziz* 4.6.0 (offshore part). Land app: **Monsoon EYE
 
 - Address: **https://azizdigital.github.io/oceanwatch/**
 - iPad: open it in Safari → Share → **Add to Home Screen**.
-- Changes: `PERUBAHAN_1.1.1.txt`, `PERUBAHAN_1.1.0.txt`, `PERUBAHAN_1.0.0.txt`. User guide (BM): `PANDUAN.md`.
+- Changes: `PERUBAHAN_1.1.2.txt`, `PERUBAHAN_1.1.1.txt`, `PERUBAHAN_1.1.0.txt`, `PERUBAHAN_1.0.0.txt`. User guide (BM): `PANDUAN.md`.
 
 ## PC app (Windows)
 A full PC app like Dashboard Cuaca's: local server, data collection & alerts in the background (also from the tray when the window is closed), Windows notifications, websites inside the app + ad blocker, PDF, start with Windows.
@@ -20,7 +20,7 @@ Needs **Node.js 22 LTS** (nodejs.org). In the repo folder (the one with `package
 npm install
 npm run dist
 ```
-Output in `dist\`: **Sentinel OceanWATCH Setup 1.1.1.exe** (installer) and **Sentinel OceanWATCH 1.1.1.exe** (portable). Try it without building: `npm start`.
+Output in `dist\`: **Sentinel OceanWATCH Setup 1.1.2.exe** (installer) and **Sentinel OceanWATCH 1.1.2.exe** (portable). Try it without building: `npm start`.
 If `npm install` fails: check you are in the right folder (`dir package.json`), delete `node_modules`, try again; if it still fails, copy the first `npm error` line.
 
 ## Data (free, no API keys)

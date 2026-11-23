@@ -8,7 +8,7 @@
 ## Pasang di PC (Windows)
 1. Pasang **Node.js 22 LTS** (nodejs.org) jika belum ada.
 2. Ekstrak zip, buka folder yang ada `package.json`, klik bar alamat, taip `cmd`, Enter.
-3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.1.1.exe** (pasang) dan **Sentinel OceanWATCH 1.1.1.exe** (portable).
+3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.1.2.exe** (pasang) dan **Sentinel OceanWATCH 1.1.2.exe** (portable).
 4. Buka app → **Settings › Import from Dashboard Cuaca** — profil & tetapan dibaca terus dari app PC Dashboard Cuaca.
 5. Boleh buka serentak dengan Dashboard Cuaca dan app satu lagi (port 30060, folder data `%APPDATA%\Sentinel OceanWATCH`). Pilih **Kekal di tray** dalam Tetapan supaya alert terus berbunyi bila tetingkap ditutup.
 

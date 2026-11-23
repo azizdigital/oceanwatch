@@ -1,7 +1,7 @@
 {
   "name": "sentinel-oceanwatch",
   "productName": "Sentinel OceanWATCH",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Sentinel OceanWATCH - Offshore Weather Guideline & Monitoring: models, my jobs, demob time, MET marine, Ask AI. PC app (Windows) + web app for iPad / phone (GitHub Pages).",
   "main": "main.js",
   "author": "Aziz Mohamad",

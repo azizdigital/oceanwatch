@@ -1,0 +1,6 @@
+Sentinel OceanWATCH 1.1.2
+=========================
+Fix: the web app did not open after the 1.1.1 update
+- Devices loaded the new page with the old scripts kept on the device, and the app stopped. Every app file now comes from
+  the internet first (up to 4 seconds); the copy on the device only when offline or slow.
+- The old button is kept hidden so a device with the 1.1.0 scripts can open once and get the new version.

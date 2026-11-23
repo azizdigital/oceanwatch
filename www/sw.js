@@ -28,14 +28,22 @@ self.addEventListener('fetch', function (e) {
   if (url.origin !== location.origin) return;                       /* public APIs and web sites: straight to the network */
   if (url.pathname.indexOf('/api/') === 0 || url.pathname === '/dashboard-cuaca-ca.crt') return;
   var isPage = req.mode === 'navigate';
+  /* network first (a few seconds), the copy kept on the device when offline or slow. Network first for every file, not only
+     the page: a new page with the old scripts from the device's copy stopped the app after an update (4.6.1 / 1.1.1). */
   e.respondWith(caches.open(CACHE).then(function (c) {
-    /* pages: network first (new version straight away when the PC is there), cache when it is not */
-    if (isPage) {
-      return fetch(req).then(function (r) { if (r && r.ok) c.put('./index.html', r.clone()); return r; })
-        .catch(function () { return c.match('./index.html').then(function (h) { return h || new Response('Offline', { status: 503 }); }); });
-    }
-    return c.match(req, { ignoreSearch: true }).then(function (hit) {
-      return hit || fetch(req).then(function (r) { if (r && r.ok && r.type === 'basic') c.put(req, r.clone()); return r; });
+    /* the app's start page under './index.html'; another page (kemaman.html, splash.html, also inside a frame) under its own address */
+    var key = isPage ? (/\/$/.test(url.pathname) ? './index.html' : url.origin + url.pathname) : req;
+    var kept = function () { return c.match(key, { ignoreSearch: true }); };
+    var net = fetch(isPage ? req.url : req, { cache: 'no-cache', credentials: 'same-origin' }).then(function (r) {
+      if (r && r.ok && r.type === 'basic') c.put(key, r.clone());
+      return r;
+    });
+    var slow = new Promise(function (res) { setTimeout(function () { res(null); }, 4000); });
+    return Promise.race([net.catch(function () { return null; }), slow]).then(function (r) {
+      if (r) return r;
+      return kept().then(function (h) { return h || net; });
+    }).catch(function () {
+      return kept().then(function (h) { return h || (isPage ? new Response('Offline', { status: 503 }) : Response.error()); });
     });
   }));
 });
