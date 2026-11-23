@@ -152,7 +152,8 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     await page.locator('.vs-tb tr[data-i]').first().locator('[data-k="job"]').selectOption('lq');
     await page.click('#vsAdd');
     const r2 = page.locator('.vs-tb tr[data-i]').nth(1);
-    await r2.locator('[data-k="name"]').fill('JM Perkasa 2'); await r2.locator('[data-k="imo"]').fill('9585833'); await r2.locator('[data-k="type"]').selectOption('ahts');
+    await r2.locator('[data-k="name"]').fill('JM Perkasa 2'); await r2.locator('[data-k="imo"]').fill('9585833'); await r2.locator('[data-k="type"]').selectOption('av');
+    await r2.locator('[data-k="call"]').fill('9m-ab 2');
     await page.click('#vsSave');
     await expect(page.locator('.vs-it')).toHaveCount(4);                 /* all, area, 2 vessels */
     await expect(page.locator('.vs-it.on')).toContainText('SK Patron');
@@ -165,6 +166,16 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     await expect.poll(() => maps.some(u => /ais\/embed\/.*mmsi:533049100/.test(u))).toBeTruthy();
     const kept = await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')));
     expect(kept.list.map(v => v.name)).toEqual(['SK Patron', 'JM Perkasa 2']);
+    expect(kept.list[1].call).toBe('9MAB2'); expect(kept.list[1].type).toBe('av');
+    /* around the platform: Irong Barat A pinned over the map, and the app's own platform map with 5 / 10 / 20 nm rings */
+    await page.click('[data-vs="area"]');
+    await expect(page.locator('#vsMap .vs-pin')).toContainText('Irong Barat A');
+    await expect(page.locator('#vsCenter')).toBeVisible();
+    await page.click('[data-vs-src="osm"]');
+    await expect(page.locator('#vsOsm .vs-pf')).toContainText('Irong Barat A', { timeout: 15000 });
+    await expect(page.locator('#vsOsm .vs-ring')).toHaveCount(3);
+    await page.click('[data-vs="v533049100"]');
+    await expect(page.locator('[data-vs-src="osm"]')).toHaveCount(0);
     expect(errors).toEqual([]);
   });
   test('Models page has the comparison card and the PDF button', async ({ page }) => {

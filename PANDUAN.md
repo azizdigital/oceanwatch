@@ -8,7 +8,7 @@
 ## Pasang di PC (Windows)
 1. Pasang **Node.js 22 LTS** (nodejs.org) jika belum ada.
 2. Ekstrak zip, buka folder yang ada `package.json`, klik bar alamat, taip `cmd`, Enter.
-3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.2.0.exe** (pasang) dan **Sentinel OceanWATCH 1.2.0.exe** (portable).
+3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.2.1.exe** (pasang) dan **Sentinel OceanWATCH 1.2.1.exe** (portable).
 4. Buka app → **Settings › Import from Dashboard Cuaca** — profil & tetapan dibaca terus dari app PC Dashboard Cuaca.
 5. Boleh buka serentak dengan Dashboard Cuaca dan app satu lagi (port 30060, folder data `%APPDATA%\Sentinel OceanWATCH`). Pilih **Kekal di tray** dalam Tetapan supaya alert terus berbunyi bila tetingkap ditutup.
 
@@ -22,9 +22,9 @@ Semua model (6 model angin, 4 model ombak, 2 ensembel) digabung jadi satu cerita
 - **Pasang surut**: paras laut model di platform + jadual pelabuhan Cukai (Tide Forecast, salinan GitHub Monsoon EYE).
 
 ## Tab Kapal (baru 1.2.0)
-- **⚙ Tetapan kapal**: nama + MMSI (9 digit) atau IMO (7 digit); jenis, peranan / nota dan kerja (Go / No-Go) pilihan. Nombor di halaman kapal VesselFinder / MarineTraffic. Disimpan dalam peranti ini (maksimum 20).
+- **⚙ Tetapan kapal**: nama + MMSI (9 digit) atau IMO (7 digit); callsign, jenis (termasuk AV — kapal penginapan), peranan / nota dan kerja (Go / No-Go) pilihan. Di sini juga **nama platform** yang ditanda di peta (lalai: Irong Barat A, di titik profil). Nombor di halaman kapal VesselFinder / MarineTraffic. Disimpan dalam peranti ini (maksimum 20).
 - **Semua kapal saya**: satu peta setiap kapal — VesselFinder tunjuk kapal itu sahaja, dengan trek 24 jam, pelabuhan seterusnya, ETA & laju.
-- Tekan satu kapal untuk peta besar; tukar **VesselFinder / MarineTraffic** (MarineTraffic tanda kapal anda tetapi kapal lain turut nampak). **Kawasan** = semua kapal sekitar platform. **Buka laman penuh ↗** untuk butiran.
+- Tekan satu kapal untuk peta besar; tukar **VesselFinder / MarineTraffic** (MarineTraffic tanda kapal anda tetapi kapal lain turut nampak). **Kawasan** = semua kapal sekitar platform, dengan pin 🛢️ **Irong Barat A** di tengah peta (pin pudar bila peta digerak — tekan **⌖ Pusatkan semula**); **Peta platform** = peta app sendiri (OpenStreetMap) dengan platform dan bulatan 5 / 10 / 20 nm (tiada kapal AIS di peta ini). **Buka laman penuh ↗** untuk butiran.
 - Kad kapal yang dipautkan ke kerja tunjuk status kerja itu sekarang.
 - Semua kapal dalam satu peta perlukan akaun Fleet VesselFinder / MarineTraffic (tidak percuma) — sebab itu satu peta setiap kapal.
 

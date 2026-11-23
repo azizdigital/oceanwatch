@@ -1,0 +1,8 @@
+Sentinel OceanWATCH 1.2.1
+=========================
+Vessels page
+- Around the platform: Irong Barat A is pinned over the VesselFinder / MarineTraffic map (the map opens centred on the
+  profile point 5.5501, 104.7745). The app cannot see the map being moved inside it, so the pin fades once the map is
+  touched; "Re-centre" puts both back.
+- New "Platform map": the app's own map (OpenStreetMap) with the platform and 5 / 10 / 20 nm rings (no AIS vessels).
+- Vessel settings: call sign (optional), new type AV (accommodation vessel), the platform name shown on the maps.

@@ -335,12 +335,17 @@
 
   /* ------------------------------------------------------------------ Vessels */
   var TYPES = [['crew', '🚤', 'Crew boat', 'Crew boat'], ['fcb', '🛥️', 'FCB / bot laju', 'FCB / fast boat'], ['psv', '🚢', 'Supply (PSV)', 'Supply (PSV)'], ['ahts', '⚓', 'AHTS', 'AHTS'],
-    ['tug', '⛴️', 'Tunda', 'Tug'], ['errv', '🛟', 'Standby (ERRV)', 'Standby (ERRV)'], ['barge', '🏗️', 'Tongkang / barge', 'Barge'], ['tanker', '🛢️', 'Tanker', 'Tanker'], ['other', '🔹', 'Lain-lain', 'Other']];
+    ['tug', '⛴️', 'Tunda', 'Tug'], ['errv', '🛟', 'Standby (ERRV)', 'Standby (ERRV)'], ['av', '🏨', 'AV (kapal penginapan)', 'AV (accommodation vessel)'], ['barge', '🏗️', 'Tongkang / barge', 'Barge'], ['tanker', '🛢️', 'Tanker', 'Tanker'], ['other', '🔹', 'Lain-lain', 'Other']];
   function typeOf(id) { return TYPES.filter(function (x) { return x[0] === id; })[0] || TYPES[TYPES.length - 1]; }
   var Vessels = {
     cfg: (function () { var c = MC.load('mc_vessels', null); return c && Array.isArray(c.list) ? c : { list: [], sel: 'area', src: 'vf', zoom: 9, track: true }; })(),
     editing: null,
     save: function () { MC.save('mc_vessels', this.cfg); },
+    /* the platform marked on the area maps: the profile point; its name can be changed in Vessel settings */
+    platform: function () {
+      var s = settings(), n = String(this.cfg.platform || '').trim();
+      return { name: n || (/^irong barat$/i.test(String(s.locationName || '').trim()) ? 'Irong Barat A' : (s.locationName || 'Platform')), lat: +s.marineLat, lon: +s.marineLon };
+    },
     sel: function () { var c = this.cfg; return c.list.filter(function (v) { return v.id === c.sel; })[0] || null; },
     mapUrl: function (v, src, h) {
       var s = settings(), z = this.cfg.zoom || 9, lat = (+s.marineLat).toFixed(4), lon = (+s.marineLon).toFixed(4);
@@ -372,22 +377,26 @@
       if (!host || state.view !== 'vessels') return;
       host.classList.toggle('vs-editing', !!Vessels.editing);
       if (Vessels.editing) { host.innerHTML = Vessels.editor(); return; }
-      var c = Vessels.cfg, v = Vessels.sel(), src = c.src === 'mt' ? 'mt' : 'vf', s = settings();
+      var c = Vessels.cfg, v = Vessels.sel(), src = c.src === 'mt' || c.src === 'osm' ? c.src : 'vf', s = settings();
       var all = c.sel === 'all' && c.list.length;
       var list = (c.list.length > 1 ? '<button type="button" class="vs-it' + (all ? ' on' : '') + '" data-vs="all"><span class="vs-ic">🧭</span><span><b>' + T('Semua kapal saya', 'All my vessels') + ' (' + c.list.length + ')</b><small>' + T('satu peta setiap kapal, kapal itu sahaja', 'one map per vessel, that vessel only') + '</small></span></button>' : '') +
         '<button type="button" class="vs-it' + (!v && !all ? ' on' : '') + '" data-vs="area"><span class="vs-ic">🗺️</span><span><b>' + T('Kawasan ', 'Around ') + esc(s.locationName || 'platform') + '</b><small>' + T('semua kapal sekitar platform', 'every vessel around the platform') + '</small></span></button>' +
         c.list.map(function (x) {
           var ty = typeOf(x.type);
           return '<button type="button" class="vs-it' + (v && v.id === x.id ? ' on' : '') + '" data-vs="' + esc(x.id) + '"><span class="vs-ic">' + ty[1] + '</span><span><b>' + esc(x.name || x.mmsi || x.imo) + '</b>' +
-            '<small>' + esc(EN() ? ty[3] : ty[2]) + (x.mmsi ? ' · MMSI ' + esc(x.mmsi) : '') + (x.imo ? ' · IMO ' + esc(x.imo) : '') + '</small>' +
+            '<small>' + esc(EN() ? ty[3] : ty[2]) + (x.mmsi ? ' · MMSI ' + esc(x.mmsi) : '') + (x.imo ? ' · IMO ' + esc(x.imo) : '') + (x.call ? ' · ' + esc(x.call) : '') + '</small>' +
             (x.role ? '<small class="vs-role">' + esc(x.role) + '</small>' : '') + Vessels.job(x) + '</span></button>';
         }).join('') +
         (c.list.length ? '' : '<p class="muted vs-none">' + T('Belum ada kapal. Tekan ⚙ Tetapan kapal untuk tambah (nama + MMSI atau IMO).', 'No vessels yet. Press ⚙ Vessel settings to add one (name + MMSI or IMO).') + '</p>');
-      var bar = '<div class="vs-bar"><div class="seg"><button type="button" data-vs-src="vf" aria-selected="' + (src === 'vf') + '">VesselFinder</button><button type="button" data-vs-src="mt" aria-selected="' + (src === 'mt') + '">MarineTraffic</button></div>' +
+      var area = !v && !all, P = Vessels.platform();
+      if (src === 'osm' && !area) src = 'vf';
+      var bar = '<div class="vs-bar"><div class="seg"><button type="button" data-vs-src="vf" aria-selected="' + (src === 'vf') + '">VesselFinder</button><button type="button" data-vs-src="mt" aria-selected="' + (src === 'mt') + '">MarineTraffic</button>' +
+        (area ? '<button type="button" data-vs-src="osm" aria-selected="' + (src === 'osm') + '">' + T('Peta platform', 'Platform map') + '</button>' : '') + '</div>' +
         '<label class="vs-z">' + T('Zum', 'Zoom') + ' <select id="vsZoom">' + [7, 8, 9, 10, 11, 12].map(function (z) { return '<option' + (z === +c.zoom ? ' selected' : '') + '>' + z + '</option>'; }).join('') + '</select></label>' +
-        (src === 'vf' ? '<label class="vs-z"><input type="checkbox" id="vsTrack"' + (c.track ? ' checked' : '') + '> ' + T('Trek 24 j', '24 h track') + '</label>' : '') +
-        '<div class="sp"></div><button type="button" class="btn sm" id="vsFull">' + T('Buka laman penuh ↗', 'Open full site ↗') + '</button></div>';
-      var title = all ? '<div class="vs-title">🧭 <b>' + T('Semua kapal saya', 'All my vessels') + '</b></div>' : v ? '<div class="vs-title">' + typeOf(v.type)[1] + ' <b>' + esc(v.name || '') + '</b>' + (v.role ? ' · ' + esc(v.role) : '') + ' ' + Vessels.job(v) + '</div>' : '<div class="vs-title">🗺️ <b>' + T('Kawasan ', 'Around ') + esc(s.locationName || '') + '</b></div>';
+        (src === 'vf' && !area ? '<label class="vs-z"><input type="checkbox" id="vsTrack"' + (c.track ? ' checked' : '') + '> ' + T('Trek 24 j', '24 h track') + '</label>' : '') +
+        '<div class="sp"></div>' + (area && src !== 'osm' ? '<button type="button" class="btn sm" id="vsCenter">⌖ ' + T('Pusatkan semula', 'Re-centre') + '</button>' : '') +
+        (src !== 'osm' ? '<button type="button" class="btn sm" id="vsFull">' + T('Buka laman penuh ↗', 'Open full site ↗') + '</button>' : '') + '</div>';
+      var title = all ? '<div class="vs-title">🧭 <b>' + T('Semua kapal saya', 'All my vessels') + '</b></div>' : v ? '<div class="vs-title">' + typeOf(v.type)[1] + ' <b>' + esc(v.name || '') + '</b>' + (v.role ? ' · ' + esc(v.role) : '') + ' ' + Vessels.job(v) + '</div>' : '<div class="vs-title">🗺️ <b>' + T('Kawasan ', 'Around ') + esc(s.locationName || '') + '</b> · 🛢️ ' + esc(P.name) + ' <span class="mw-rg">' + P.lat.toFixed(4) + ', ' + P.lon.toFixed(4) + '</span></div>';
       host.innerHTML = '<div class="vs-side card"><div class="card-h"><h3>' + T('Kapal saya', 'My vessels') + '</h3><div class="sp"></div><button type="button" class="btn sm" id="vsEdit">⚙ ' + T('Tetapan kapal', 'Vessel settings') + '</button></div>' +
         '<div class="card-b vs-list">' + list + '</div></div>' +
         '<div class="vs-main card">' + title + bar + (all ? '<div class="vs-grid">' + c.list.map(function (x) {
@@ -395,7 +404,26 @@
         }).join('') + '</div>' : '<div class="vs-map" id="vsMap"></div>') +
         '<p class="muted vs-note">' + T('Peta percuma VesselFinder / MarineTraffic (AIS). Kapal di luar liputan AIS darat mungkin tunjuk kedudukan lama.', 'Free VesselFinder / MarineTraffic maps (AIS). A vessel out of shore AIS range may show an old position.') + '</p></div>';
       if (all) c.list.forEach(function (x) { Vessels.map(x, src, document.querySelector('[data-vs-map="' + x.id + '"]'), 360); });
+      else if (src === 'osm') Vessels.osm();
       else Vessels.map(v, src);
+    },
+    /* Platform map: the app's own map (OpenStreetMap, Leaflet) - the platform and 5 / 10 / 20 nm rings; no AIS vessels here */
+    osm: function () {
+      var box = $('vsMap'), P = this.platform();
+      if (!box) return;
+      box.removeAttribute('data-url'); box.innerHTML = '<div class="vs-osm" id="vsOsm"></div>';
+      loadLeaflet(function () {
+        var el = $('vsOsm');
+        if (!el || !window.L) return;
+        var map = L.map(el, { zoomControl: true, attributionControl: true }).setView([P.lat, P.lon], 10);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 16, attribution: '© OpenStreetMap' }).addTo(map);
+        [5, 10, 20].forEach(function (nm) {
+          L.circle([P.lat, P.lon], { radius: nm * 1852, color: '#22d3ee', weight: 1.5, fill: false, dashArray: '6 6' }).addTo(map);
+          L.marker([P.lat + nm / 60, P.lon], { interactive: false, icon: L.divIcon({ className: 'vs-ring', html: '<div class="in">' + nm + ' nm</div>', iconSize: null }) }).addTo(map);
+        });
+        L.marker([P.lat, P.lon], { icon: L.divIcon({ className: 'vs-pf', html: '<div class="in"><span>🛢️</span><b>' + esc(P.name) + '</b></div>', iconSize: null }) }).addTo(map);
+        map.fitBounds(L.latLng(P.lat, P.lon).toBounds(22 * 1852 * 2));
+      });
     },
     /* the map: an iframe on the web; a <webview> in the PC app (its window may only load its own pages) */
     map: function (v, src, box, h) {
@@ -411,28 +439,40 @@
       el.setAttribute('src', url);
       el.setAttribute('title', src === 'mt' ? 'MarineTraffic' : 'VesselFinder');
       box.appendChild(el);
+      /* area map: the platform pinned over the map's centre (the map opens centred on it); moving the map inside it cannot be
+         seen by the app, so the pin fades once the map is touched and "Re-centre" puts both back */
+      if (!v && box.id === 'vsMap') {
+        var P = this.platform(), pin = document.createElement('div');
+        pin.className = 'vs-pin ' + src;
+        pin.innerHTML = '<span class="dot"></span><b>🛢️ ' + esc(P.name) + '</b>';
+        box.appendChild(pin);
+        box.classList.remove('moved');
+      }
     },
     editor: function () {
       var rows = Vessels.editing.map(function (x, i) {
         return '<tr data-i="' + i + '"><td><input class="inp" data-k="name" value="' + esc(x.name || '') + '" placeholder="' + T('cth KM Sri Kemaman', 'e.g. MV Sea Swift') + '"></td>' +
           '<td><input class="inp" data-k="mmsi" inputmode="numeric" maxlength="9" value="' + esc(x.mmsi || '') + '" placeholder="9 ' + T('digit', 'digits') + '"></td>' +
           '<td><input class="inp" data-k="imo" inputmode="numeric" maxlength="7" value="' + esc(x.imo || '') + '" placeholder="7 ' + T('digit', 'digits') + '"></td>' +
+          '<td><input class="inp" data-k="call" maxlength="10" value="' + esc(x.call || '') + '" placeholder="' + T('cth 9MAB2', 'e.g. 9MAB2') + '" autocapitalize="characters"></td>' +
           '<td><select class="sel" data-k="type">' + TYPES.map(function (t) { return '<option value="' + t[0] + '"' + (t[0] === x.type ? ' selected' : '') + '>' + t[1] + ' ' + esc(EN() ? t[3] : t[2]) + '</option>'; }).join('') + '</select></td>' +
           '<td><input class="inp" data-k="role" value="' + esc(x.role || '') + '" placeholder="' + T('cth Boat demob LQ', 'e.g. LQ demob boat') + '"></td>' +
           '<td><select class="sel" data-k="job">' + Vessels.jobOptions(x.job) + '</select></td>' +
           '<td><button type="button" class="btn sm" data-vs-del="' + i + '" title="' + T('Padam', 'Delete') + '">✕</button></td></tr>' +
-          (x.msg ? '<tr class="vs-err"><td colspan="7">' + esc(x.msg) + '</td></tr>' : '');
+          (x.msg ? '<tr class="vs-err"><td colspan="8">' + esc(x.msg) + '</td></tr>' : '');
       }).join('');
       return '<div class="card vs-ed"><div class="card-h"><h3>⚙ ' + T('Tetapan kapal', 'Vessel settings') + '</h3><small>' + T('disimpan dalam peranti ini', 'kept on this device') + '</small></div><div class="card-b">' +
         '<p class="muted">' + T('Isi nama dan sekurang-kurangnya satu nombor: MMSI (9 digit) atau IMO (7 digit). Cari nombor di VesselFinder / MarineTraffic (halaman kapal). Jenis, peranan dan kerja boleh dibiarkan.',
           'Fill in the name and at least one number: MMSI (9 digits) or IMO (7 digits). Find them on VesselFinder / MarineTraffic (the vessel page). Type, role and job are optional.') + '</p>' +
-        '<div class="mw-tw"><table class="mw-tb vs-tb"><thead><tr><th>' + T('Nama', 'Name') + '</th><th>MMSI</th><th>IMO</th><th>' + T('Jenis', 'Type') + '</th><th>' + T('Peranan / nota', 'Role / note') + '</th><th>' + T('Kerja (Go / No-Go)', 'Job (Go / No-Go)') + '</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+        '<div class="fld vs-pfld"><label for="vsPlatform">' + T('Nama platform di peta', 'Platform name on the map') + '<small>' + T('ditanda di titik profil ', 'marked at the profile point ') + (+settings().marineLat).toFixed(4) + ', ' + (+settings().marineLon).toFixed(4) + '</small></label>' +
+        '<input class="inp" id="vsPlatform" maxlength="40" value="' + esc(Vessels.cfg.platform || '') + '" placeholder="' + esc(Vessels.platform().name) + '"></div>' +
+        '<div class="mw-tw"><table class="mw-tb vs-tb"><thead><tr><th>' + T('Nama', 'Name') + '</th><th>MMSI</th><th>IMO</th><th>' + T('Callsign', 'Call sign') + '</th><th>' + T('Jenis', 'Type') + '</th><th>' + T('Peranan / nota', 'Role / note') + '</th><th>' + T('Kerja (Go / No-Go)', 'Job (Go / No-Go)') + '</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
         '<div class="relay-btns"><button type="button" class="btn sm" id="vsAdd">+ ' + T('Tambah kapal', 'Add vessel') + '</button><div class="sp"></div><button type="button" class="btn sm" id="vsCancel">' + T('Batal', 'Cancel') + '</button><button type="button" class="btn sm pri" id="vsSave">' + T('Simpan', 'Save') + '</button></div></div></div>';
     },
     check: function (list) {
       var bad = false, seen = {};
       list.forEach(function (x) {
-        x.name = String(x.name || '').trim().slice(0, 60); x.mmsi = String(x.mmsi || '').replace(/\D/g, ''); x.imo = String(x.imo || '').replace(/\D/g, ''); x.role = String(x.role || '').trim().slice(0, 80);
+        x.name = String(x.name || '').trim().slice(0, 60); x.mmsi = String(x.mmsi || '').replace(/\D/g, ''); x.imo = String(x.imo || '').replace(/\D/g, ''); x.role = String(x.role || '').trim().slice(0, 80); x.call = String(x.call || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
         x.msg = '';
         if (!x.mmsi && !x.imo) x.msg = T('Perlu MMSI atau IMO.', 'MMSI or IMO needed.');
         else if (x.mmsi && x.mmsi.length !== 9) x.msg = T('MMSI mesti 9 digit (ada {n}).', 'MMSI must be 9 digits (has {n}).').replace('{n}', x.mmsi.length);
@@ -457,6 +497,7 @@
     if (!t.closest || !t.closest('#vesselsHost')) return;
     if ((b = t.closest('[data-vs]'))) { Vessels.cfg.sel = b.getAttribute('data-vs'); Vessels.save(); Vessels.render(); return; }
     if ((b = t.closest('[data-vs-src]'))) { Vessels.cfg.src = b.getAttribute('data-vs-src'); Vessels.save(); Vessels.render(); return; }
+    if (t.closest('#vsCenter')) { var mb = $('vsMap'); if (mb) mb.removeAttribute('data-url'); Vessels.render(); return; }
     if (t.closest('#vsFull')) { MC.openExternal(Vessels.fullUrl(Vessels.sel(), Vessels.cfg.src === 'mt' ? 'mt' : 'vf')); return; }
     if (t.closest('#vsEdit')) { Vessels.editing = Vessels.cfg.list.map(function (x) { return Object.assign({}, x); }); if (!Vessels.editing.length) Vessels.editing.push({ type: 'crew' }); Vessels.render(); return; }
     if (t.closest('#vsAdd')) { readEditor(); if (Vessels.editing.length >= 20) return MC.toast(T('Maksimum 20 kapal', 'At most 20 vessels'), '', 'warning'); Vessels.editing.push({ type: 'crew' }); Vessels.render(); return; }
@@ -466,7 +507,8 @@
       readEditor();
       var list = Vessels.editing.filter(function (x) { return String(x.name || '').trim() || x.mmsi || x.imo; });
       if (!Vessels.check(list)) { Vessels.editing = list.length ? list : [{ type: 'crew' }]; Vessels.render(); MC.toast(T('Semak baris bertanda', 'Check the marked rows'), '', 'warning'); return; }
-      Vessels.cfg.list = list.map(function (x, i) { return { id: 'v' + (x.mmsi || x.imo), name: x.name, mmsi: x.mmsi, imo: x.imo, type: x.type || 'other', role: x.role, job: x.job || '' }; });
+      Vessels.cfg.list = list.map(function (x, i) { return { id: 'v' + (x.mmsi || x.imo), name: x.name, mmsi: x.mmsi, imo: x.imo, call: x.call || '', type: x.type || 'other', role: x.role, job: x.job || '' }; });
+      Vessels.cfg.platform = String(($('vsPlatform') || {}).value || '').trim().slice(0, 40);
       if (!Vessels.cfg.list.some(function (x) { return x.id === Vessels.cfg.sel; })) Vessels.cfg.sel = Vessels.cfg.list[0] ? Vessels.cfg.list[0].id : 'area';
       Vessels.save(); Vessels.editing = null; Vessels.render(); MC.toast(T('Kapal disimpan ✓', 'Vessels saved ✓'), Vessels.cfg.list.length + ''); return;
     }
@@ -474,6 +516,26 @@
   document.addEventListener('change', function (e) {
     if (e.target.id === 'vsZoom') { Vessels.cfg.zoom = +e.target.value; Vessels.save(); Vessels.render(); }
     if (e.target.id === 'vsTrack') { Vessels.cfg.track = e.target.checked; Vessels.save(); Vessels.render(); }
+  });
+
+  /* Leaflet (the same copy as Monsoon EYE's river map), loaded only when the platform map is opened */
+  var leafletWait = null;
+  function loadLeaflet(cb) {
+    if (window.L) return cb();
+    if (leafletWait) { leafletWait.push(cb); return; }
+    leafletWait = [cb];
+    var css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'assets/vendor/leaflet/leaflet.css'; document.head.appendChild(css);
+    var js = document.createElement('script'); js.src = 'assets/vendor/leaflet/leaflet.js';
+    js.onload = function () { var w = leafletWait; leafletWait = null; w.forEach(function (f) { try { f(); } catch (e) { console.error(e); } }); };
+    js.onerror = function () { leafletWait = null; var el = $('vsOsm'); if (el) el.innerHTML = '<div class="empty">' + T('Peta tidak dapat dimuat', 'The map could not be loaded') + '</div>'; };
+    document.head.appendChild(js);
+  }
+  /* the page loses focus to the map inside it = the user is moving that map: the pin may no longer be on the platform */
+  window.addEventListener('blur', function () {
+    setTimeout(function () {
+      var a = document.activeElement, box = a && a.closest ? a.closest('#vsMap') : null;
+      if (box && box.querySelector('.vs-pin')) box.classList.add('moved');
+    }, 0);
   });
 
   /* ------------------------------------------------------------------ hooks */
