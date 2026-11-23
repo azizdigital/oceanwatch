@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VesselFinder</title>
+<style>html,body{margin:0;height:100%;background:#0f172a;color:#cbd5e1;font:13px -apple-system,Segoe UI,sans-serif}#msg{padding:16px}</style>
+</head>
+<body>
+<!-- Ship map for the iPad / phone app: VesselFinder's own embeddable map (vesselfinder.com/embed), centred on the active
+     profile. The full vesselfinder.com site refuses to be shown inside other apps; this embed is made for it. -->
+<div id="msg">Loading ship map… / Memuatkan peta kapal…</div>
+<script>
+  var q = new URLSearchParams(location.search);
+  var num = function (k, d, lo, hi) { var v = parseFloat(q.get(k)); return isFinite(v) && v >= lo && v <= hi ? v : d; };
+  /* the embed script reads these globals */
+  var width = '100%';
+  var height = String(Math.max(300, window.innerHeight));
+  var latitude = num('lat', 4.23, -90, 90).toFixed(4);
+  var longitude = num('lon', 103.42, -180, 180).toFixed(4);
+  var zoom = String(Math.round(num('zoom', 8, 2, 14)));
+  var names = true;
+  var show_names = true;
+  document.getElementById('msg').remove();
+</script>
+<script src="https://www.vesselfinder.com/aismap.js"></script>
+</body>
+</html>

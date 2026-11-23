@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ms" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sentinel OceanWATCH</title>
+<meta name="theme-color" content="#030c1c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="OceanWATCH">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icons/favicon.ico">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon-180.png">
+<script src="assets/js/edition.js"></script>
+<script>try{var t=localStorage.getItem('mc_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/css/app.css">
+<link rel="stylesheet" href="assets/css/edition.css">
+</head>
+<body>
+<div id="splash" aria-hidden="true"><iframe src="splash.html" title="Memuatkan" tabindex="-1"></iframe></div>
+<script>/* splash, 5 seconds (the desktop app shows it in its own window); tap to skip */
+(function(){var s=document.getElementById('splash');if(window.mcDesktop||navigator.webdriver){s.remove();return;}
+function out(){if(!s.parentNode)return;s.classList.add('out');setTimeout(function(){s.remove();},450);}
+setTimeout(out,5000);s.addEventListener('click',out);})();</script>
+<div class="app" id="app">
+  <!-- icon rail (bottom bar on phones) -->
+  <nav class="rail" aria-label="Menu utama">
+    <div class="logo" title="Sentinel OceanWATCH"></div>
+    <button class="rbtn" data-view="dashboard" aria-label="Utama"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span class="lbl">Utama</span><span class="tip">Dashboard (Ctrl+H)</span></button>
+    <button class="rbtn" data-view="advisor" aria-label="Kerja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16"/><path d="M11 14l2 2 4-4"/></svg><span class="lbl">Kerja</span><span class="tip">Go / Caution / No-Go setiap kerja</span></button>
+    <button class="rbtn" data-view="models" aria-label="Model"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M4 14l5-3 4 1 7-5" opacity=".5"/></svg><span class="lbl">Model</span><span class="tip">Perbandingan model & PDF AMT</span></button>
+    <button class="rbtn" data-view="site" id="railSites" aria-label="Laman"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span class="lbl">Laman</span><span class="tip">Laman web</span></button>
+    <button class="rbtn" data-view="wall" aria-label="Dinding"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16M3 12h18"/></svg><span class="lbl">Dinding</span><span class="tip">Mod dinding (Ctrl+L)</span></button>
+    <button class="rbtn" data-view="ask" aria-label="Tanya AI"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/><path d="M5 16l.6 1.4L7 18l-1.4.6L5 20l-.6-1.4L3 18l1.4-.6z"/></svg><span class="lbl">Tanya AI</span><span class="tip">Panduan app & prompt AI</span></button>
+    <button class="rbtn" data-view="history" aria-label="Sejarah"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg><span class="lbl">Sejarah</span><span class="tip">Sejarah & graf</span></button>
+    <button class="rbtn" data-view="alerts" aria-label="Alert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="lbl">Alert</span><span class="badge" id="railBadge" hidden>0</span><span class="tip">Alert</span></button>
+    <button class="rbtn" data-view="settings" aria-label="Tetapan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="lbl">Tetapan</span><span class="tip">Tetapan</span></button>
+    <div class="sp"></div>
+    <button class="rbtn desk" id="railPhone" aria-label="Telefon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg><span class="tip">Telefon / tablet (QR) · Ctrl+P</span></button>
+    <button class="rbtn desk" id="railSide" aria-label="Sorok / papar senarai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg><span class="lbl">Senarai</span><span class="tip">Sorok / papar senarai laman</span></button>
+    <button class="rbtn desk" id="railTheme" aria-label="Tema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span class="lbl">Tema</span><span class="tip">Tema gelap / cerah</span></button>
+  </nav>
+
+  <!-- site list -->
+  <aside class="side" id="side">
+    <div class="side-head">
+      <h1 class="ed-name">SENTINEL Ocean<em>WATCH</em></h1>
+      <p class="ed-tag">Offshore Weather Guideline &amp; Monitoring</p>
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="sideSearch" type="search" placeholder="Cari laman..." autocomplete="off"><kbd>Ctrl K</kbd></div>
+    </div>
+    <div class="side-list" id="sideList"></div>
+    <div class="side-foot">© 2026 Aziz Mohamad<br>Sentinel OceanWATCH · <span id="verFoot">v1.0.0</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="top">
+      <button class="ibtn only-phone" id="topMenu" aria-label="Senarai laman"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="ttl"><span class="ic" id="topIcon">🌤️</span><div><h2 id="topTitle">Dashboard</h2><small id="topSub">Kemaman, Terengganu</small></div></div>
+      <div class="sp"></div>
+      <div class="prof-wrap">
+        <button class="prof-btn" id="profBtn" aria-haspopup="menu" title="Tukar profil lokasi"><span class="e" id="profIcon">📍</span><span id="profName">Kemaman</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="prof-menu" id="profMenu" role="menu" hidden></div>
+      </div>
+      <button class="lang-btn" id="langBtn" title="Tukar ke Bahasa Melayu">BM</button>
+      <span class="pill" id="statusPill" title="Status data"><span class="dot" id="statusDot"></span><span id="statusText">Memuatkan…</span></span>
+      <button class="ibtn" id="btnRefresh" title="Kemas kini data sekarang (F9)" aria-label="Kemas kini data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+      <button class="ibtn force" id="btnForce" title="Paksa kemas kini: baca semula semua data sekarang, tanpa cache" aria-label="Paksa kemas kini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></button>
+      <button class="ibtn" id="btnBell" title="Alert" aria-label="Alert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="badge" id="bellBadge" hidden>0</span></button>
+      <button class="ibtn" id="btnPalette" title="Cari & arahan (Ctrl+K)" aria-label="Cari"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+    </header>
+
+    <div class="views">
+      <!-- DASHBOARD -->
+      <section class="view on" id="view-dashboard">
+        <div class="pad">
+          <div id="dashBanner"></div>
+          <div id="dashHero" class="hero"></div>
+          <div class="tiles" id="dashTiles"></div>
+          <div class="grid">
+            <section class="card wide off-only" id="cardJobs">
+              <div class="card-h"><h3>🗂️ Kerja hari ini</h3><small id="jobsSub">blok 3 jam · nilai paling teruk setiap blok · had anda</small><div class="sp"></div><div class="seg" id="jobsSeg" role="tablist"><button data-h="24">24 jam</button><button data-h="shift">Syif</button><button data-h="72">3 hari</button></div><button class="btn sm" id="jobsPdf" type="button">📄 PDF (AMT)</button></div>
+              <div class="card-b" id="jobsBody"></div>
+            </section>
+            <section class="card wide" id="cardRisk">
+              <div class="card-h"><h3 id="rkTitle">📊 Skor risiko</h3><small id="rkSub">24 jam akan datang</small><div class="sp"></div><button class="btn sm" type="button" id="rkMore">Perincian ›</button></div>
+              <div class="card-b" id="rkBody"></div>
+            </section>
+            <section class="card wide off-only" id="cardOffshore">
+              <div class="card-h"><h3>🛢️ Keadaan offshore</h3><small id="offSub">angin, ombak, alun, penglihatan · 24 jam</small><div class="sp"></div><button class="btn sm" data-open-site="windywave">Peta ombak</button></div>
+              <div class="card-b">
+                <div class="grid2c">
+                  <div><div class="legend"><span><i style="background:var(--chart-future)"></i>Tinggi ombak (m)</span></div><div class="chart" id="chartWave"></div></div>
+                  <div><div class="legend"><span><i style="background:var(--chart-future)"></i>Tiupan angin (knot)</span></div><div class="chart" id="chartGust"></div></div>
+                </div>
+                <div id="offTable" style="overflow-x:auto;margin-top:12px"></div>
+              </div>
+            </section>
+            <section class="card wide off-only" id="cardOffCmp">
+              <div class="card-h"><h3>🧭 Perbandingan model offshore</h3><small id="ocSub">beberapa model percuma · nilai tengah & julat</small><div class="sp"></div><div class="seg" id="ocSeg" role="tablist"><button data-days="3">3 hari</button><button data-days="7">7 hari</button><button data-days="14">14 hari</button></div><button class="btn sm" id="ocPdf" type="button">📄 Simpan PDF</button></div>
+              <div class="card-b" id="ocBody"></div>
+            </section>
+            <section class="card wide land-only" id="cardWater">
+              <div class="card-h"><h3>🌊 Paras Air Sungai</h3><small id="waterSub">JPS Public Infobanjir</small><div class="sp"></div><a class="btn sm" id="waterLink" target="_blank" rel="noopener" href="https://publicinfobanjir.water.gov.my/aras-air/data-paras-air/aras-air-data/?state=TRG&amp;district=ALL&amp;station=ALL&amp;lang=en">Laman JPS ↗</a></div>
+              <div class="card-b" id="waterBody"></div>
+              <div class="card-b jpsfull" id="waterFull"></div>
+            </section>
+            <section class="card wide" id="cardFc">
+              <div class="card-h"><h3>📅 Ramalan</h3><small id="fcSub"></small><div class="sp"></div><div class="seg" id="fcSeg" role="tablist"><button data-days="7">7 hari</button><button data-days="14">14 hari</button><button data-days="28">28 hari</button></div></div>
+              <div class="card-b" id="fcBody"></div>
+            </section>
+            <section class="card wide land-only" id="cardFlood">
+              <div class="card-h"><h3>🏞️ Ramalan aliran sungai 30 hari</h3><small id="floodSub">GloFAS (model banjir global, sama jenis dengan Flood Hub)</small><div class="sp"></div><a class="btn sm" target="_blank" rel="noopener" href="https://sites.research.google/floods/l/4.226693947058215/103.41916850003622/13.39981973087496/p/ChIJYVEG9-SGyDERjwlnnLGhe5E?layers=1">Flood Hub ↗</a></div>
+              <div class="card-b" id="floodBody"></div>
+            </section>
+            <section class="card" id="cardRain">
+              <div class="card-h"><h3>🌧️ Hujan setiap jam</h3><small>24 jam lalu · 24 jam ramalan</small></div>
+              <div class="card-b"><div class="legend"><span><i style="background:var(--chart-past)"></i>Lepas</span><span><i style="background:var(--chart-future)"></i>Ramalan</span></div><div class="chart" id="chartRain"></div></div>
+            </section>
+            <section class="card land-only" id="cardRainSt">
+              <div class="card-h"><h3>☔ Hujan di stesen</h3><small id="rainStSub">JPS Public Infobanjir</small><div class="sp"></div><a class="btn sm" id="rainLink" target="_blank" rel="noopener" href="https://publicinfobanjir.water.gov.my/wp-content/themes/shapely/agency/searchresultrainfall.php?state=TRG&amp;district=ALL&amp;station=ALL&amp;language=1&amp;loginStatus=0">Laman JPS ↗</a></div>
+              <div class="card-b" id="rainStBody"></div>
+            </section>
+            <section class="card wide land-only" id="cardMet">
+              <div class="card-h"><h3>🌤️ Ramalan MET Malaysia</h3><small id="metSub">Kemaman (Ds065)</small><div class="sp"></div><a class="btn sm" target="_blank" rel="noopener" href="https://www.met.gov.my/en/forecast/weather/district/Ds065/" id="metLink">Laman MET ↗</a></div>
+              <div class="card-b" id="metBody"></div>
+            </section>
+            <section class="card" id="cardWarn">
+              <div class="card-h"><h3>⚠️ Amaran MET aktif</h3><small id="warnSub"></small></div>
+              <div class="card-b" id="warnBody"></div>
+            </section>
+            <section class="card" id="cardSea">
+              <div class="card-h"><h3>⚓ Laut: ombak & swell</h3><small id="seaSub">ramalan sehingga ~10 hari</small><div class="sp"></div><button class="btn sm" data-open-site="windywave">Peta ombak</button></div>
+              <div class="card-b" id="seaBody"></div>
+            </section>
+            <section class="card" id="cardTide">
+              <div class="card-h"><h3>🌙 Pasang surut</h3><small id="tideSub"></small><div class="sp"></div><a class="btn sm" target="_blank" rel="noopener" href="https://www.tide-forecast.com/locations/Cukai/tides/latest">Tide Forecast ↗</a></div>
+              <div class="card-b" id="tideBody"></div>
+            </section>
+
+
+          </div>
+          <p class="muted" style="font-size:11px;margin:14px 2px 4px;line-height:1.5">Data: MET Malaysia melalui data.gov.my · Open-Meteo (CC BY 4.0) · infobanjir Terengganu (JPS). Ombak, alun, angin, penglihatan & paras laut ialah anggaran model, bukan bacaan stesen. Untuk keputusan keselamatan dan operasi offshore, rujuk sumber rasmi.</p>
+        </div>
+      </section>
+
+      <!-- SITE VIEWER -->
+      <section class="view fill" id="view-site">
+        <div class="stabs-row"><div class="stabs" id="siteTabs"></div><button class="btn sm warn" id="closeAllBtn" title="Tutup semua laman yang terbuka (Ctrl+Shift+W)">Tutup semua</button></div>
+        <div class="sbar">
+          <button class="ibtn" id="sBack" title="Undur (Alt+←)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button class="ibtn" id="sFwd" title="Maju (Alt+→)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>
+          <button class="ibtn" id="sReload" title="Muat semula laman (Ctrl+R)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
+          <button class="ibtn" id="sHome" title="Kembali ke alamat asal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></button>
+          <div class="url"><span class="dot" id="sDot"></span><span id="sUrl">-</span></div>
+          <span class="fresh" id="sFresh" hidden></span>
+          <button class="shield desk-only" id="sShield" hidden title="Penyekat iklan"><span class="e">🛡️</span><span id="sShieldN">0</span></button>
+          <label class="muted hide-s" for="sAuto" style="font-size:12px">Auto</label>
+          <select class="sel sm" id="sAuto" title="Muat semula laman ini secara automatik">
+            <option value="0">Off</option><option value="1">1 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option>
+          </select>
+          <button class="ibtn hide-s" id="sZoomOut" title="Kecilkan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+          <button class="ibtn hide-s" id="sZoomIn" title="Besarkan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+          <button class="ibtn" id="sExt" title="Buka dalam pelayar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14L21 3"/></svg></button>
+        </div>
+        <div class="snote" id="sNote" hidden></div>
+        <div class="shost" id="siteHost"></div>
+      </section>
+
+      <!-- WALL -->
+      <section class="view fill" id="view-wall">
+        <div class="sbar">
+          <label class="muted" style="font-size:12px">Susun atur</label>
+          <select class="sel sm" id="wLayout"><option value="1x2">2 panel</option><option value="2x2">4 panel</option><option value="1+2">1 besar + 2</option><option value="2x3">6 panel</option></select>
+          <label class="muted" style="font-size:12px;margin-left:8px">Auto muat semula</label>
+          <select class="sel sm" id="wAuto"><option value="0">Off</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select>
+          <div style="flex:1"></div>
+          <button class="btn sm" id="wReloadAll">Muat semula semua</button>
+        </div>
+        <div class="wall" id="wall"></div>
+      </section>
+
+      <!-- HISTORY -->
+      <!-- AI SUGGESTION -->
+      <section class="view" id="view-advisor">
+        <div class="pad adv">
+          <section class="card"><div class="card-h"><h3>🤖 Cadangan AI</h3><small id="advSub">penilaian automatik ikut data app, atau prompt untuk AI lain</small></div>
+            <div class="card-b">
+              <div class="adv-row">
+                <label class="adv-l">Dari <input type="date" class="inp" id="advFrom"></label>
+                <label class="adv-l">Hingga <input type="date" class="inp" id="advTo"></label>
+                <div class="seg" id="advQuick"><button data-q="0">Hari ini</button><button data-q="1">Esok</button><button data-q="3">3 hari</button><button data-q="7">7 hari</button><button data-q="14">14 hari</button></div>
+              </div>
+              <div class="adv-row">
+                <span class="adv-k">Paparan</span><div class="seg" id="advRes"><button data-res="shift">Syif siang / malam</button><button data-res="3h">Setiap 3 jam</button><button data-res="day">Harian</button></div>
+                <label class="adv-l">Syif siang <input class="inp" id="advShift" placeholder="07-19" style="width:76px"></label>
+              </div>
+              <div class="adv-row land-only"><span class="adv-k">Kawasan</span><div class="seg" id="advArea"><button data-area="station">Stesen JPS</button><button data-area="district">Daerah</button><button data-area="custom">Tempat saya</button></div></div>
+              <div class="adv-row"><button class="btn pri" id="advRun" type="button">🤖 Nilai sekarang (automatik)</button><button class="btn" id="advPromptBtn" type="button">📋 Jana prompt untuk AI</button></div>
+              <p class="note">Automatik: app menilai sendiri dengan peraturan (percuma, tanpa AI luar). Prompt: app sediakan semua data dan arahan; salin dan tampal ke ChatGPT, Claude, Gemini atau Copilot untuk semakan internet, media sosial & jurnal.</p>
+            </div></section>
+          <section class="card" id="advOut" hidden><div class="card-h"><h3 id="advOutTitle">Keputusan</h3><small id="advOutSub"></small></div><div class="card-b" id="advBody"></div></section>
+          <section class="card" id="advPromptCard" hidden><div class="card-h"><h3>📋 Prompt untuk AI</h3><small id="advPromptSub"></small></div><div class="card-b">
+            <div class="adv-row"><div class="seg" id="advTarget"><button data-t="chatgpt">ChatGPT</button><button data-t="claude">Claude</button><button data-t="gemini">Gemini</button><button data-t="copilot">Copilot</button><button data-t="other">Lain-lain</button></div>
+              <select class="sel" id="advLang"><option value="ms">Jawapan: Bahasa Melayu</option><option value="en">Jawapan: English</option></select></div>
+            <textarea id="advPrompt" class="inp adv-ta" readonly spellcheck="false"></textarea>
+            <div class="adv-row"><button class="btn pri" id="advCopy" type="button">Salin prompt</button><button class="btn" id="advShare" type="button">Kongsi…</button><button class="btn" id="advOpenAI" type="button">Buka AI ↗</button><small id="advCount" class="muted"></small></div>
+            <p class="note">Salin, buka AI, kemudian tampal. Pastikan carian web AI itu dihidupkan supaya ia boleh semak sumber terkini.</p>
+          </div></section>
+          <section class="card off-only"><div class="card-h"><h3>Had operasi offshore</h3><small>nilai lazim industri - tukar ikut MOS / SOP syarikat</small></div><div class="card-b" id="advLimitsBody"></div></section>
+          <section class="card land-only"><div class="card-h"><h3>Tempat saya (semakan banjir)</h3><small>satu baris untuk setiap tempat</small></div><div class="card-b">
+            <textarea id="advPlaces" class="inp adv-ta sm" spellcheck="false" placeholder="Chukai; 4.23; 103.42; Chukai; pantai&#10;Kg. Air Putih; 4.17; 103.30; Air Putih"></textarea>
+            <div class="adv-row"><button class="btn" id="advPlacesSave" type="button">Simpan tempat</button><small id="advPlacesMsg" class="muted"></small></div>
+            <p class="note">Format: Nama; latitud; longitud; sebahagian nama stesen JPS (pilihan); pantai (pilihan, jika tepi laut).</p>
+          </div></section>
+        </div>
+      </section>
+      <!-- ASK AI: the app's own guide + a prompt for an outside AI, one purpose at a time (edition-ui.js) -->
+      <section class="view" id="view-ask">
+        <div class="pad ask">
+          <div class="ask-list card" id="askList"></div>
+          <div class="ask-main" id="askMain"></div>
+        </div>
+      </section>
+      <section class="view" id="view-models">
+        <div class="pad"><div class="grid" id="modelsHost"></div></div>
+      </section>
+      <section class="view" id="view-history">
+        <div class="pad">
+          <div class="ctrls">
+            <label for="hStation">Stesen</label><select class="sel" id="hStation"></select>
+            <label for="hHours">Tempoh</label>
+            <select class="sel" id="hHours"><option value="24">1 hari</option><option value="72">3 hari</option><option value="168">7 hari</option><option value="336" selected>14 hari</option><option value="720">30 hari</option></select>
+            <div style="flex:1"></div>
+            <button class="btn" id="hCsv">Muat turun CSV</button>
+          </div>
+          <div class="grid">
+            <section class="card wide"><div class="card-h"><h3 id="hTitle">Paras air</h3><small id="hSub"></small></div><div class="card-b"><div class="chart" id="chartLevel"></div><p class="note" id="hNote"></p></div></section>
+            <section class="card wide"><div class="card-h"><h3 id="hRainTitle">Hujan setiap jam</h3><small id="hRainSub">Open-Meteo · 48 jam lalu + 7 hari ramalan</small></div><div class="card-b"><div class="legend"><span><i style="background:var(--chart-past)"></i>Lepas</span><span><i style="background:var(--chart-future)"></i>Ramalan</span></div><div class="chart" id="chartRainLong"></div></div></section>
+            <section class="card"><div class="card-h"><h3 id="hTempTitle">Suhu (bacaan app)</h3><small>dari setiap kemas kini</small></div><div class="card-b"><div class="chart" id="chartTemp"></div></div></section>
+            <section class="card"><div class="card-h"><h3>Bacaan terakhir</h3><small id="hCount"></small></div><div class="card-b" id="hTable" style="max-height:340px;overflow:auto"></div></section>
+          </div>
+        </div>
+      </section>
+
+      <!-- ALERTS -->
+      <section class="view" id="view-alerts">
+        <div class="pad">
+          <div class="ctrls">
+            <button class="btn" id="aAckAll">Akui semua</button>
+            <button class="btn" id="aTest">Uji bunyi & notifikasi</button>
+            <button class="btn" id="aMute">Senyapkan bunyi</button>
+            <div style="flex:1"></div>
+            <button class="btn" id="aSettings">Ambang alert…</button>
+          </div>
+          <section class="card" style="margin-bottom:14px"><div class="card-h"><h3>Alert aktif</h3><small id="aSub"></small></div><div class="card-b"><div class="alist" id="aActive"></div></div></section>
+          <section class="card"><div class="card-h"><h3>Log alert</h3><small>200 terkini</small></div><div class="card-b" id="aLog"></div></section>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" id="view-settings">
+        <div class="pad">
+          <form id="setForm" class="form" autocomplete="off" onsubmit="return false">
+            <section class="card wide-form"><div class="card-h"><h3>📍 Profil lokasi</h3><small>Hanya profil aktif dipantau. Tukar profil juga dari butang 📍 di atas.</small></div><div class="card-b">
+              <div class="plist" id="profList"></div>
+              <div class="padd">
+                <input class="inp" id="newProfName" placeholder="Nama profil baru (cth: Platform Tapis)">
+                <input type="hidden" id="newProfKind" value="offshore">
+                <input class="inp" id="newProfLat" placeholder="Latitud (cth 5.5501)" inputmode="decimal">
+                <input class="inp" id="newProfLon" placeholder="Longitud (cth 104.7745)" inputmode="decimal">
+                <button type="button" class="btn pri" id="newProfAdd">Tambah profil</button>
+              </div>
+            </div></section>
+            <section class="card wide-form" id="myJobsCard"><div class="card-h"><h3>🧰 Kerja saya</h3><small>kerja sendiri dengan had & masa demob · keluar dalam jadual Kerja dengan ★</small></div><div class="card-b" id="myJobsBody"></div></section>
+            <section class="card wide-form" id="importCard"><div class="card-h"><h3>⤵️ Import dari Dashboard Cuaca</h3><small>salin profil, had, Tempat saya &amp; kunci relay dari app asal di iPad ini</small></div><div class="card-b" id="importBody"></div></section>
+            <section class="card"><div class="card-h"><h3>Lokasi · <span class="pname">-</span></h3><small>untuk profil ini sahaja</small></div><div class="card-b">
+              <div class="fld"><label for="f_profileName">Nama profil</label><input class="inp" id="f_profileName" name="profileName"></div>
+              <input type="hidden" id="f_kind" name="kind" value="offshore">
+              <div class="fld"><label for="f_lat">Latitud / longitud cuaca<small>Titik ramalan hujan, angin & penglihatan</small></label><div style="display:flex;gap:6px"><input class="inp" id="f_lat" name="lat" inputmode="decimal"><input class="inp" id="f_lon" name="lon" inputmode="decimal"></div></div>
+              <div class="fld"><label for="f_marineLat">Latitud / longitud laut<small>Titik di laut untuk ombak & alun</small></label><div style="display:flex;gap:6px"><input class="inp" id="f_marineLat" name="marineLat" inputmode="decimal"><input class="inp" id="f_marineLon" name="marineLon" inputmode="decimal"></div></div>
+              <div class="fld land-field"><label for="f_riverLat">Latitud / longitud sungai<small>Titik di atas sungai untuk ramalan aliran 30 hari (GloFAS)</small></label><div style="display:flex;gap:6px"><input class="inp" id="f_riverLat" name="riverLat" inputmode="decimal"><input class="inp" id="f_riverLon" name="riverLon" inputmode="decimal"></div></div>
+              <div class="fld"><label for="f_metLocationId">Kod lokasi MET<small>Ds065 = Daerah Kemaman · kosongkan untuk offshore</small></label><input class="inp" id="f_metLocationId" name="metLocationId"></div>
+              <div class="fld"><label for="f_warningKeywords">Kata kunci amaran MET<small>Offshore: Terengganu, Condore, Reef North</small></label><input class="inp" id="f_warningKeywords" name="warningKeywords"></div>
+              <div class="fld land-field"><label for="f_waterDistrict">Daerah paras air JPS<small>cth. Kemaman (stesen JPS negeri Terengganu)</small></label><input class="inp" id="f_waterDistrict" name="waterDistrict"></div>
+              <div class="fld"><label for="f_tidePlace">Pasang surut<small>Jadual Cukai dari Tide Forecast, atau anggaran model di titik laut</small></label><select class="sel" id="f_tidePlace" name="tidePlace"><option value="cukai">Jadual Cukai (mirror GitHub)</option><option value="model">Model di titik laut</option></select></div>
+              <div class="fld land-field"><label for="f_scrapeInfobanjir">Baca paras air & hujan JPS<small>Stesen daerah di atas (mirror GitHub ~15 min)</small></label><div class="sw"><input type="checkbox" id="f_scrapeInfobanjir" name="scrapeInfobanjir"><span></span></div></div>
+              <div class="fld land-field"><label for="f_useDataGovFlood">Paras air data.gov.my<small>Sumber kedua</small></label><div class="sw"><input type="checkbox" id="f_useDataGovFlood" name="useDataGovFlood"><span></span></div></div>
+            </div></section>
+            <section class="card"><div class="card-h"><h3>Ambang alert · <span class="pname">-</span></h3><small>untuk profil ini sahaja</small></div><div class="card-b">
+              <div class="fld"><label for="f_gustKmh">Tiupan angin (km/j)<small id="gustKt">50 km/j = 27 knot</small></label><input class="inp" id="f_gustKmh" name="gustKmh" type="number" step="1" min="1"></div>
+              <div class="fld"><label for="f_waveM">Tinggi ombak (m)</label><input class="inp" id="f_waveM" name="waveM" type="number" step="0.1" min="0.1"></div>
+              <div class="fld off-only"><label for="f_offWindKt">Had angin kad perbandingan (knot)<small>Untuk % peluang &amp; garisan merah carta</small></label><input class="inp" id="f_offWindKt" name="offWindKt" type="number" step="1" min="1" max="80"></div>
+              <div class="fld off-only"><label for="f_offWaveM">Had ombak kad perbandingan (Hs, m)<small>Untuk % peluang &amp; garisan merah carta</small></label><input class="inp" id="f_offWaveM" name="offWaveM" type="number" step="0.1" min="0.1" max="15"></div>
+              <div class="fld land-field"><label for="f_coastal">Kawasan pantai<small>Kira Risiko pantai (air pasang, ombak)</small></label><div class="sw"><input type="checkbox" id="f_coastal" name="coastal"><span></span></div></div>
+              <div class="fld"><label for="f_omEveryMin">Data model: kemas kini setiap (minit)<small>5 model hujan &amp; model offshore, selagi app dibuka; perlahan sendiri bila hampir had percuma Open-Meteo (~10,000 sehari)</small></label><input class="inp" id="f_omEveryMin" name="omEveryMin" type="number" step="1" min="3" max="60"></div>
+              <div class="fld land-field"><label for="f_ewConf">Amaran awal banjir: keyakinan untuk notifikasi (%)<small>Anggaran 4 &amp; 24 jam; bawah nilai ini ditunjuk senyap</small></label><input class="inp" id="f_ewConf" name="ewConf" type="number" step="1" min="50" max="99"></div>
+              <div class="fld land-field wide"><label for="f_ewUpstream">Susunan sungai (hulu → hilir) &amp; kampung berisiko<small>Satu baris setiap stesen: Stesen &lt; hulu, hulu | kampung, kampung. "~" di depan = muara (pasang surut).</small></label><textarea class="inp" id="f_ewUpstream" name="ewUpstream" rows="8" spellcheck="false"></textarea></div>
+              <div class="fld off-only"><label for="f_ewWindRise">Amaran awal offshore: angin naik (knot dalam 6 jam)</label><input class="inp" id="f_ewWindRise" name="ewWindRise" type="number" step="1" min="2" max="30"></div>
+              <div class="fld off-only"><label for="f_ewSwellTp">Alun panjang dari tempoh (saat)</label><input class="inp" id="f_ewSwellTp" name="ewSwellTp" type="number" step="1" min="5" max="20"></div>
+              <div class="fld off-only"><label for="f_advWindowH">Weather window paling pendek (jam)</label><input class="inp" id="f_advWindowH" name="advWindowH" type="number" step="1" min="1" max="24"></div>
+              <div class="fld"><label for="f_visKm">Penglihatan kurang daripada (km)<small>0 = tutup</small></label><input class="inp" id="f_visKm" name="visKm" type="number" step="0.5" min="0"></div>
+              <div class="fld"><label for="f_thunderAlert">Alert ribut petir dijangka<small>Ramalan dalam 6 jam</small></label><div class="sw"><input type="checkbox" id="f_thunderAlert" name="thunderAlert"><span></span></div></div>
+              <div class="fld"><label for="f_rain3hMm">Ramalan hujan 3 jam (mm)</label><input class="inp" id="f_rain3hMm" name="rain3hMm" type="number" step="1" min="1"></div>
+              <div class="fld"><label for="f_rain24hMm">Ramalan hujan 24 jam (mm)</label><input class="inp" id="f_rain24hMm" name="rain24hMm" type="number" step="1" min="1"></div>
+              <div class="fld land-field"><label for="f_waterAlertLevel">Alert paras air bermula pada<small>Ikut ambang rasmi setiap stesen</small></label><select class="sel" id="f_waterAlertLevel" name="waterAlertLevel"><option value="alert">Waspada</option><option value="warning">Amaran</option><option value="danger">Bahaya</option></select></div>
+              <div class="fld land-field"><label for="f_waterRiseM">Paras naik cepat (m / 1 jam)<small>0 = tutup</small></label><input class="inp" id="f_waterRiseM" name="waterRiseM" type="number" step="0.1" min="0"></div>
+            </div></section>
+            <section class="card"><div class="card-h"><h3>Kemas kini</h3><small>semua profil</small></div><div class="card-b">
+              <div class="fld"><label for="f_refreshMin">Kekerapan kemas kini data<small>Berapa kerap app ambil data baru</small></label><select class="sel" id="f_refreshMin" name="refreshMin"><option value="5">5 minit</option><option value="10">10 minit</option><option value="15">15 minit</option><option value="30">30 minit</option><option value="60">60 minit</option></select></div>
+              <div class="fld"><label for="f_staleHours">Data stesen dikira lama selepas (jam)<small>Data lama tidak mencetuskan alert</small></label><input class="inp" id="f_staleHours" name="staleHours" type="number" step="1" min="1"></div>
+              <div class="fld"><label>Paksa kemas kini<small>Baca semula semua data sekarang tanpa cache (cuaca, model, JPS, halaman Kemaman). Mirror JPS sendiri dikemas kini oleh GitHub setiap ~15 minit.</small></label><button class="btn" type="button" id="btnForce2">⚡ Paksa kemas kini</button></div>
+              <div class="fld"><label for="f_siteCheck">Semak status semua laman<small>Setiap 30 minit</small></label><div class="sw"><input type="checkbox" id="f_siteCheck" name="siteCheck"><span></span></div></div>
+            </div></section>
+            <section class="card"><div class="card-h"><h3>Notifikasi & aplikasi</h3></div><div class="card-b">
+              <div class="fld"><label for="f_sound">Bunyi alert</label><div class="sw"><input type="checkbox" id="f_sound" name="sound"><span></span></div></div>
+              <div class="fld"><label for="f_soundLevel">Bunyi untuk<small>Alert lain tetap dipapar & dicatat, cuma senyap. Bahaya yang belum diakui berbunyi semula setiap 15 minit.</small></label><select class="sel" id="f_soundLevel" name="soundLevel"><option value="critical">Kritikal / Bahaya sahaja</option><option value="warning">Amaran & kritikal</option><option value="all">Semua alert</option><option value="none">Senyap semua</option></select></div>
+              <div class="fld"><label for="f_notify">Notifikasi Windows</label><div class="sw"><input type="checkbox" id="f_notify" name="notify"><span></span></div></div>
+              <div class="fld"><label for="f_keepInTray">Kekal di tray bila ditutup<small>Mati: tutup tetingkap = app tutup terus. Hidup: terus memantau & berbunyi dari ikon tray</small></label><div class="sw"><input type="checkbox" id="f_keepInTray" name="keepInTray"><span></span></div></div>
+              <div class="fld"><label for="f_startWithWindows">Mula bersama Windows<small>Buka app bila Windows bermula (terus ke tray jika "Kekal di tray" hidup)</small></label><div class="sw"><input type="checkbox" id="f_startWithWindows" name="startWithWindows"><span></span></div></div>
+              <div class="fld"><label>Notifikasi di telefon ini<small>Hanya semasa app dibuka</small></label><button type="button" class="btn sm" id="btnPhoneNotif">Benarkan</button></div>
+              <div class="fld"><label for="f_lang">Bahasa / Language</label><select class="sel" id="f_lang" name="lang"><option value="en">English</option><option value="ms">Bahasa Melayu</option></select></div>
+              <div class="fld"><label>Tema</label><select class="sel" id="f_theme"><option value="dark">Gelap</option><option value="light">Cerah</option></select></div>
+            </div></section>
+            <section class="card land-only pc-only"><div class="card-h"><h3>Diagnostik</h3><small>jadual infobanjir</small></div><div class="card-b">
+              <div class="fld wide"><label>Apa yang app baca dari laman infobanjir<small>Untuk semak jika paras air kosong</small></label><div class="diag" id="diagBox" data-noi18n>-</div></div>
+            </div></section>
+            <section class="card" id="relayCard"><div class="card-h"><h3>Relay laman</h3><small>Cloudflare percuma</small></div><div class="card-b">
+              <p class="muted relay-intro">Sesetengah laman (titik biru) tidak membenarkan dirinya dipaparkan di dalam app lain. Relay percuma anda di Cloudflare membuang sekatan itu, supaya laman tersebut keluar di dalam app, di mana-mana, tanpa PC. Tanpa relay, laman itu dibuka dalam pelayar di atas app.</p>
+              <p class="muted relay-intro web-only">Relay juga <b>membuang iklan</b> dari laman yang dibuka melaluinya. infobanjir Terengganu &amp; met.gov.my hanya menerima sambungan dari Malaysia, jadi kedua-duanya tetap diganti dengan kad di Dashboard atau dibuka di tab baru.</p>
+              <ol class="relay-steps">
+                <li>Daftar akaun percuma di <b>dash.cloudflare.com</b> (emel + kata laluan).</li>
+                <li><b>Workers &amp; Pages</b> → <b>Create</b> → <b>Hello World</b> → beri nama (cth <code>cuaca-relay</code>) → <b>Deploy</b>.</li>
+                <li>Tekan <b>Salin skrip relay</b> di bawah → dalam Cloudflare: <b>Edit code</b> → padam semua → tampal → <b>Deploy</b>.</li>
+                <li>Salin alamat worker (<code>https://cuaca-relay.….workers.dev</code>) ke <b>Alamat relay</b> → <b>Simpan</b> → <b>Uji relay</b>.</li>
+              </ol>
+              <div class="fld wide"><label for="f_relayUrl">Alamat relay<small>Alamat worker Cloudflare anda</small></label><input class="inp" id="f_relayUrl" name="relayUrl" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://cuaca-relay.aziz.workers.dev"></div>
+              <div class="fld wide"><label for="f_relayKey">Kunci relay<small>Kata laluan rahsia dalam skrip. Kunci baru = salin & tampal skrip sekali lagi.</small></label><div class="relay-key"><input class="inp" id="f_relayKey" name="relayKey" autocomplete="off" spellcheck="false" placeholder="(buat kunci)"><button type="button" class="btn sm" id="relayNewKey">Buat kunci baru</button></div></div>
+              <div class="relay-btns"><button type="button" class="btn sm pri" id="relayCopy">Salin skrip relay</button><button type="button" class="btn sm" id="relayDownload">Muat turun skrip</button><button type="button" class="btn sm" id="relayTest">Uji relay</button></div>
+              <div class="fld web-only"><label for="f_relayAds">Buang iklan melalui relay<small>Laman pasang surut &amp; trafik (yang penuh iklan) dibuka melalui relay, tanpa iklan</small></label><div class="sw"><input type="checkbox" id="f_relayAds" name="relayAds"><span></span></div></div>
+              <input type="hidden" id="f_relayBad" name="relayBad"><input type="hidden" id="f_relayAltOff" name="relayAltOff">
+              <div class="relay-msg muted" id="relayMsg"></div>
+              <div class="relay-bad muted" id="relayBadInfo" hidden></div>
+            </div></section>
+            <section class="card desk-only"><div class="card-h"><h3>Penyekat iklan</h3><small>laman dalam app</small></div><div class="card-b">
+              <div class="fld"><label for="f_adblock">Sekat iklan<small>Iklan, pop-up iklan, ruang kosong bekas iklan dan notis cookie</small></label><div class="sw"><input type="checkbox" id="f_adblock" name="adblock"><span></span></div></div>
+              <div class="fld wide"><label for="f_adblockExcept">Laman yang tidak disekat<small>Nama laman, dipisah dengan koma. Guna jika laman rosak atau minta matikan penyekat iklan. Butang 🛡️ dalam bar laman juga menambah / membuang laman di sini.</small></label><textarea class="inp" id="f_adblockExcept" name="adblockExcept" rows="2" spellcheck="false" placeholder="tide-forecast.com, vesselfinder.com"></textarea></div>
+              <div class="fld"><label>Senarai iklan<small id="adStatus">-</small></label><button type="button" class="btn sm" id="adUpdate">Kemas kini sekarang</button></div>
+            </div></section>
+            <section class="card web-only" id="moveCard"><div class="card-h"><h3>Peranti lain</h3><small>PC, iPad, telefon</small></div><div class="card-b">
+              <p class="muted">Setiap peranti menyimpan tetapannya sendiri. Untuk guna tetapan yang sama (relay, profil, ambang alert) di peranti lain: salin pautan ini, hantar kepada diri sendiri (WhatsApp / emel), kemudian buka di peranti itu.</p>
+              <div class="relay-btns"><button type="button" class="btn sm pri" id="moveCopy">Salin pautan tetapan</button><button type="button" class="btn sm" id="moveShare">Kongsi…</button><button type="button" class="btn sm" id="movePaste">Tampal pautan dari peranti lain</button></div>
+              <p class="muted" style="font-size:12px">iPad / iPhone: app di skrin utama tidak berkongsi tetapan dengan Safari. Salin pautan, buka app, kemudian tekan <b>Tampal pautan dari peranti lain</b>.</p>
+              <div class="relay-msg muted" id="moveMsg"></div>
+            </div></section>
+            <section class="card" id="cardSources">
+              <div class="card-h"><h3>📡 Status sumber</h3><small id="srcSub"></small></div>
+              <div class="card-b" id="srcBody"></div>
+            </section>
+            <section class="card"><div class="card-h"><h3>Lain-lain</h3></div><div class="card-b">
+              <div class="fld desk-only"><label>Telefon / tablet<small>QR untuk pasang app di telefon</small></label><button type="button" class="btn sm" id="btnSetup">Buka QR</button></div>
+              <div class="fld desk-only"><label>Folder data<small>Snapshot, sejarah, log alert</small></label><button type="button" class="btn sm" id="btnDataDir">Buka folder</button></div>
+              <div class="fld desk-only"><label>Log keluar semua laman<small>Padam cookie & cache laman web</small></label><button type="button" class="btn sm" id="btnClearSites">Padam</button></div>
+              <div class="fld"><label>Versi</label><span class="mono" id="aboutVer" style="justify-self:end">-</span></div>
+              <div class="fld"><label>Mod data</label><span id="aboutMode" style="justify-self:end;font-size:12.5px">-</span></div>
+              <div class="fld wide about-logo"><img src="assets/icons/logo-full.png" alt="Sentinel OceanWATCH" loading="lazy"></div>
+            </div></section>
+          </form>
+          <div class="savebar"><span class="muted" id="setMsg" style="font-size:12.5px;margin-right:auto"></span><button class="btn" id="setReset">Tetapan asal</button><button class="btn pri" id="setSave">Simpan</button></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="pal-bg" id="palBg" hidden>
+  <div class="pal" role="dialog" aria-label="Cari">
+    <input id="palInput" placeholder="Cari laman atau arahan…" autocomplete="off">
+    <ul id="palList" role="listbox"></ul>
+  </div>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="precache-manifest.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/charts.js"></script>
+<script src="assets/js/charts2.js"></script>
+<script src="assets/js/offshore.js"></script>
+<script src="assets/js/risk.js"></script>
+<script src="assets/js/advisor.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/edition-ui.js"></script>
+<script src="assets/js/ask.js"></script>
+<script src="assets/js/myjobs.js"></script>
+</body>
+</html>

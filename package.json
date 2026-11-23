@@ -1,0 +1,18 @@
+{
+  "name": "oceanwatch",
+  "productName": "Sentinel OceanWATCH",
+  "version": "1.0.0",
+  "description": "Sentinel OceanWATCH - Offshore Weather Guideline & Monitoring (Irong Barat and other platforms): wind, waves, swell, model comparison, Go / Caution / No-Go for every job, My jobs & demob time, AMT PDF, Ask AI. Web app for iPad / phone (GitHub Pages).",
+  "author": "Aziz Mohamad",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "serve": "node tools/serve.js 42050",
+    "build-www": "node tools/build-precache.js",
+    "test:unit": "node tests/unit.js && node tests/edition.js",
+    "test": "node tools/build-precache.js && node tests/unit.js && node tests/edition.js && playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1"
+  }
+}

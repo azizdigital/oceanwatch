@@ -1,0 +1,61 @@
+/* Sentinel OceanWATCH - which app this repo is (tools/build-edition.js writes www/assets/js/edition.js from it) */
+'use strict';
+module.exports = {
+  "oceanwatch": {
+    "id": "oceanwatch",
+    "short": "ow",
+    "kind": "offshore",
+    "version": "1.0.0",
+    "name": "Sentinel OceanWATCH",
+    "nameHtml": "SENTINEL Ocean<em>WATCH</em>",
+    "tagline": "Offshore Weather Guideline & Monitoring",
+    "repo": "azizdigital/oceanwatch",
+    "url": "https://azizdigital.github.io/oceanwatch/",
+    "prefix": "ow_",
+    "cache": "oceanwatch-",
+    "themeColor": "#030c1c",
+    "defaults": {
+      "lang": "en",
+      "relayUrl": "",
+      "kind": "offshore",
+      "tidePlace": "model",
+      "scrapeInfobanjir": false,
+      "useDataGovFlood": false,
+      "metLocationId": "",
+      "waterDistrict": "",
+      "warningKeywords": "Terengganu, Condore, Reef North",
+      "locationName": "Irong Barat",
+      "lat": 5.5501,
+      "lon": 104.7745,
+      "marineLat": 5.5501,
+      "marineLon": 104.7745
+    },
+    "profiles": [
+      "irong-barat"
+    ],
+    "activeProfile": "irong-barat",
+    "sites": [
+      "zoomearth",
+      "rainviewer",
+      "metradar",
+      "himawari",
+      "metmarine",
+      "windywave",
+      "windywind",
+      "nullschool",
+      "windyswell",
+      "blitzortung",
+      "vesselfinder",
+      "marinetraffic",
+      "storms"
+    ],
+    "wall": [
+      "dashboard",
+      "windywave",
+      "windywind",
+      "nullschool",
+      "vesselfinder",
+      "metradar"
+    ]
+  }
+};

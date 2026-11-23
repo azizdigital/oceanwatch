@@ -1,0 +1,278 @@
+
+
+
+<style>
+/* ekon
+.responstable {
+	font-size: 11.4px;
+	margin: 1em 0;
+	width: 100%;
+	background: #FFF;
+	color: #024457;
+	border-radius: 10px;
+	border: 1px solid #167F92;
+	overflow: hidden;
+  margin: 0px;
+  } */
+  #normaltable1 tr {
+	border-top: 1px solid #167F92;
+	border-bottom: 1px solid #167F92;
+  }
+  #normaltable1 tr:nth-child(odd) {
+	background-color: #EAF3F3;
+  }
+  #normaltable1 th {
+	border: 1px solid;
+	color: #FFF;
+  font-size: 14.2px;
+  text-align: center;
+  padding: 5px;
+  }
+#normaltable1 td{
+  text-align: center;
+  font-size: 14px;
+  border: 1px solid #a6a6a6;
+}
+  #normaltable2 tr {
+	border-top: 1px solid #167F92;
+	border-bottom: 1px solid #167F92;
+  }
+  #normaltable2 tr:nth-child(odd) {
+	background-color: #EAF3F3;
+  }
+  #normaltable2 th {
+	border: 1px solid;
+	color: #FFF;
+  font-size: 14.2px;
+  text-align: center;
+  padding: 5px;
+  }
+  #normaltable2 td{
+  text-align: center;
+  font-size: 14px;
+  border: 1px solid #a6a6a6;
+}
+#normal{
+  background-color: #008000;
+  color: black;
+  font-weight: bold;
+}
+#alert{
+  background-color: #ffff00;
+  color: black;
+  font-weight: bold;
+}
+#warning{
+  background-color: #ffa500;
+  color: black;
+  font-weight: bold;
+}
+#danger{
+  background-color: #ff0000;
+  color: white;
+  font-weight: bold;
+}
+#district1{
+	cursor:pointer;
+  color:#4d79ff;
+}
+.box{
+  width: 450px;
+   height: 80px;
+   border: ridge;
+   float: right;
+  padding: 10px;
+  box-shadow: 4px 4px #888888;
+  margin-bottom: 10px;
+}
+.horiz > li {
+  display: inline;
+  padding-right: 20px;
+}
+.legend {
+  vertical-align:top;
+  padding-left:15px;
+  list-style: none;
+  float: right;
+}
+#wl{
+  color: black;
+  text-decoration: underline;
+}
+#wldanger{
+  color: white;
+  text-decoration: underline;
+}
+
+</style>
+
+
+      <div class='custyle' style='overflow: auto;'>
+      <table class='normaltable-fluid' border='1' id='normaltable1'>
+      <thead>
+  		<tr>
+    <tr>
+    <th rowspan = '2' style='background-color: #2d7fc7;'>No.</th><th rowspan = '2' style='background-color: #2d7fc7;'>Station ID</th><th rowspan = '2' style='background-color: #2d7fc7; width: 15%;'>Station Name</th>
+    <th rowspan = '2' style='background-color: #2d7fc7;'>District</th>
+    <th rowspan = '2' style='background-color: #2d7fc7;'>Main Basin</th>
+    <th rowspan = '2' style='background-color: #2d7fc7;'>Sub River Basin</th>
+    <th rowspan = '2' style='background-color: #2d7fc7;'>Last Updated</th>
+    <th rowspan = '2' style='background-color: #2d7fc7;'>Water Level (m)<br>(Graph)</th>
+    <th colspan = '4' class='text-center' style='background-color: #2d7fc7;'>Threshold</th>
+    </tr>
+    <tr>
+    <th style='background-color: #2d7fc7;'>Normal	</th>
+    <th id='alert' style='color:black;'>Alert</th>
+    <th id='warning' style='color:black;'>Warning</th>
+    <th id='danger' style='color:black;'>Danger</th>
+		</tr>
+    </thead>
+    <tbody>
+
+    </tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>1</td><td data-th='Station ID'>0670491WL</td><td data-th='Station Name'>Sg. Berang di Kg. Menerong (F1)</td><td data-th='District'>Hulu Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Berang</td><td data-th='Last Update'>20/11/2026 21:15</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27962' id='wl' target='_blank'>
+          20.45</a></td><td data-th='Normal'>20.00</td><td data-th='Alert'>23.50</td><td data-th='Warning'>24.00</td><td data-th='Danger'>24.50</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>2</td><td data-th='Station ID'>5424401</td><td data-th='Station Name'>Sg. Besut di Jambatan Keruak</td><td data-th='District'>Besut</td><td data-th='Main Basin (mm)'>Sungai Besut</td><td data-th='Sub River Basin (mm)'>Sg. Besut</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=5424001_' id='wl' target='_blank'>
+          32.27</a></td><td data-th='Normal'>28.50</td><td data-th='Alert'>33.00</td><td data-th='Warning'>34.00</td><td data-th='Danger'>35.00</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>3</td><td data-th='Station ID'>5524401</td><td data-th='Station Name'>Sg. Besut di Kg. La</td><td data-th='District'>Besut</td><td data-th='Main Basin (mm)'>Sungai Besut</td><td data-th='Sub River Basin (mm)'>Sg. Besut</td><td data-th='Last Update'>20/11/2026 20:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=5524001_' id='wl' target='_blank'>
+          17.09</a></td><td data-th='Normal'>16.50</td><td data-th='Alert'>19.80</td><td data-th='Warning'>20.80</td><td data-th='Danger'>21.80</td></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>4</td><td data-th='Station ID'>5724411</td><td data-th='Station Name'>Sg. Besut di Jambatan Jerteh</td><td data-th='District'>Besut</td><td data-th='Main Basin (mm)'>Sungai Besut</td><td data-th='Sub River Basin (mm)'>Sg. Besut</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=5724003_' id='wl' target='_blank'>
+          1.54</a></td><td data-th='Normal'>2.30</td><td data-th='Alert'>6.00</td><td data-th='Warning'>7.00</td><td data-th='Danger'>8.50</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>5</td><td data-th='Station ID'>5428440</td><td data-th='Station Name'>Sg. Nerus di Kg. Langkap (F1)</td><td data-th='District'>Setiu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Nerus</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=5428040_TSET0001' id='wl' target='_blank'>
+          17.99</a></td><td data-th='Normal'>17.00</td><td data-th='Alert'>19.50</td><td data-th='Warning'>20.00</td><td data-th='Danger'>21.00</td></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>6</td><td data-th='Station ID'>0670271WL</td><td data-th='Station Name'>Sg. Nerus di Kg. Bukit (F1)</td><td data-th='District'>Setiu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Nerus</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=_TSET0008' id='wl' target='_blank'>
+          9.35</a></td><td data-th='Normal'>6.00</td><td data-th='Alert'>10.50</td><td data-th='Warning'>12.00</td><td data-th='Danger'>13.20</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>7</td><td data-th='Station ID'>5229436</td><td data-th='Station Name'>Sg. Nerus di Kg. Bukit</td><td data-th='District'>Setiu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Nerus</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=KGBUKIT' id='wl' target='_blank'>
+          8.60</a></td><td data-th='Normal'>6.00</td><td data-th='Alert'>10.50</td><td data-th='Warning'>12.00</td><td data-th='Danger'>13.20</td></tr></tr></tr></tr><tr  class='item'><td data-th='No'>8</td><td data-th='Station ID'>5426401</td><td data-th='Station Name'>Sg. Setiu di Kg. Besut</td><td data-th='District'>Setiu</td><td data-th='Main Basin (mm)'>Sungai Setiu</td><td data-th='Sub River Basin (mm)'>Sg. Setiu</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=5426003_' id='wl' target='_blank'>
+          14.22</a></td><td data-th='Normal'>13.30</td><td data-th='Alert'>16.00</td><td data-th='Warning'>17.00</td><td data-th='Danger'>17.50</td></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>9</td><td data-th='Station ID'>5426401</td><td data-th='Station Name'>Sg. Setiu di Kg. Besut (RHN)</td><td data-th='District'>Setiu</td><td data-th='Main Basin (mm)'>Sungai Setiu</td><td data-th='Sub River Basin (mm)'>Sg. Ima Putih</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=25318' id='wl' target='_blank'>
+          14.25</a></td><td data-th='Normal'>13.30</td><td data-th='Alert'>16.00</td><td data-th='Warning'>17.00</td><td data-th='Danger'>17.50</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>10</td><td data-th='Station ID'>5527401</td><td data-th='Station Name'>Sg. Setiu di Jambatan Permaisuri</td><td data-th='District'>Setiu</td><td data-th='Main Basin (mm)'>Sungai Setiu</td><td data-th='Sub River Basin (mm)'>Sg. Setiu</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=5527024_' id='wl' target='_blank'>
+          5.95</a></td><td data-th='Normal'>5.50</td><td data-th='Alert'>7.60</td><td data-th='Warning'>8.30</td><td data-th='Danger'>8.80</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>11</td><td data-th='Station ID'>0670541WL</td><td data-th='Station Name'>Pulau Ilo (F1)</td><td data-th='District'>Hulu Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Terengganu</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=_THTG0192' id='wl' target='_blank'>
+          136.33</a></td><td data-th='Normal'>138.00</td><td data-th='Alert'>145.00</td><td data-th='Warning'>146.00</td><td data-th='Danger'>147.00</td></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>12</td><td data-th='Station ID'>0670381WL</td><td data-th='Station Name'>Empangan Puah (F1)</td><td data-th='District'>Hulu Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Terengganu</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=_THTG0194' id='wl' target='_blank'>
+          290.42</a></td><td data-th='Normal'>287.00</td><td data-th='Alert'>296.00</td><td data-th='Warning'>297.00</td><td data-th='Danger'>298.00</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>13</td><td data-th='Station ID'>0670181WL</td><td data-th='Station Name'>Sg. Terengganu di Kg. Dura (F1)</td><td data-th='District'>Hulu Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Terengganu</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=5029034_THTG0005' id='wl' target='_blank'>
+          7.35</a></td><td data-th='Normal'>8.00</td><td data-th='Alert'>12.00</td><td data-th='Warning'>13.00</td><td data-th='Danger'>14.50</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>14</td><td data-th='Station ID'>0670411WL</td><td data-th='Station Name'>Sg. Terengganu di Jambatan Kuala Berang (F1)</td><td data-th='District'>Hulu Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Terengganu</td><td data-th='Last Update'>20/11/2026 21:15</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=_THTG0004' id='wl' target='_blank'>
+          2.53</a></td><td data-th='Normal'>4.50</td><td data-th='Alert'>9.00</td><td data-th='Warning'>11.00</td><td data-th='Danger'>13.00</td></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>15</td><td data-th='Station ID'>0670361WL</td><td data-th='Station Name'>Sg. Terengganu di Kg. Tanggol (F1)</td><td data-th='District'>Hulu Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Terengganu</td><td data-th='Last Update'>20/11/2026 21:15</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=_THTG0077' id='wl' target='_blank'>
+          1.37</a></td><td data-th='Normal'>2.00</td><td data-th='Alert'>8.00</td><td data-th='Warning'>9.00</td><td data-th='Danger'>9.80</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>16</td><td data-th='Station ID'>0670461WL</td><td data-th='Station Name'>Sg. Peneh di Kg. Felda Mengkawang (F1)</td><td data-th='District'>Hulu Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Peneh</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=_THTG0009' id='wl' target='_blank'>
+          35.76</a></td><td data-th='Normal'>35.00</td><td data-th='Alert'>36.50</td><td data-th='Warning'>37.50</td><td data-th='Danger'>38.50</td></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>17</td><td data-th='Station ID'>6230015</td><td data-th='Station Name'>Sg. Peneh di Felda Mengkawang</td><td data-th='District'>Hulu Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Peneh</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=MENGKAWAN' id='wl' target='_blank'>
+          35.75</a></td><td data-th='Normal'>35.00</td><td data-th='Alert'>36.50</td><td data-th='Warning'>37.50</td><td data-th='Danger'>38.50</td></tr></tr></tr></tr><tr  class='item'><td data-th='No'>18</td><td data-th='Station ID'>0670351WL</td><td data-th='Station Name'>Sg. Tersat di Kg. Sekayu (F1)</td><td data-th='District'>Hulu Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Tersat</td><td data-th='Last Update'>20/11/2026 20:45</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=_THTG0007' id='wl' target='_blank'>
+          18.47</a></td><td data-th='Normal'>18.00</td><td data-th='Alert'>19.00</td><td data-th='Warning'>20.00</td><td data-th='Danger'>21.00</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>19</td><td data-th='Station ID'>0670471WL</td><td data-th='Station Name'>Sg. Telemong di Kuala Ping (F1)</td><td data-th='District'>Hulu Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Telemong</td><td data-th='Last Update'>20/11/2026 09:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=5229048_THTG0002' id='wl' target='_blank'>
+          15.97</a></td><td data-th='Normal'>16.50</td><td data-th='Alert'>17.70</td><td data-th='Warning'>18.70</td><td data-th='Danger'>19.70</td></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>20</td><td data-th='Station ID'>0670371WL</td><td data-th='Station Name'>Sg. Terengganu di Rumah Pam Pulau Bahagia (F1)</td><td data-th='District'>Kuala Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Terengganu</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=_TKTG0005' id='wl' target='_blank'>
+          1.62</a></td><td data-th='Normal'>1.50</td><td data-th='Alert'>2.00</td><td data-th='Warning'>3.00</td><td data-th='Danger'>4.00</td></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>21</td><td data-th='Station ID'>0670521WL</td><td data-th='Station Name'>Sg. Terengganu di Muzium Terengganu (F1)</td><td data-th='District'>Kuala Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Terengganu</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=_TKTG0003' id='wl' target='_blank'>
+          0.45</a></td><td data-th='Normal'>0.50</td><td data-th='Alert'>1.60</td><td data-th='Warning'>2.00</td><td data-th='Danger'>2.40</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>22</td><td data-th='Station ID'>0670401WL</td><td data-th='Station Name'>Sg. Terengganu di Bukit Tumbuh (F1)</td><td data-th='District'>Kuala Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Terengganu</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=_TKTG0002' id='wl' target='_blank'>
+          0.00</a></td><td data-th='Normal'>0.50</td><td data-th='Alert'>1.60</td><td data-th='Warning'>2.00</td><td data-th='Danger'>2.50</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>23</td><td data-th='Station ID'>0670341WL</td><td data-th='Station Name'>Sg. Terengganu di Drawbridge (F1)</td><td data-th='District'>Kuala Terengganu</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Terengganu</td><td data-th='Last Update'>20/11/2026 21:15</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=_TKTG0097' id='wl' target='_blank'>
+          0.55</a></td><td data-th='Normal'>0.30</td><td data-th='Alert'>1.40</td><td data-th='Warning'>1.60</td><td data-th='Danger'>1.80</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>24</td><td data-th='Station ID'>5330447</td><td data-th='Station Name'>Sg. Nerus di Kg. Jeram</td><td data-th='District'>Kuala Nerus</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Nerus</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=25823' id='wl' target='_blank'>
+          1.42</a></td><td data-th='Normal'>-</td><td data-th='Alert'>2.00</td><td data-th='Warning'>3.20</td><td data-th='Danger'>3.70</td></tr></tr></tr></tr><tr  class='item'><td data-th='No'>25</td><td data-th='Station ID'>0670531WL</td><td data-th='Station Name'>Parit Utama di Padang Kemunting (F1)</td><td data-th='District'>Kuala Nerus</td><td data-th='Main Basin (mm)'>Sungai Terengganu</td><td data-th='Sub River Basin (mm)'>Sg. Terengganu</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=_TKTG0096' id='wl' target='_blank'>
+          1.29</a></td><td data-th='Normal'>1.50</td><td data-th='Alert'>3.20</td><td data-th='Warning'>3.60</td><td data-th='Danger'>3.80</td></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>26</td><td data-th='Station ID'>5031401</td><td data-th='Station Name'>Sg. Marang di Jambatan Pengkalan Berangan</td><td data-th='District'>Marang</td><td data-th='Main Basin (mm)'>Sungai Marang</td><td data-th='Sub River Basin (mm)'>Sg. Marang</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=5031001_' id='wl' target='_blank'>
+          -0.21</a></td><td data-th='Normal'>1.00</td><td data-th='Alert'>2.00</td><td data-th='Warning'>2.40</td><td data-th='Danger'>2.70</td></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>27</td><td data-th='Station ID'>5624411</td><td data-th='Station Name'>Sg. Dungun di Kg. Pasir Raja</td><td data-th='District'>Dungun</td><td data-th='Main Basin (mm)'>Sungai Dungun</td><td data-th='Sub River Basin (mm)'>Sg. Dungun</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=5624002_' id='wl' target='_blank'>
+          35.89</a></td><td data-th='Normal'>35.70</td><td data-th='Alert'>37.20</td><td data-th='Warning'>37.70</td><td data-th='Danger'>38.70</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>28</td><td data-th='Station ID'>4832441</td><td data-th='Station Name'>Sg. Dungun di Jambatan Jerangau</td><td data-th='District'>Dungun</td><td data-th='Main Basin (mm)'>Sungai Dungun</td><td data-th='Sub River Basin (mm)'>Sg. Dungun</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=4832011_' id='wl' target='_blank'>
+          4.32</a></td><td data-th='Normal'>5.00</td><td data-th='Alert'>10.00</td><td data-th='Warning'>11.50</td><td data-th='Danger'>12.50</td></tr></tr></tr><tr  class='item'><td data-th='No'>29</td><td data-th='Station ID'>4832441</td><td data-th='Station Name'>Sg. Dungun di Jam. Jerangau (RHN)</td><td data-th='District'>Dungun</td><td data-th='Main Basin (mm)'>Sungai Dungun</td><td data-th='Sub River Basin (mm)'>Sg. Dungun</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=25531' id='wl' target='_blank'>
+          4.63</a></td><td data-th='Normal'>5.00</td><td data-th='Alert'>10.90</td><td data-th='Warning'>11.70</td><td data-th='Danger'>12.50</td></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>30</td><td data-th='Station ID'>4131453</td><td data-th='Station Name'>Sg. Cherul di Jambatan Ban Ho</td><td data-th='District'>Kemaman</td><td data-th='Main Basin (mm)'>Sungai Kemaman</td><td data-th='Sub River Basin (mm)'>Sg. Cherul</td><td data-th='Last Update'>20/11/2026 20:55</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=4131001_' id='wl' target='_blank'>
+          10.92</a></td><td data-th='Normal'>10.00</td><td data-th='Alert'>17.00</td><td data-th='Warning'>18.00</td><td data-th='Danger'>19.00</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>31</td><td data-th='Station ID'>4233453</td><td data-th='Station Name'>Sg. Kemaman di Rumah Pam Paya Paman</td><td data-th='District'>Kemaman</td><td data-th='Main Basin (mm)'>Sungai Kemaman</td><td data-th='Sub River Basin (mm)'>Sg. Kemaman</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=4233453_' id='wl' target='_blank'>
+          1.24</a></td><td data-th='Normal'>1.40</td><td data-th='Alert'>3.00</td><td data-th='Warning'>3.50</td><td data-th='Danger'>4.00</td></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>32</td><td data-th='Station ID'>4434995</td><td data-th='Station Name'>Sg. Tumpat di Kg. Baru Kemasik</td><td data-th='District'>Kemaman</td><td data-th='Main Basin (mm)'>Sungai Kemasik</td><td data-th='Sub River Basin (mm)'>Sg. Kemasik</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=25822' id='wl' target='_blank'>
+          0.58</a></td><td data-th='Normal'>1.00</td><td data-th='Alert'>1.60</td><td data-th='Warning'>1.90</td><td data-th='Danger'>2.70</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>33</td><td data-th='Station ID'>0700201WL</td><td data-th='Station Name'>Sg. Besut di Jambatan Keruak (F2)</td><td data-th='District'>Besut</td><td data-th='Main Basin (mm)'>Sungai Besut</td><td data-th='Sub River Basin (mm)'>Sg. Besut</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27200' id='wl' target='_blank'>
+          32.24</a></td><td data-th='Normal'>28.50</td><td data-th='Alert'>33.00</td><td data-th='Warning'>34.00</td><td data-th='Danger'>35.00</td></tr></tr></tr><tr  class='item'><td data-th='No'>34</td><td data-th='Station ID'>0690071WL</td><td data-th='Station Name'>Sg. Keluang di Kg. Tembila (F2)</td><td data-th='District'>Besut</td><td data-th='Main Basin (mm)'>Sungai Keluang Besar</td><td data-th='Sub River Basin (mm)'>Sg. Keluang Besar</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27203' id='wl' target='_blank'>
+          0.00</a></td><td data-th='Normal'>1.00</td><td data-th='Alert'>3.00</td><td data-th='Warning'>4.00</td><td data-th='Danger'>5.00</td></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>35</td><td data-th='Station ID'>0680111WL</td><td data-th='Station Name'>Sg. Setiu di Jambatan Penarik (F2)</td><td data-th='District'>Setiu</td><td data-th='Main Basin (mm)'>Sungai Setiu</td><td data-th='Sub River Basin (mm)'>Sg. Setiu</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27211' id='wl' target='_blank'>
+          0.55</a></td><td data-th='Normal'>2.00</td><td data-th='Alert'>2.50</td><td data-th='Warning'>3.00</td><td data-th='Danger'>4.50</td></tr></tr><tr  class='item'><td data-th='No'>36</td><td data-th='Station ID'>0680171WL</td><td data-th='Station Name'>Sg. Chalok di Jambatan Chalok (F2)</td><td data-th='District'>Setiu</td><td data-th='Main Basin (mm)'>Sungai Setiu</td><td data-th='Sub River Basin (mm)'>Sg. Chalok</td><td data-th='Last Update'>20/11/2026 21:15</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27212' id='wl' target='_blank'>
+          6.26</a></td><td data-th='Normal'>5.00</td><td data-th='Alert'>7.00</td><td data-th='Warning'>7.70</td><td data-th='Danger'>8.40</td></tr></tr><tr  class='item'><td data-th='No'>37</td><td data-th='Station ID'>0680221WL</td><td data-th='Station Name'>Sg. Guntung di Jambatan Guntung (F2)</td><td data-th='District'>Setiu</td><td data-th='Main Basin (mm)'>Sungai Setiu</td><td data-th='Sub River Basin (mm)'>Sg. Guntung</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27214' id='wl' target='_blank'>
+          9.34</a></td><td data-th='Normal'>8.50</td><td data-th='Alert'>11.00</td><td data-th='Warning'>12.00</td><td data-th='Danger'>13.00</td></tr></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>38</td><td data-th='Station ID'>0680211WL</td><td data-th='Station Name'>Sg. Setiu di Jambatan Che Selamah (F2)</td><td data-th='District'>Setiu</td><td data-th='Main Basin (mm)'>Sungai Setiu</td><td data-th='Sub River Basin (mm)'>Sg. Setiu</td><td data-th='Last Update'>20/11/2026 21:15</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=26678' id='wl' target='_blank'>
+          0.96</a></td><td data-th='Normal'>3.00</td><td data-th='Alert'>4.00</td><td data-th='Warning'>5.00</td><td data-th='Danger'>6.00</td></tr></tr></tr><tr  class='item'><td data-th='No'>39</td><td data-th='Station ID'>0650041WL</td><td data-th='Station Name'>Sg. Marang di Jamb. Pengkalan Berangan (F2)</td><td data-th='District'>Marang</td><td data-th='Main Basin (mm)'>Sungai Marang</td><td data-th='Sub River Basin (mm)'>Sg. Marang</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27216' id='wl' target='_blank'>
+          0.30</a></td><td data-th='Normal'>1.00</td><td data-th='Alert'>2.00</td><td data-th='Warning'>2.40</td><td data-th='Danger'>2.70</td></tr><tr  class='item'><td data-th='No'>40</td><td data-th='Station ID'>0630161WL</td><td data-th='Station Name'>Sg Dungun di Pasir Raja (F2)</td><td data-th='District'>Dungun</td><td data-th='Main Basin (mm)'>Sungai Dungun</td><td data-th='Sub River Basin (mm)'>Sg. Dungun</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27206' id='wl' target='_blank'>
+          36.02</a></td><td data-th='Normal'>35.70</td><td data-th='Alert'>37.20</td><td data-th='Warning'>37.70</td><td data-th='Danger'>38.70</td></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>41</td><td data-th='Station ID'>0630151WL</td><td data-th='Station Name'>Sg. Dungun di Kuala Jengai (F2)</td><td data-th='District'>Dungun</td><td data-th='Main Basin (mm)'>Sungai Dungun</td><td data-th='Sub River Basin (mm)'>Sg. Dungun</td><td data-th='Last Update'>20/11/2026 21:15</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27207' id='wl' target='_blank'>
+          15.11</a></td><td data-th='Normal'>14.00</td><td data-th='Alert'>19.50</td><td data-th='Warning'>20.00</td><td data-th='Danger'>21.00</td></tr></tr></tr></tr></tr></tr></tr><tr  class='item'><td data-th='No'>42</td><td data-th='Station ID'>0600201WL</td><td data-th='Station Name'>Sg. Kemaman di Jamb. Air Putih (F2)</td><td data-th='District'>Kemaman</td><td data-th='Main Basin (mm)'>Sungai Kemaman</td><td data-th='Sub River Basin (mm)'>Sg. Kemaman</td><td data-th='Last Update'>20/11/2026 21:15</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27192' id='wl' target='_blank'>
+          8.93</a></td><td data-th='Normal'>9.00</td><td data-th='Alert'>12.50</td><td data-th='Warning'>13.00</td><td data-th='Danger'>14.00</td></tr></tr><tr  class='item'><td data-th='No'>43</td><td data-th='Station ID'>0600161WL</td><td data-th='Station Name'>Sg. Cukai di Kg. Yak Yah (F2)</td><td data-th='District'>Kemaman</td><td data-th='Main Basin (mm)'>Sungai Kemaman</td><td data-th='Sub River Basin (mm)'>Sg. Chukai</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27195' id='wl' target='_blank'>
+          0.04</a></td><td data-th='Normal'>1.50</td><td data-th='Alert'>3.00</td><td data-th='Warning'>4.00</td><td data-th='Danger'>5.00</td></tr><tr  class='item'><td data-th='No'>44</td><td data-th='Station ID'>0600251WL</td><td data-th='Station Name'>Sg. Kemaman di Kg. Rantau Panjang (F2)</td><td data-th='District'>Kemaman</td><td data-th='Main Basin (mm)'>Sungai Kemaman</td><td data-th='Sub River Basin (mm)'>Sg. Kemaman</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27196' id='wl' target='_blank'>
+          3.67</a></td><td data-th='Normal'>4.00</td><td data-th='Alert'>10.00</td><td data-th='Warning'>11.00</td><td data-th='Danger'>12.00</td></tr></tr><tr  class='item'><td data-th='No'>45</td><td data-th='Station ID'>0600261WL</td><td data-th='Station Name'>Sg. Mas di Kg. Sg. Mas (F2)</td><td data-th='District'>Kemaman</td><td data-th='Main Basin (mm)'>Sungai Kemaman</td><td data-th='Sub River Basin (mm)'>Sg. Kemaman</td><td data-th='Last Update'>20/11/2026 21:15</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=27197' id='wl' target='_blank'>
+          29.14</a></td><td data-th='Normal'>27.00</td><td data-th='Alert'>31.00</td><td data-th='Warning'>31.50</td><td data-th='Danger'>32.00</td></tr><tr  class='item'><td data-th='No'>46</td><td data-th='Station ID'>0600241WL</td><td data-th='Station Name'>Muara Sg. Kemaman di Kg. Geliga (F2)</td><td data-th='District'>Kemaman</td><td data-th='Main Basin (mm)'>Sungai Kemaman</td><td data-th='Sub River Basin (mm)'>Sg. Kemaman</td><td data-th='Last Update'>20/11/2026 21:00</td><td data-th='wl'>
+          <a href='/index.php/wl-graph/?stationid=26675' id='wl' target='_blank'>
+          0.76</a></td><td data-th='Normal'>1.00</td><td data-th='Alert'>3.00</td><td data-th='Warning'>4.00</td><td data-th='Danger'>5.00</td></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></tr></table>
+        </table>
+        </div><div id='Modal' class='modal fade text-center'>
+  <div class='modal-dialog'>
+    <div class='modal-content'>
+    </div>
+  </div>
+</div><script>
+$(document).ready( function()
+{
+  //Add this on your call.html page
+    $(".link").click(function()
+    {
+        //if you need the link to be dynamic you can use attributes on the element to set the url
+        var hash = $(this).attr("data-url");
+        console.log("stname = " + hash);
+
+        //set hash on url to whatever it is
+        window.location.hash = hash;
+
+        //Stop event bubbling up DOM
+        event.preventDefault();
+
+        var page = $(this).attr('href');
+        console.log("page = " + page);
+
+        //send a request to the server to retrieve your .html page
+        $.ajax(
+        {
+          method: "GET",
+          url: page,
+          success: function(result)
+          {
+            $(".modal-content").load(result)
+          },
+          error: function(result)
+          {
+            $(".modal-content").html("<div class='error'><span><b> failed to get a response </b></span><p> try again later </p></div>");
+          }
+        });
+    });
+});
+
+//revert url back to previous
+function revertToOriginalURL()
+{
+    var original = window.location.href.substr(0, window.location.href.indexOf('#'));
+    history.replaceState({}, document.title, original);
+}
+
+//when modal is closed revert url back to previous state
+$('.modal').on('hidden.bs.modal', function () {
+    revertToOriginalURL();
+});
+</script>

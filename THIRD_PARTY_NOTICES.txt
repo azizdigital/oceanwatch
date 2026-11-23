@@ -1,0 +1,14 @@
+Dashboard Cuaca Aziz - third-party components used by the ad blocker (3.3.0)
+=============================================================================
+
+@ghostery/adblocker, @ghostery/adblocker-electron, @ghostery/adblocker-electron-preload (and their helpers)
+  Copyright (c) 2017-present Ghostery GmbH. Mozilla Public License 2.0. https://github.com/ghostery/adblocker
+
+Filter lists compiled into lib/adblock-engine.bin and downloaded again daily by the app:
+  EasyList, EasyList Cookie List - The EasyList authors (https://easylist.to). GPL-3.0 / CC BY-SA 3.0.
+  uBlock Origin filters, Badware, Quick fixes, Resource abuse, Unbreak, Cookie notices - Raymond Hill and contributors
+    (https://github.com/uBlockOrigin/uAssets). GPL-3.0.
+  Peter Lowe's ad and tracking server list (https://pgl.yoyo.org/adservers/). Free to use, see the list header.
+  uBlock Origin scriptlet resources, packaged by Ghostery. GPL-3.0.
+
+The app is for personal use. The lists are used unchanged; rebuild the shipped copy with: npm run adblock:build

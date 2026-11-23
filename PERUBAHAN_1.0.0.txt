@@ -1,0 +1,16 @@
+Sentinel OceanWATCH 1.0.0 (22 Nov 2026) — Offshore Weather Guideline & Monitoring
+
+App baru, dipecahkan daripada Dashboard Cuaca Aziz 4.6.0 (bahagian offshore). App asal tidak diubah.
+- Nama, logo, ikon & warna sendiri (navy gelap: cyan + emas). English lalai, boleh tukar BM.
+- Kotak jawapan di atas: GO / CAUTION / NO-GO sekarang untuk Kerja luar (LQ) atau kerja pilihan, kerja yang No-Go & sehingga bila,
+  GO window seterusnya, amaran awal, amaran MET laut.
+- "Jobs today": setiap kerja × blok 3 jam (24 j / syif / 3 hari), tekan petak untuk sebab, PDF AMT.
+- Halaman Models (perbandingan model + PDF), menu berlabel: Home, Jobs, Models, Sites, Wall, Ask AI, History, Alerts, Settings.
+- 13 laman laut (baru: Ramalan Marin MET); amaran MET laut sahaja.
+- Kerja saya (Settings): kerja sendiri dengan had, siang sahaja, ribut petir, jam demob, cara demob (bot/heli/tunda).
+- Teruskan atau demob?: mula demob paling lewat = had henti pertama (nilai tengah model) − (demob + masa selamat),
+  model paling teruk & paling ok dalam kurungan; bot/heli mesti dalam had semasa keluar.
+- Ask AI: 9 tujuan (kerja X, demob, weather window, downtime, crew change, medevac, taklimat, monsun/cold surge, laporan DPR),
+  setiap satu dengan panduan app sendiri (tanpa AI) + prompt (Short/Full, BM/EN).
+- Relay Cloudflare sendiri. Import tetapan dari Dashboard Cuaca (profil offshore, had kerja, syif, kunci relay).
+- Tempat simpan & cache luar talian sendiri.
