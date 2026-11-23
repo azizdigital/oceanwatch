@@ -190,7 +190,7 @@
     adblock: true,                   /* desktop: block ads, ad pop-ups and cookie notices inside the sites */
     adblockExcept: '',               /* sites left alone, host names separated by commas */
     relayUrl: 'https://dashboardcuaca.aziz-mohamad-ai.workers.dev',   /* Aziz's own relay; the key is set on each device */
-    relayKey: '',                    /* its secret key (letters, numbers, - and _) */
+    relayKey: '',                    /* its secret key, typed by the user (RELAY_KEY: letters, numbers, - _ . ~) */
     relayBad: '',                    /* sites the relay could not fetch at the last test (opened in the browser instead) */
     relayAltOff: '',                 /* stand-ins that failed the last relay test (site ids) */
     relayAds: true,                  /* web app: ad-heavy sites (tides, traffic) open through the relay, which removes the ads */
@@ -220,6 +220,18 @@
       if (h && !seen[h]) { seen[h] = 1; out.push(h); }
     });
     return out;
+  }
+  /* the relay key goes in every relay address (https://relay/<KEY>/https/site/...): only the characters every browser,
+     Cloudflare and GitHub keep as they are in an address (RFC 3986 "unreserved"), 8 to 64 of them */
+  var RELAY_KEY = /^[A-Za-z0-9._~-]{8,64}$/;
+  function relayKeyProblem(k) {
+    k = String(k === null || k === undefined ? '' : k).trim();
+    if (!k) return L('Taip kunci relay dahulu (8-64 aksara: huruf, nombor, - _ . ~).');
+    var bad = k.replace(/[A-Za-z0-9._~-]/g, '');
+    if (bad) return L('Aksara tidak dibenarkan dalam kunci: {c} - guna huruf, nombor, - _ . ~ sahaja.', { c: Array.from(new Set(bad.split(''))).map(function (c) { return c === ' ' ? L('jarak') : c; }).join(' ') });
+    if (k.length < 8) return L('Kunci terlalu pendek: {n} aksara (sekurang-kurangnya 8).', { n: k.length });
+    if (k.length > 64) return L('Kunci terlalu panjang: {n} aksara (maksimum 64).', { n: k.length });
+    return '';
   }
   function relayReady(s) { return !!(s && s.relayUrl && s.relayKey); }
   /* can this site be shown through the relay? (relay set up, and the site did not fail the last relay test) */
@@ -305,7 +317,7 @@
     out.relayUrl = /^https?:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(String(out.relayUrl).trim().replace(/\/+$/, '')) ? String(out.relayUrl).trim().replace(/\/+$/, '') : '';
     out.relayBad = adHosts(out.relayBad).join(', ');
     out.relayAltOff = String(out.relayAltOff || '').split(/[\s,]+/).filter(function (x) { return /^[a-z0-9]{2,20}$/.test(x); }).join(', ');
-    out.relayKey = /^[A-Za-z0-9_-]{8,64}$/.test(String(out.relayKey).trim()) ? String(out.relayKey).trim() : '';
+    out.relayKey = RELAY_KEY.test(String(out.relayKey).trim()) ? String(out.relayKey).trim() : '';
     ['lat', 'marineLat'].forEach(function (k2) { if (out[k2] < -90 || out[k2] > 90) out[k2] = DEFAULTS[k2]; });
     ['lon', 'marineLon'].forEach(function (k2) { if (out[k2] < -180 || out[k2] > 180) out[k2] = DEFAULTS[k2]; });
     if (out.metLocationId !== '' && !/^[A-Za-z]{2}\d{3}$/.test(out.metLocationId)) out.metLocationId = DEFAULTS.metLocationId;
@@ -1185,7 +1197,7 @@
   }
 
   return {
-    siteBlocked: siteBlocked, altFor: altFor, ALT: ALT, adHosts: adHosts, relayHosts: relayHosts, relayReady: relayReady, relayFor: relayFor, malaysiaOnly: malaysiaOnly, relayAdsFor: relayAdsFor, relayVerdict: relayVerdict, relayUrlFor: relayUrlFor, relayMirrorUrl: relayMirrorUrl, pokeMirror: pokeMirror, relayCode: relayCode, parseMetText: parseMetText, metType: metType, metSummary: metSummary, metShort: metShort, metWhen: metWhen, metRange: metRange, windText: windText, metDate: metDate,
+    siteBlocked: siteBlocked, altFor: altFor, ALT: ALT, adHosts: adHosts, relayHosts: relayHosts, relayReady: relayReady, RELAY_KEY: RELAY_KEY, relayKeyProblem: relayKeyProblem, relayFor: relayFor, malaysiaOnly: malaysiaOnly, relayAdsFor: relayAdsFor, relayVerdict: relayVerdict, relayUrlFor: relayUrlFor, relayMirrorUrl: relayMirrorUrl, pokeMirror: pokeMirror, relayCode: relayCode, parseMetText: parseMetText, metType: metType, metSummary: metSummary, metShort: metShort, metWhen: metWhen, metRange: metRange, windText: windText, metDate: metDate,
     VERSION: VERSION, ED: ED, metIsSea: metIsSea, CATEGORIES: CATEGORIES, SITES: SITES, siteById: siteById, siteUrl: siteUrl, hostOf: hostOf, certAllowed: certAllowed, CERT_ALLOW: CERT_ALLOW,
     DEFAULTS: DEFAULTS, REFRESH_CHOICES: REFRESH_CHOICES, cleanSettings: cleanSettings, urls: urls, SCRAPE: SCRAPE, jpsUrls: jpsUrls, mirrorBase: mirrorBase, mirrorUrls: mirrorUrls, fromMirror: fromMirror, parseOutlook: parseOutlook, parseTideMirror: parseTideMirror, parseRiver: parseRiver, parseJps: parseJps, htmlRows: htmlRows, htmlText: htmlText, JPS_STATES: JPS_STATES,
     PROFILE_KEYS: PROFILE_KEYS, DEFAULT_PROFILES: DEFAULT_PROFILES, OFFSHORE_BASE: OFFSHORE_BASE, cleanProfile: cleanProfile, profileSettings: profileSettings,

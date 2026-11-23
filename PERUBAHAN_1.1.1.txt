@@ -1,0 +1,9 @@
+Sentinel OceanWATCH 1.1.1
+=========================
+Relay key: typed by you
+- The "New key" button is gone; the app no longer makes or changes the relay key by itself.
+- Type the key in Settings › Site relay (8-64 characters: letters, numbers, - _ . ~), Save. The same key as Dashboard Cuaca
+  = the Dashboard Cuaca relay can be shared (fill in the same relay address).
+- A key that cannot work (e.g. with @ or a space): a clear message, the old key stays, the script is not copied.
+Sites
+- The Sites button always opens the site list; sites that need the relay open in a new tab while no relay is set up.

@@ -2227,6 +2227,9 @@
       return out;
     },
     save: function () {
+      /* a relay key that cannot work is not saved (the old one stays); the message says why */
+      var rk = ($('f_relayKey').value || '').trim(), rkWhy = rk ? C.relayKeyProblem(rk) : '';
+      if (rkWhy) { $('setMsg').textContent = rkWhy; relayMsg(rkWhy, 'bad'); toast(L('Kunci relay tidak sah'), rkWhy, 'warning'); $('f_relayKey').focus(); return; }
       Data.saveSettings(this.read()).then(function () {
         if (state.settings.lang !== I18N.lang()) { I18N.setLang(state.settings.lang); location.reload(); return; }
         state.dirty = false; Settings.fill(); $('setMsg').textContent = L('Disimpan ✓ ') + C.fmtTime(Date.now()); toast(L('Tetapan disimpan'), ''); renderAll(); })
@@ -2363,25 +2366,24 @@
   $('btnDataDir').onclick = function () { if (D) D.openDataDir(); };
   /* ---- relay settings: make a key, copy / download the worker script, test the relay */
   function relayMsg(text, kind) { var m = $('relayMsg'); m.textContent = text; m.className = 'relay-msg muted' + (kind ? ' ' + kind : ''); }
-  function newKey() {
-    var a = new Uint8Array(18), abc = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789', k = '';
-    (window.crypto || window.msCrypto).getRandomValues(a);
-    for (var i = 0; i < a.length; i++) k += abc[a[i] % abc.length];
-    return k;
-  }
+  /* the key is the user's own (typed here, the same in every app); the app never makes or changes it */
   function relayScript() {
-    var key = ($('f_relayKey').value || '').trim();
-    if (!/^[A-Za-z0-9_-]{8,64}$/.test(key)) { key = newKey(); $('f_relayKey').value = key; state.dirty = true; }
+    var key = ($('f_relayKey').value || '').trim(), why = C.relayKeyProblem(key);
+    if (why) { $('f_relayKey').focus(); return Promise.reject(Object.assign(new Error(why), { key: true })); }
     return fetch('relay-worker.js', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
       .then(function (t) { return C.relayCode(t, key, location.origin + location.pathname.replace(/[^/]*$/, '') + 'relay-tweaks.js'); });
   }
-  $('relayNewKey').onclick = function () { $('f_relayKey').value = newKey(); state.dirty = true; relayMsg(L('Kunci baru dibuat. Simpan, kemudian salin & tampal skrip relay sekali lagi di Cloudflare.')); };
+  $('f_relayKey').addEventListener('input', function () {
+    var v = this.value.trim(), why = v ? C.relayKeyProblem(v) : '';
+    this.classList.toggle('bad', !!why);
+    relayMsg(why || (v ? L('Kunci baru: Simpan, kemudian Salin skrip relay dan tampal di Cloudflare (Edit code › Deploy). Apps lain: taip kunci yang sama.') : ''), why ? 'bad' : '');
+  });
   $('relayCopy').onclick = function () {
     relayScript().then(function (code) {
       var done = function () { relayMsg(L('Skrip disalin. Tampal di Cloudflare (Edit code), kemudian tekan Simpan di sini.'), 'ok'); };
       if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(code).then(done);
       var ta = document.createElement('textarea'); ta.value = code; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done();
-    }).catch(function (e) { relayMsg(L('Tidak dapat salin: ') + e.message + L(' - guna Muat turun skrip.'), 'bad'); });
+    }).catch(function (e) { relayMsg(e.key ? e.message : L('Tidak dapat salin: ') + e.message + L(' - guna Muat turun skrip.'), 'bad'); });
   };
   $('relayDownload').onclick = function () {
     relayScript().then(function (code) {

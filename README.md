@@ -6,7 +6,7 @@ Split from *Dashboard Cuaca Aziz* 4.6.0 (offshore part). Land app: **Monsoon EYE
 
 - Address: **https://azizdigital.github.io/oceanwatch/**
 - iPad: open it in Safari → Share → **Add to Home Screen**.
-- Changes: `PERUBAHAN_1.1.0.txt`, `PERUBAHAN_1.0.0.txt`. User guide (BM): `PANDUAN.md`.
+- Changes: `PERUBAHAN_1.1.1.txt`, `PERUBAHAN_1.1.0.txt`, `PERUBAHAN_1.0.0.txt`. User guide (BM): `PANDUAN.md`.
 
 ## PC app (Windows)
 A full PC app like Dashboard Cuaca's: local server, data collection & alerts in the background (also from the tray when the window is closed), Windows notifications, websites inside the app + ad blocker, PDF, start with Windows.
@@ -20,7 +20,7 @@ Needs **Node.js 22 LTS** (nodejs.org). In the repo folder (the one with `package
 npm install
 npm run dist
 ```
-Output in `dist\`: **Sentinel OceanWATCH Setup 1.1.0.exe** (installer) and **Sentinel OceanWATCH 1.1.0.exe** (portable). Try it without building: `npm start`.
+Output in `dist\`: **Sentinel OceanWATCH Setup 1.1.1.exe** (installer) and **Sentinel OceanWATCH 1.1.1.exe** (portable). Try it without building: `npm start`.
 If `npm install` fails: check you are in the right folder (`dir package.json`), delete `node_modules`, try again; if it still fails, copy the first `npm error` line.
 
 ## Data (free, no API keys)
@@ -28,7 +28,7 @@ Open-Meteo (ECMWF, GFS, ICON, JMA, Météo-France, UKMO; ECMWF WAM, GFS Wave, MF
 
 ## One-time setup (owner)
 1. **GitHub Pages:** repo › Settings › Pages › Source: **GitHub Actions**. Every push to `main` publishes `www/`.
-2. **Cloudflare relay** (new, OceanWATCH only — for sites that refuse to be shown inside the app, e.g. Windy, MarineTraffic, VesselFinder, and to remove ads): dash.cloudflare.com › Workers & Pages › Create › Hello World › name `oceanwatch-relay` › Deploy. In the app: Settings › Site relay › **Copy relay script** → Cloudflare *Edit code* → paste → Deploy. Fill in the worker address + key in the app → **Test relay**. (No GitHub token needed: OceanWATCH has no JPS mirror.)
+2. **Cloudflare relay** (for sites that refuse to be shown inside the app, e.g. Windy, MarineTraffic, VesselFinder, and to remove ads): the existing Dashboard Cuaca relay can be shared — Settings › Site relay › fill in the same **relay address** + type the same **relay key** (your own key: 8-64 characters, letters, numbers, `- _ . ~`) › Save › Test relay. A new relay of its own instead: dash.cloudflare.com › Workers & Pages › Create › Hello World › Deploy; in the app type a key › Save › **Copy relay script** → Cloudflare *Edit code* → delete all → paste → **Deploy** → Test relay.
 
 ## Layout
 ```
