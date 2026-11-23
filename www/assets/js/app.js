@@ -416,6 +416,13 @@
          (iOS: over the app, with "Done" to come back); its tab keeps a card with the same button */
       if (!isDesktop && site && C.siteBlocked(site, (state.snap && state.snap.sites || {})[id]) && !C.relayFor(site, state.settings)) {
         var alt = C.altFor(site, state.settings);
+        /* Monsoon EYE / OceanWATCH: a site tapped in the list opens the real site in a new tab (it cannot be shown inside the app
+           without the relay); the app's own card (stand-in) only when the new tab was blocked */
+        if (alt && alt.kind === 'view' && tapped && C.ED) {
+          var nw = null;
+          try { nw = window.open(siteUrl(site), '_blank'); } catch (e) { nw = null; }
+          if (nw) { try { nw.opener = null; } catch (e2) { /* */ } toast(L('Dibuka di tab baru'), site.name); return; }
+        }
         if (alt && alt.kind === 'view') {
           /* e.g. Met Malaysia: the app's own MET forecast & warnings (official MET data) */
           show(alt.view);

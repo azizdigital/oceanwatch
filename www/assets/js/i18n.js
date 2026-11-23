@@ -345,6 +345,7 @@
  "Diagnostik": "Diagnostics",
  "Dibenarkan ✓": "Allowed ✓",
  "Dibuka di pelayar (relay tidak dapat mengambilnya): ": "Opened in the browser (the relay cannot fetch them): ",
+ "Dibuka di tab baru": "Opened in a new tab",
  "Dibuka di tab baru (laman tidak benarkan paparan terbenam)": "Opens in a new tab (the site does not allow embedding)",
  "Dijangka capai {t} dalam {h} jam.": "Expected to reach {t} within {h} hours.",
  "Dijangka sekitar ": "Expected around ",

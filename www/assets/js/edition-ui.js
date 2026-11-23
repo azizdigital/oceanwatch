@@ -53,12 +53,12 @@
     if (view === 'settings') Import.render();
     if (MC.EXT.views && MC.EXT.views[view]) MC.EXT.views[view]();
   };
-  /* "Laman" with no site open: show the list of sites instead of a message */
+  /* "Laman": always opens the list of sites; with sites already open their tabs are shown too, otherwise the dashboard stays */
   var railSites = $('railSites');
   if (railSites) railSites.addEventListener('click', function (e) {
-    if (MC.Sites.current || MC.Sites.open.length) return;
-    e.preventDefault(); e.stopPropagation();
     MC.toggleSide(true);
+    if (MC.Sites.current || MC.Sites.open.length) return;   /* the normal handler shows the open site */
+    e.preventDefault(); e.stopPropagation();
     var q = $('sideSearch'); if (q && window.innerWidth > 820) setTimeout(function () { q.focus(); }, 50);
   }, true);
 
