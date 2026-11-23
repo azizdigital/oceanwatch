@@ -64,6 +64,8 @@
     return fetchT(p, 120000, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-MC': '1' }, body: JSON.stringify(body || {}) })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
   }
+  /* PC app: an outside address read by the PC (lib/api.js /api/fetch, its own list of allowed sources); JSON, or { text } for JPS pages */
+  function pcGet(u, ms) { return fetchT('/api/fetch?url=' + encodeURIComponent(u), ms || 60000).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }); }
   function openExternal(url) { if (D) D.openExternal(url); else window.open(url, '_blank', 'noopener'); }
 
   var state = {
@@ -1776,6 +1778,7 @@
     every: function () { var o = OM.get(); return C.omEvery(o.n, OM.BUDGET, state.settings.omEveryMin, o.block, Date.now()); },
     /* fetch JSON, counting Open-Meteo calls; refused (429) = an hour's pause */
     json: function (u, ms) {
+      if (state.mode === 'pc') return pcGet(u, ms);   /* PC app: the page itself reaches only this PC, which fetches (and counts Open-Meteo) */
       var o = OM.get();
       if (/open-meteo\.com\//.test(u) && o.block && Date.now() < o.block) return Promise.reject(new Error(L('Open-Meteo: had percuma harian, cuba semula sejam lagi')));
       OM.count(u, /marine-api/.test(u) ? 1.2 : 1);
@@ -2241,7 +2244,7 @@
         { e: '🌐', t: I18N.lang() === 'en' ? 'Tukar ke Bahasa Melayu' : 'Switch to English', run: function () { setLanguage(I18N.lang() === 'en' ? 'ms' : 'en'); } },
         { e: '🌓', t: L('Tukar tema gelap / cerah'), run: function () { setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light'); } }
       ];
-      if (D) a.push({ e: '📱', t: L('Telefon / tablet (QR)'), k: 'Ctrl+P', run: function () { D.openPhoneSetup(); } });
+      if (D && D.openPhoneSetup) a.push({ e: '📱', t: L('Telefon / tablet (QR)'), k: 'Ctrl+P', run: function () { D.openPhoneSetup(); } });
       if (Sites.open.length) a.push({ e: '✖️', t: L('Tutup semua laman (') + Sites.open.length + ')', k: 'Ctrl+Shift+W', run: function () { Sites.closeAll(); } });
       (state.profiles.profiles || []).forEach(function (p) {
         if (p.id !== state.profiles.active) a.push({ e: KIND_ICON[p.kind], t: L('Tukar profil: ') + p.name, run: function () { switchProfile(p.id); } });
@@ -2347,7 +2350,9 @@
   $('railSide').onclick = function () { toggleSide(); };
   $('topMenu').onclick = function () { toggleSide(); };
   $('railTheme').onclick = function () { setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light'); };
-  $('railPhone').onclick = $('btnSetup').onclick = function () { if (D) D.openPhoneSetup(); };
+  $('railPhone').onclick = $('btnSetup').onclick = function () { if (D && D.openPhoneSetup) D.openPhoneSetup(); };
+  /* Monsoon EYE / OceanWATCH PC app: no phone sharing (iPad and phone use the web app) */
+  if (D && !D.openPhoneSetup) { $('railPhone').hidden = true; var fs0 = $('btnSetup').closest('.fld'); if (fs0) fs0.hidden = true; }
   $('btnDataDir').onclick = function () { if (D) D.openDataDir(); };
   /* ---- relay settings: make a key, copy / download the worker script, test the relay */
   function relayMsg(text, kind) { var m = $('relayMsg'); m.textContent = text; m.className = 'relay-msg muted' + (kind ? ' ' + kind : ''); }
@@ -2628,5 +2633,6 @@
     /* for edition-ui.js (Monsoon EYE / OceanWATCH) */
     EXT: EXT, TITLES: TITLES, toast: toast, esc: esc, f: f, load: load, save: save, fetchT: fetchT, openExternal: openExternal, OM: OM, Early: Early, Settings: Settings,
     setTitle: setTitle, renderProfiles: renderProfiles, setProfiles: setProfiles, applySettings: applySettings, renderRiskCard: renderRiskCard, MIRROR: MIRROR, isWeb: isWeb, chip: chip, trendHtml: trendHtml,
-    activeAlerts: activeAlerts, metCard: metCard, toggleSide: toggleSide, Direct: Direct, Native: Native, forceUpdate: forceUpdate };
+    activeAlerts: activeAlerts, metCard: metCard, toggleSide: toggleSide, Direct: Direct, Native: Native, forceUpdate: forceUpdate,
+    isDesktop: isDesktop, desk: D, pcGet: pcGet };
 })();

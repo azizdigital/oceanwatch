@@ -316,6 +316,13 @@
 
   /* ---------------------------------------------------------------- import from the original Dashboard Cuaca (same iPad, same address) */
   var Import = {
+    /* PC app: Dashboard Cuaca's PC app keeps its settings in %APPDATA%\Dashboard Cuaca Aziz\config.json (read by main.js) */
+    readPc: function () {
+      return MC.desk.importOriginal().then(function (r) {
+        if (!r || !r.ok) return { s: null, p: null, pc: true, error: r && r.error !== 'none' ? r.error : '' };
+        return { s: r.settings, p: { active: r.active, profiles: r.profiles || [] }, theme: null, pc: true };
+      });
+    },
     read: function () {
       var get = function (k) { try { var v = ED.rawGet ? ED.rawGet(k) : null; return v ? JSON.parse(v) : null; } catch (e) { return null; } };
       return { s: get('mc_settings'), p: get('mc_profiles'), theme: ED.rawGet ? ED.rawGet('mc_theme') : null };
@@ -323,13 +330,26 @@
     render: function () {
       var body = $('importBody');
       if (!body) return;
-      var o = this.read(), profs = (o.p && o.p.profiles) || [], mine = profs.filter(function (p) { return p.kind === ED.kind; });
+      if (MC.isDesktop && MC.desk && MC.desk.importOriginal) {
+        if (body.dataset.pcBusy) return;
+        body.dataset.pcBusy = '1';
+        this.readPc().then(function (o) { delete body.dataset.pcBusy; Import.draw(body, o); }, function (e) { delete body.dataset.pcBusy; body.innerHTML = '<p class="muted">' + esc(e.message) + '</p>'; });
+        return;
+      }
+      this.draw(body, this.read());
+    },
+    draw: function (body, o) {
+      var profs = (o.p && o.p.profiles) || [], mine = profs.filter(function (p) { return p.kind === ED.kind; });
+      if (o.pc && !o.s && !profs.length) {
+        body.innerHTML = '<p class="muted">' + (o.error ? esc(o.error) : L('App PC Dashboard Cuaca tidak dijumpai di PC ini (tiada fail tetapan dalam folder data Dashboard Cuaca Aziz).')) + '</p>';
+        return;
+      }
       if (!o.s && !profs.length) {
         body.innerHTML = '<p class="muted">' + L('Tiada tetapan Dashboard Cuaca dalam pelayar / iPad ini. Import hanya berfungsi bila app asal dibuka dari alamat yang sama (azizdigital.github.io) dalam app yang sama (Safari atau ikon Skrin Utama).') + '</p>' +
           '<p class="muted" style="font-size:12px">' + L('Cara lain: dalam Dashboard Cuaca, Tetapan › Peranti lain › Salin pautan tetapan, kemudian di sini Tetapan › Peranti lain › Tampal pautan.') + '</p>';
         return;
       }
-      body.innerHTML = '<p class="muted">' + L('Dijumpai dalam Dashboard Cuaca: {n} profil {k} ({list}){r}.', { n: mine.length, k: LAND ? L('darat') : 'offshore', list: mine.map(function (p) { return esc(p.name); }).join(', ') || '-',
+      body.innerHTML = '<p class="muted">' + L(o.pc ? 'Dijumpai dalam app PC Dashboard Cuaca: {n} profil {k} ({list}){r}.' : 'Dijumpai dalam Dashboard Cuaca: {n} profil {k} ({list}){r}.', { n: mine.length, k: LAND ? L('darat') : 'offshore', list: mine.map(function (p) { return esc(p.name); }).join(', ') || '-',
         r: o.s && o.s.relayKey ? L(', kunci relay') : '' }) + '</p>' +
         '<div class="relay-btns"><button type="button" class="btn sm pri" id="impGo">' + L('Import sekarang') + '</button></div>' +
         '<p class="muted" style="font-size:12px">' + (LAND ? L('Disalin: profil darat, ambang alert, Tempat saya, susunan sungai, bunyi, bahasa & tema. Kunci relay disalin; alamat relay perlu diisi selepas buat relay baru Monsoon EYE (Tetapan › Relay laman).')
@@ -350,12 +370,24 @@
         ns = C.profileSettings(ns, profs.filter(function (x) { return x.id === act; })[0]);
       }
       ns = C.cleanSettings(ns);
+      if (o.pc) return Import.runPc(ns, mine, o);
       MC.save('mc_settings', ns);
       if (o.theme === 'light' || o.theme === 'dark') { try { localStorage.setItem('mc_theme', o.theme); } catch (e) { /* */ } }
       MC.save('mc_snap', null);
       $('impMsg').textContent = L('Disalin ✓ — app dimuat semula…');
       setTimeout(function () { location.reload(); }, 700);
     }
+  };
+  /* PC app: profiles one by one into config.json, then the settings, through the PC's own API */
+  Import.runPc = function (ns, mine, o) {
+    var msg = $('impMsg'), profs = mine.slice(0, 20).map(function (p) { var x = Object.assign({}, p); if (x.id === 'irong-barat') x.name = String(x.name).replace(/\s*\(offshore\)\s*$/i, ''); return C.cleanProfile(x); });
+    var act = o.p && profs.some(function (x) { return x.id === o.p.active; }) ? o.p.active : profs.length ? profs[0].id : '';
+    var chain = Promise.resolve();
+    profs.forEach(function (p) { chain = chain.then(function () { return MC.Data.profile('save', { profile: p, activate: p.id === act }); }); });
+    return chain.then(function () { return MC.Data.saveSettings(Object.assign({}, MC.state.settings, ns, { profileName: MC.state.settings.locationName })); }).then(function () {
+      msg.textContent = L('Disalin ✓ — app dimuat semula…');
+      setTimeout(function () { location.reload(); }, 700);
+    }, function (e) { msg.textContent = e.message; });
   };
   MC.EXT.Import = Import;
 

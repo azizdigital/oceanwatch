@@ -117,6 +117,34 @@ test('every L(\'...\') text in the new files has an English translation', () => 
   assert.deepStrictEqual(miss, []);
 });
 
+/* PC app (main.js + lib/): Monsoon EYE reads JPS of the profile's state straight from JPS; the GitHub copy only when JPS fails */
+if (ME && fs.existsSync(path.join(JS, 'mirror-parse.js')) && fs.existsSync(path.join(__dirname, '..', 'lib', 'collector.js'))) test('Monsoon EYE PC: JPS read directly by the PC, GitHub copy as fallback', async () => {
+  as('monsoon-eye');
+  ['collector', 'store', 'api'].forEach(m => { try { delete require.cache[require.resolve('../lib/' + m)]; } catch (e) { /* */ } });
+  const os = require('os');
+  const fx = f => fs.readFileSync(path.join(__dirname, 'web-fixtures', f), 'utf8');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'me-pc-'));
+  const store = require('../lib/store').create(dir);
+  let jpsDown = false;
+  const asked = [];
+  const col = require('../lib/collector').create({
+    store,
+    fetchJson: async url => { asked.push(url); if (/raw\.githubusercontent\.com\/azizdigital\/monsoon-eye\/data\/jps-TRG\.json/.test(url)) return { state: 'TRG', water: [{ id: 'x', name: 'Mirror St', district: 'Kemaman', level: 1, updated: new Date().toISOString() }], rain: { stations: [] } }; throw new Error('offline'); },
+    fetchText: async url => { if (jpsDown) throw new Error('HTTP 503'); return /aras-air-data/.test(url) ? fx('jps-water-TRG.html') : fx('jps-rain-TRG.html'); },
+    log: () => {}
+  });
+  const s1 = await col.run('test'); col.stop();
+  assert.ok(s1.jps && s1.jps.live, 'read live from JPS');
+  assert.strictEqual(s1.jps.state, 'TRG');
+  assert.ok(s1.stations.length >= 5 && s1.stations.every(st => /kemaman/i.test(st.district)), 'Kemaman gauges from the JPS page');
+  assert.ok(!asked.some(u => /jps-TRG\.json/.test(u)), 'no GitHub copy needed');
+  jpsDown = true;
+  const s2 = await col.run('test'); col.stop();
+  assert.ok(s2.jps && !s2.jps.live, 'GitHub copy when JPS fails');
+  assert.ok(s2.stations.some(st => st.name === 'Mirror St'));
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 (async () => {
   let pass = 0, fail = 0;
   for (const t of tests) {

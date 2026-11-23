@@ -10,7 +10,7 @@ const core = require('../www/assets/js/core');
 const fx = require('./fixtures/make');
 
 const tests = [];
-/* the web-only apps (Monsoon EYE, OceanWATCH) have no PC code (lib/): those tests are skipped there */
+/* a copy without the PC code (lib/): those tests are skipped there */
 const HAS_LIB = fs.existsSync(path.join(__dirname, '..', 'lib'));
 /* a test that needs a file this app does not have (lib/ of the PC app; offshore.js in Monsoon EYE; kemaman.js in OceanWATCH) is skipped */
 const resolves = rel => { try { require.resolve(path.join(__dirname, rel)); return true; } catch (e) { return false; } };
@@ -19,6 +19,8 @@ const test = (name, fn) => {
   src.replace(/require\('(\.\.?\/[^']+)'\)/g, (m, r) => { need.push(r); return m; });
   if (!HAS_LIB && /require\('\.\.\/lib\//.test(src)) return;
   if (need.some(r => !resolves(r))) return;
+  /* the ad blocker needs the Electron packages (npm install); GitHub's check runs without them */
+  if (/lib\/adblock/.test(src)) { try { require.resolve('electron'); } catch (e) { return; } }
   tests.push({ name, fn });
 };
 const NOW = Date.UTC(2026, 10, 17, 12, 20); /* 17 Nov 2026 20:20 MYT */
@@ -438,7 +440,7 @@ test('collector run: snapshot, history, alert log, ack, failure fallback', async
   assert.strictEqual(s3.sources.openMeteo.ok, false);
   await col.checkSites();
   const sites = col.snapshot().sites;
-  assert.strictEqual(Object.keys(sites).length, 29);
+  assert.strictEqual(Object.keys(sites).length, core.SITES.length);
   assert.strictEqual(sites.windy.frameable, false); assert.strictEqual(sites.jalanow.ok, false); assert.strictEqual(sites.ventusky.frameable, true);
 });
 test('store keeps settings and prunes old history', () => {
@@ -552,7 +554,8 @@ test('server + API: files, traversal blocked, CSRF header, settings, history, SS
     assert.strictEqual(bad.status, 400);
   } finally { await srv.stop(); col.stop(); }
 });
-test('phone sharing: setup port only serves the guide, HTTPS serves the app', async () => {
+/* phone sharing: Dashboard Cuaca only (Monsoon EYE / OceanWATCH have no setup.html: iPad and phone use the web app) */
+if (fs.existsSync(path.join(__dirname, '..', 'www', 'setup.html'))) test('phone sharing: setup port only serves the guide, HTTPS serves the app', async () => {
   const dir = tmp();
   const port = 32040 + Math.floor(Math.random() * 50);
   const srv = require('../lib/server').create({ www: path.join(__dirname, '..', 'www'), dataDir: dir, ports: { app: port, setup: port + 1, https: port + 2 }, api: () => false });

@@ -1,0 +1,11 @@
+Sentinel OceanWATCH 1.1.0 — PC app (Windows)
+=============================================
+New
+- Full PC app (Electron), same as Dashboard Cuaca's PC app: local server, data collection & alerts in the
+  background, tray, Windows notifications, websites inside the app + ad blocker, PDF, start with Windows.
+- Runs at the same time as Dashboard Cuaca and Monsoon EYE: port 30060, data folder
+  %APPDATA%\Sentinel OceanWATCH, own Windows ID (local.oceanwatch.aziz), own icon & tray.
+- Import settings: read straight from the Dashboard Cuaca PC app (%APPDATA%\Dashboard Cuaca Aziz\config.json).
+- Build: npm install -> npm run dist (Setup + Portable). PC app test: npm run test:pc.
+Not included
+- Phone / QR / HTTPS sharing (iPad and phone use the web app).

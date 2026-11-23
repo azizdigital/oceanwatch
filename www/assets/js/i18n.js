@@ -1460,6 +1460,8 @@
  "model No-Go": "of models No-Go",
  "Tiada tetapan Dashboard Cuaca dalam pelayar / iPad ini. Import hanya berfungsi bila app asal dibuka dari alamat yang sama (azizdigital.github.io) dalam app yang sama (Safari atau ikon Skrin Utama).": "No Dashboard Cuaca settings in this browser / iPad. Import only works when the original app was opened from the same address (azizdigital.github.io) in the same app (Safari or the Home Screen icon).",
  "Cara lain: dalam Dashboard Cuaca, Tetapan › Peranti lain › Salin pautan tetapan, kemudian di sini Tetapan › Peranti lain › Tampal pautan.": "Another way: in Dashboard Cuaca, Settings › Other devices › Copy settings link, then here Settings › Other devices › Paste link.",
+ "Dijumpai dalam app PC Dashboard Cuaca: {n} profil {k} ({list}){r}.": "Found in the Dashboard Cuaca PC app: {n} {k} profiles ({list}){r}.",
+ "App PC Dashboard Cuaca tidak dijumpai di PC ini (tiada fail tetapan dalam folder data Dashboard Cuaca Aziz).": "Dashboard Cuaca PC app not found on this PC (no settings file in the Dashboard Cuaca Aziz data folder).",
  "Dijumpai dalam Dashboard Cuaca: {n} profil {k} ({list}){r}.": "Found in Dashboard Cuaca: {n} {k} profiles ({list}){r}.",
  ", kunci relay": ", relay key",
  "Import sekarang": "Import now",

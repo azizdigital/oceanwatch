@@ -5,7 +5,12 @@ module.exports = {
     "id": "oceanwatch",
     "short": "ow",
     "kind": "offshore",
-    "version": "1.0.0",
+    "version": "1.1.0",
+    "pc": {
+      "port": 30060,
+      "appId": "local.oceanwatch.aziz",
+      "exe": "Sentinel OceanWATCH"
+    },
     "name": "Sentinel OceanWATCH",
     "nameHtml": "SENTINEL Ocean<em>WATCH</em>",
     "tagline": "Offshore Weather Guideline & Monitoring",
