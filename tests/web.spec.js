@@ -114,6 +114,59 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     }
     expect(errors).toEqual([]);
   });
+  test('Weather page: every model together - story every 6 hours, 3-hour table, 7-day charts, tides (platform + Cukai port)', async ({ page }) => {
+    const errors = await open(page, 'ow');
+    /* after open(): the newest route wins */
+    await page.route(/tide-cukai\.json/, r => { const n = Date.now(), H = 3600000, ev = [];
+      for (let i = 0; i < 8; i++) ev.push({ time: new Date(n + (2 + i * 6.2) * H).toISOString(), type: i % 2 ? 'low' : 'high', m: i % 2 ? 0.5 : 2.4 });
+      r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ place: 'cukai', eventsAt: new Date().toISOString(), events: ev }) }); });
+    await page.click('.rbtn[data-view="weather"]');
+    await expect(page.locator('.mw-head')).toContainText(/kt/, { timeout: 30000 });
+    await expect(page.locator('.mw-where')).toContainText(/6\/6/);
+    expect(await page.locator('.mw-p').count()).toBeGreaterThanOrEqual(10);
+    await expect(page.locator('.mw-p').first()).toContainText(/\d+ kt \(\d+–\d+\)/);
+    await expect(page.locator('.mw-cmp svg')).toHaveCount(2);
+    await page.click('[data-mw-tab="table"]');
+    expect(await page.locator('.mw-tb tbody tr:not(.mw-dr)').count()).toBeGreaterThanOrEqual(20);
+    await page.click('[data-mw-tab="charts"]');
+    await expect(page.locator('svg.mw-ch')).toHaveCount(4);
+    await expect(page.locator('svg.mw-ch .mw-lim').first()).toBeAttached();
+    await page.click('[data-mw-tab="tide"]');
+    await expect(page.locator('.mw-tide')).toBeAttached();
+    await expect(page.locator('.mw-tb.sm tbody tr').first()).toContainText(/Pasang|Surut|High|Low/);
+    expect(errors).toEqual([]);
+  });
+  test('Vessels page: own list (checked numbers), one map per vessel showing only that vessel, MarineTraffic switch', async ({ page }) => {
+    const maps = [];
+    await page.route(/vesselfinder\.com\/aismap|marinetraffic\.com\/en\/ais\/embed/, r => { maps.push(r.request().url()); r.fulfill({ status: 200, contentType: 'text/html', body: '<p>map</p>' }); });
+    const errors = await open(page, 'ow');
+    await page.click('.rbtn[data-view="vessels"]');
+    await expect(page.locator('.vs-none')).toBeVisible();
+    await page.click('#vsEdit');
+    const row = page.locator('.vs-tb tr[data-i]').first();
+    await row.locator('[data-k="name"]').fill('SK Patron');
+    await row.locator('[data-k="mmsi"]').fill('53304910');            /* 8 digits: refused */
+    await page.click('#vsSave');
+    await expect(page.locator('.vs-err')).toContainText(/9/);
+    await page.locator('.vs-tb tr[data-i]').first().locator('[data-k="mmsi"]').fill('533049100');
+    await page.locator('.vs-tb tr[data-i]').first().locator('[data-k="job"]').selectOption('lq');
+    await page.click('#vsAdd');
+    const r2 = page.locator('.vs-tb tr[data-i]').nth(1);
+    await r2.locator('[data-k="name"]').fill('JM Perkasa 2'); await r2.locator('[data-k="imo"]').fill('9585833'); await r2.locator('[data-k="type"]').selectOption('ahts');
+    await page.click('#vsSave');
+    await expect(page.locator('.vs-it')).toHaveCount(4);                 /* all, area, 2 vessels */
+    await expect(page.locator('.vs-it.on')).toContainText('SK Patron');
+    await expect(page.locator('.vs-it.on .chip')).toContainText(/GO|CAUTION|LIMITED|STAY/);
+    await expect.poll(() => maps.some(u => /aismap.*mmsi=533049100.*track=true/.test(u))).toBeTruthy();
+    await page.click('[data-vs="all"]');
+    await expect(page.locator('.vs-grid .vs-cell')).toHaveCount(2);
+    await expect.poll(() => maps.some(u => /imo=9585833/.test(u))).toBeTruthy();
+    await page.click('[data-vs-src="mt"]');
+    await expect.poll(() => maps.some(u => /ais\/embed\/.*mmsi:533049100/.test(u))).toBeTruthy();
+    const kept = await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')));
+    expect(kept.list.map(v => v.name)).toEqual(['SK Patron', 'JM Perkasa 2']);
+    expect(errors).toEqual([]);
+  });
   test('Models page has the comparison card and the PDF button', async ({ page }) => {
     const errors = await open(page, 'ow');
     await page.click('.rbtn[data-view="models"]');

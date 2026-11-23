@@ -1,0 +1,18 @@
+Sentinel OceanWATCH 1.2.0 — Weather & Vessels
+==============================================
+New: Weather page (menu Cuaca / Weather, under Home)
+- Every model OceanWATCH reads (6 weather models, 4 wave models, 2 ensembles) told as one story for the profile's point.
+  Bold = the middle of the models; in brackets = the lowest and highest model (the same formula as demob).
+- Story: every 6 hours for 3 days (the worst hour of each period): wind & direction, gusts, Hs & max wave, swell
+  (height / period / direction), rain or thunderstorms; arrows for rising / falling; red label over your limits;
+  "models disagree" when the wind range is 10 kt or more; days 4-7 one line each with the ensemble chance.
+- Headline: the strongest wind, highest waves and thunderstorm times of the next 72 hours; MET sea warnings.
+- Compasses: wind and swell direction now and in 24 hours.
+- 3-hour table for 3 days (yellow near, red over your limits), 7-day charts with the model band and your limit line,
+  tides: model sea level at the platform + the Cukai port table (Tide Forecast, Monsoon EYE GitHub copy).
+New: Vessels page (menu Kapal / Vessels)
+- Your own vessels (name, MMSI / IMO, type, role, job), checked and kept on this device (Vessel settings).
+- All my vessels: one VesselFinder map per vessel showing only that vessel, with its 24-hour track, next port, ETA, speed.
+- One vessel: large map, VesselFinder or MarineTraffic, zoom, track, open the full site; Around the platform: every vessel.
+- A vessel linked to a job shows that job's Go / Caution / No-Go now.
+- Free maps, no account or key. PC app: the maps open inside the app.

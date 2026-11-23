@@ -28,6 +28,8 @@ setTimeout(out,5000);s.addEventListener('click',out);})();</script>
   <nav class="rail" aria-label="Menu utama">
     <div class="logo" title="Sentinel OceanWATCH"></div>
     <button class="rbtn" data-view="dashboard" aria-label="Utama"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span class="lbl">Utama</span><span class="tip">Dashboard (Ctrl+H)</span></button>
+    <button class="rbtn" data-view="weather" aria-label="Cuaca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15a4 4 0 0 1 .5-8 5 5 0 0 1 9.5 1.5A3.5 3.5 0 0 1 17 15z"/><path d="M2 19c2 0 2-1.5 4-1.5S8 19 10 19s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/></svg><span class="lbl">Cuaca</span><span class="tip">Cuaca offshore: semua model digabung</span></button>
+    <button class="rbtn" data-view="vessels" aria-label="Kapal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l2 3h14l2-3z"/><path d="M5 17V11h14v6"/><path d="M9 11V6h6v5M12 3v3"/></svg><span class="lbl">Kapal</span><span class="tip">Kapal yang anda pantau</span></button>
     <button class="rbtn" data-view="advisor" aria-label="Kerja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16"/><path d="M11 14l2 2 4-4"/></svg><span class="lbl">Kerja</span><span class="tip">Go / Caution / No-Go setiap kerja</span></button>
     <button class="rbtn" data-view="models" aria-label="Model"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M4 14l5-3 4 1 7-5" opacity=".5"/></svg><span class="lbl">Model</span><span class="tip">Perbandingan model & PDF AMT</span></button>
     <button class="rbtn" data-view="site" id="railSites" aria-label="Laman"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span class="lbl">Laman</span><span class="tip">Laman web</span></button>
@@ -225,6 +227,12 @@ setTimeout(out,5000);s.addEventListener('click',out);})();</script>
       <section class="view" id="view-models">
         <div class="pad"><div class="grid" id="modelsHost"></div></div>
       </section>
+      <section class="view" id="view-weather">
+        <div class="pad"><div class="mw" id="weatherHost"></div></div>
+      </section>
+      <section class="view" id="view-vessels">
+        <div class="pad vs-pad"><div class="vs" id="vesselsHost"></div></div>
+      </section>
       <section class="view" id="view-history">
         <div class="pad">
           <div class="ctrls">
@@ -394,5 +402,6 @@ setTimeout(out,5000);s.addEventListener('click',out);})();</script>
 <script src="assets/js/edition-ui.js"></script>
 <script src="assets/js/ask.js"></script>
 <script src="assets/js/myjobs.js"></script>
+<script src="assets/js/marine.js"></script>
 </body>
 </html>

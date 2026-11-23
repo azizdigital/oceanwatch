@@ -8,14 +8,32 @@
 ## Pasang di PC (Windows)
 1. Pasang **Node.js 22 LTS** (nodejs.org) jika belum ada.
 2. Ekstrak zip, buka folder yang ada `package.json`, klik bar alamat, taip `cmd`, Enter.
-3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.1.2.exe** (pasang) dan **Sentinel OceanWATCH 1.1.2.exe** (portable).
+3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.2.0.exe** (pasang) dan **Sentinel OceanWATCH 1.2.0.exe** (portable).
 4. Buka app → **Settings › Import from Dashboard Cuaca** — profil & tetapan dibaca terus dari app PC Dashboard Cuaca.
 5. Boleh buka serentak dengan Dashboard Cuaca dan app satu lagi (port 30060, folder data `%APPDATA%\Sentinel OceanWATCH`). Pilih **Kekal di tray** dalam Tetapan supaya alert terus berbunyi bila tetingkap ditutup.
+
+## Tab Cuaca (baru 1.2.0)
+Semua model (6 model angin, 4 model ombak, 2 ensembel) digabung jadi satu cerita untuk lokasi profil.
+- **Nombor tebal** = nilai tengah semua model; **dalam kurungan** = model paling rendah – paling tinggi (sama seperti formula demob).
+- **Cerita**: setiap 6 jam untuk 3 hari (jam paling teruk dalam tempoh itu) — angin & arah, tiupan, ombak Hs & maks, alun (tinggi / tempoh / arah), hujan atau ribut petir; ↑↓ = naik / turun; label merah bila melebihi had anda; "model tidak sependapat" bila julat angin ≥ 10 kt. Hari 4–7 satu baris sehari. Kompas arah angin & alun sekarang dan +24 jam.
+- **Ribut petir**: peratus model yang meramal ribut petir pada jam itu (≥ 20 % mungkin, ≥ 50 % dijangka).
+- **Jadual 3 jam** (3 hari): kuning = hampir had (≥ 80 %), merah = melebihi had.
+- **Graf 7 hari**: angin, ombak, tempoh alun, hujan & ribut petir; kawasan berwarna = julat model, garis merah = had anda.
+- **Pasang surut**: paras laut model di platform + jadual pelabuhan Cukai (Tide Forecast, salinan GitHub Monsoon EYE).
+
+## Tab Kapal (baru 1.2.0)
+- **⚙ Tetapan kapal**: nama + MMSI (9 digit) atau IMO (7 digit); jenis, peranan / nota dan kerja (Go / No-Go) pilihan. Nombor di halaman kapal VesselFinder / MarineTraffic. Disimpan dalam peranti ini (maksimum 20).
+- **Semua kapal saya**: satu peta setiap kapal — VesselFinder tunjuk kapal itu sahaja, dengan trek 24 jam, pelabuhan seterusnya, ETA & laju.
+- Tekan satu kapal untuk peta besar; tukar **VesselFinder / MarineTraffic** (MarineTraffic tanda kapal anda tetapi kapal lain turut nampak). **Kawasan** = semua kapal sekitar platform. **Buka laman penuh ↗** untuk butiran.
+- Kad kapal yang dipautkan ke kerja tunjuk status kerja itu sekarang.
+- Semua kapal dalam satu peta perlukan akaun Fleet VesselFinder / MarineTraffic (tidak percuma) — sebab itu satu peta setiap kapal.
 
 ## Menu
 | Menu | Isi |
 |---|---|
 | **Home** | Kotak jawapan Go / Caution / No-Go (LQ atau kerja pilihan), 7 nombor utama, **Jobs today** (setiap kerja × blok 3 jam), graf ombak & angin, skor risiko, amaran MET laut |
+| **Cuaca / Weather** | Semua model digabung: cerita 6 jam, jadual 3 jam, graf 7 hari, pasang surut |
+| **Kapal / Vessels** | Kapal anda di peta VesselFinder / MarineTraffic |
 | **Jobs** | Jadual penuh Go / Caution / No-Go, weather window, **had operasi** setiap kerja (boleh ubah) |
 | **Models** | Perbandingan 6 model angin + 4 model ombak + ensemble, 3/7/14 hari, **PDF A4 gaya AMT** |
 | **Sites** | 13 laman (Windy ombak/angin/alun, Nullschool, AIS, radar, satelit, kilat, ribut, Ramalan Marin MET) |

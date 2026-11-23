@@ -220,3 +220,89 @@ html[data-edition="me"] #cardWater { align-self: stretch; }
 .ask .ask-prompt { height: 280px; min-height: 160px; }
 .ask-form .seg { flex-wrap: wrap; }
 .ask-form .seg button { white-space: nowrap; }
+
+/* ---------------- OceanWATCH: Weather page (marine.js) ---------------- */
+.mw { display: grid; gap: 14px; }
+.mw-top .card-b { display: grid; gap: 8px; }
+.mw-top.lv1 { box-shadow: inset 4px 0 0 var(--st-alert); } .mw-top.lv2 { box-shadow: inset 4px 0 0 var(--st-danger); }
+.mw-where { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 13px; color: var(--ink-2); }
+.mw-where .btn { margin-left: auto; }
+.mw-head { margin: 0; font-size: 16.5px; line-height: 1.45; color: var(--ink); }
+.mw-how { margin: 0; font-size: 12.5px; color: var(--ink-3); }
+.mw-met { margin: 0; font-size: 13px; padding: 7px 10px; border-radius: 9px; background: var(--soft-alert); color: var(--ink); }
+.mw-met.crit { background: var(--soft-danger); } .mw-met.ok { background: var(--soft-normal); }
+.mw-tabs { justify-self: start; }
+.mw-story { display: grid; gap: 2px; }
+.mw-day { margin: 12px 0 4px; font-size: 12px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--brand-text); }
+.mw-day:first-child { margin-top: 0; }
+.mw-p { display: grid; grid-template-columns: 150px 1fr; gap: 12px; padding: 9px 10px; border-radius: 10px; border: 1px solid transparent; }
+.mw-p:nth-child(even) { background: var(--fill); }
+.mw-p.now { border-color: var(--brand); }
+.mw-p.over { box-shadow: inset 3px 0 0 var(--st-danger); }
+.mw-pl b { display: block; font-size: 13.5px; } .mw-pl small { color: var(--ink-3); font-family: var(--mono); font-size: 11.5px; }
+.mw-pt { font-size: 14px; line-height: 1.55; }
+.mw-rg { color: var(--ink-3); font-size: 12.5px; font-family: var(--mono); }
+.mw-cmps { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.mw-cmp { display: flex; gap: 14px; align-items: center; }
+.mw-cmp svg { width: 130px; height: 130px; flex: none; }
+.mw-cl { font-size: 10px; font-weight: 700; fill: var(--ink-2); }
+.mw-cmp-t { display: grid; gap: 5px; font-size: 13.5px; }
+.mw-cmp-t small { color: var(--ink-3); font-size: 11.5px; }
+.mw-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.mw-dot.a { background: var(--brand); } .mw-dot.b { background: var(--st-warning); }
+.mw-tw { overflow-x: auto; }
+.mw-tb { width: 100%; border-collapse: collapse; font-size: 13px; }
+.mw-tb th { text-align: left; font-size: 11.5px; color: var(--ink-3); font-weight: 700; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.mw-tb td { padding: 6px 8px; border-bottom: 1px solid var(--line-2, var(--line)); white-space: nowrap; }
+.mw-tb td.warn { background: var(--soft-alert); } .mw-tb td.bad { background: var(--soft-danger); }
+.mw-tb .mw-dr td { font-weight: 800; font-size: 12px; color: var(--brand-text); background: var(--fill); text-transform: uppercase; letter-spacing: .5px; }
+.mw-tb.sm { max-width: 420px; }
+.mw-tt { font-family: var(--mono); }
+.mw-ch { width: 100%; height: auto; display: block; }
+.mw-g { stroke: var(--chart-grid, var(--line)); stroke-width: 1; } .mw-g.d { stroke-dasharray: 3 3; }
+.mw-ax { font-size: 10.5px; fill: var(--ink-3); } .mw-ax.lim { fill: var(--st-danger); font-weight: 700; }
+.mw-band { fill: var(--brand); opacity: .16; } .mw-band.w { fill: #22d3ee; } .mw-band.p { fill: #a78bfa; }
+.mw-l { stroke: var(--brand); stroke-width: 2.2; } .mw-l.w { stroke: #22d3ee; } .mw-l.p { stroke: #a78bfa; }
+.mw-l2 { stroke: var(--ink-2); stroke-width: 1.4; stroke-dasharray: 5 4; }
+.mw-lim { stroke: var(--st-danger); stroke-width: 1.2; stroke-dasharray: 6 4; }
+.mw-now { stroke: var(--st-warning); stroke-width: 1.4; }
+.mw-rain { fill: #38bdf8; } .mw-th { fill: #a855f7; }
+.mw-tide { fill: none; stroke: #22d3ee; stroke-width: 2.2; } .mw-tide-a { fill: #22d3ee; opacity: .12; }
+.mw-tm.high { fill: #22d3ee; } .mw-tm.low { fill: var(--ink-3); }
+.mw-tev { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip.hi { background: rgba(34, 211, 238, .16); color: var(--ink); } .chip.lo { background: var(--fill); color: var(--ink-2); }
+@media (max-width: 700px) { .mw-p { grid-template-columns: 1fr; gap: 2px; } }
+
+/* ---------------- OceanWATCH: Vessels page (marine.js) ---------------- */
+.vs-pad { height: 100%; box-sizing: border-box; }
+.vs { display: grid; grid-template-columns: 320px 1fr; gap: 14px; min-height: calc(100vh - 120px); }
+.vs-side { display: flex; flex-direction: column; min-height: 0; }
+.vs-list { display: grid; gap: 6px; align-content: start; overflow: auto; }
+.vs-it { display: flex; gap: 10px; text-align: left; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; font: inherit; }
+.vs-it:hover { background: var(--hover); }
+.vs-it.on { border-color: var(--brand); box-shadow: inset 3px 0 0 var(--brand); }
+.vs-it > span:last-child { display: grid; gap: 3px; min-width: 0; }
+.vs-it b { font-size: 14px; } .vs-it small { font-size: 11.5px; color: var(--ink-3); }
+.vs-it .vs-role { color: var(--ink-2); } .vs-it .chip { justify-self: start; }
+.vs-ic { font-size: 22px; line-height: 1; }
+.vs-none { font-size: 13px; }
+.chip.s0 { background: var(--soft-normal); color: var(--st-normal); } .chip.s1 { background: var(--soft-alert); color: var(--st-alert); }
+.chip.s2, .chip.s3 { background: var(--soft-danger); color: var(--st-danger); }
+.vs-main { display: flex; flex-direction: column; min-height: 0; padding: 12px; gap: 10px; }
+.vs-title { font-size: 15px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.vs-bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.vs-bar .sp { flex: 1; }
+.vs-z { font-size: 12.5px; color: var(--ink-2); display: inline-flex; align-items: center; gap: 5px; }
+.vs-map { flex: 1; min-height: 480px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #e8eef3; }
+.vs-map iframe, .vs-map webview { width: 100%; height: 100%; min-height: 480px; border: 0; display: flex; }
+.vs-note { margin: 0; font-size: 11.5px; }
+.vs-ed .mw-tb input, .vs-ed .mw-tb select { width: 100%; min-width: 90px; }
+.vs-ed .mw-tb td { white-space: normal; }
+.vs-err td { color: var(--st-danger); font-size: 12px; padding-top: 0; }
+@media (max-width: 900px) { .vs { grid-template-columns: 1fr; } .vs-map, .vs-map iframe, .vs-map webview { min-height: 420px; } }
+.mw .chip.danger { background: var(--soft-danger); color: var(--st-danger); } .mw .chip.alert { background: var(--soft-alert); color: var(--st-alert); }
+.vs.vs-editing { grid-template-columns: 1fr; min-height: 0; }
+.vs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 12px; }
+.vs-cell { display: grid; gap: 6px; }
+.vs-ch { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; font-size: 13.5px; }
+.vs-map.sm, .vs-map.sm iframe, .vs-map.sm webview { min-height: 360px; height: 360px; }
