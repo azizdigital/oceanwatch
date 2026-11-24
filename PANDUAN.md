@@ -33,6 +33,8 @@ Semua model (6 model angin, 4 model ombak, 2 ensembel) digabung jadi satu cerita
   - **AIS**: kalau relay v5 dengan kunci aisstream ada, Carta tunjuk kapal AIS yang didengar sekitar ~45 nm (kapal anda ikut nama). Tiada yang didengar = tiada apa-apa dipapar (aisstream belum ada penerima dekat Irong Barat).
 - **Senarai "Kapal saya"** (1.3.2) di tepi Carta (di bawah Carta bila iPad menegak): kapal di Carta dahulu (paling dekat dahulu), kemudian laporan lama, kemudian "belum di Carta" — setiap satu ada butang **MarineRadar ↗** (buka halaman kapal + borang lapor) dan **Lapor**. Status kerja ditunjuk satu perkataan (GO / CAUTION / NO-GO).
 - **Kotak tampal di atas Carta** (1.3.2): tampal halaman kapal MarineRadar / VesselFinder terus di situ — kapal dikenal ikut MMSI/IMO dan terus masuk Carta, tanpa borang.
+- **Platform lain** (1.3.2): 145 platform dalam 150 nm dari data satelit 2023 (OOGPs, Si et al. 2026, CC-BY-4.0); oren = ada nyalaan gas. Butang **Platform** di Carta = tunjuk / sorok. Zum masuk untuk jarak & bearing setiap satu. Tiada nama dalam data; data sehingga 105.54°E dan tahun 2023.
+- **Auto Open Waters** (1.3.2): setiap 15 minit app tanya Open Waters (percuma, peribadi) untuk semua MMSI anda — dikesan < 6 jam = kedudukan sebenar; lebih lama + destinasi & ETA = anggaran laluan; selain itu baris kapal tulis sebabnya. Suis dan ↻ dalam senarai Kapal saya.
 - Tekan satu kapal: **Carta / VesselFinder / MarineTraffic**, dengan panel kanan — laporan terakhir, anggaran, ETA, **Sejarah** (✕ padam satu laporan) dan butang Lapor kedudukan.
 - **Semua kapal saya**: satu peta VesselFinder setiap kapal — kapal itu sahaja, dengan trek 24 jam.
 - Kad kapal yang dipautkan ke kerja tunjuk status kerja itu sekarang.

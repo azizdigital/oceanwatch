@@ -22,3 +22,11 @@ Automatic positions from Open Waters AIS (openwaters.io - free for personal use,
 - One Open Waters estimate is kept per vessel; your own reports stay. "Auto Open Waters" can be switched off.
 - Checked 24 Nov 2026: in the last 90 days Open Waters heard none of these vessels within 20 nm of Irong Barat
   (shore receivers near Kemaman only), so offshore positions are estimates; a MarineRadar paste is more exact when fresh.
+
+Other platforms on the chart
+- 145 offshore platforms within 150 nm of Irong Barat A, from a satellite dataset (Sentinel-1 radar, 2023): The Offshore
+  Oil and Gas Platforms (OOGPs) dataset v1.0.0, Si et al. 2026, Zenodo doi:10.5281/zenodo.18350974, CC-BY-4.0.
+  Orange = gas flare seen. Point at one for its distance / bearing from your platform; zoomed in, they are labelled.
+- The "Platforms" button on the chart shows / hides them (remembered).
+- The dataset has no names, covers up to 105.54 E and ends in 2023 (platforms built later are missing).
+- Chart labels keep a thin outline at every zoom (they turned into dark blobs when zoomed far in).

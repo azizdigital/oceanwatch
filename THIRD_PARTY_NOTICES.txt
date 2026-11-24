@@ -15,3 +15,8 @@ The app is for personal use. The lists are used unchanged; rebuild the shipped c
 
 Natural Earth (www/assets/js/coast-east.js, Sentinel OceanWATCH chart)
   Coastline from Natural Earth 1:10m land and minor islands, clipped and simplified. Public domain - "Made with Natural Earth".
+
+Offshore platforms (www/assets/js/platforms-east.js, Sentinel OceanWATCH chart)
+  The Offshore Oil and Gas Platforms (OOGPs) dataset v1.0.0: Si, L., Zhou, S., Irakulis-Loitxate, I., Roger, J., Guanter, L. (2026),
+  Zenodo, https://doi.org/10.5281/zenodo.18350974. Licence CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/).
+  Points within 150 nm of Irong Barat A from the 2023 file, coordinates rounded to 4 decimals.

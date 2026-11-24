@@ -335,6 +335,21 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     await page.click('.vs-row:has([data-vs="v533049100"]) [data-rp-mr]');
     await expect(page.locator('#rpVes')).toHaveValue('v533049100');
     await page.click('#rpCancel2');
+    /* 1.3.2: other platforms from the satellite dataset, with a show / hide button kept in the settings */
+    const opN = await page.evaluate(() => self.MC_PLATFORMS.length);
+    expect(opN).toBe(145);
+    expect(await page.locator('#vsMap .ck-op').count()).toBeGreaterThan(10);
+    await expect(page.locator('#vsMap .ck-key')).toContainText('OOGPs v1.0.0');
+    await expect(page.locator('#vsMap .ck-op title').first()).toContainText(/nm \d{3}°T/);
+    await page.click('[data-ck="plat"]');
+    await expect(page.locator('#vsMap .ck-op')).toHaveCount(0);
+    await expect(page.locator('[data-ck="plat"]')).toHaveAttribute('aria-pressed', 'false');
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).plat)).toBe(false);
+    await page.click('[data-ck="plat"]');
+    expect(await page.locator('#vsMap .ck-op').count()).toBeGreaterThan(10);
+    for (let i = 0; i < 4; i++) await page.click('[data-ck="in"]');
+    await expect(page.locator('#vsMap .ck-opl', { hasText: '1.7 nm 217°T' })).toHaveCount(1);
+    expect(await page.locator('#vsMap .ck-opl').count()).toBeLessThan(20);
     /* the coast line is drawn apart from the land, without the clip-box edges */
     await expect(page.locator('#vsMap .ck-coast')).toHaveCount(1);
     const edge = await page.evaluate(() => { const B = self.MC_COAST_BOX; return self.MC_COAST.some(r => r.some(p => p[0] === B[0])) && !!B; });

@@ -376,7 +376,7 @@ html[data-edition="me"] #cardWater { align-self: stretch; }
 .ck-flow line { stroke-linecap: round; } .ck-flow.wind line { stroke: #e6f1fb; } .ck-flow.wind path { fill: #e6f1fb; } .ck-flow.wind text { fill: #e6f1fb; font-weight: 700; }
 .ck-flow.swell line { stroke: #22d3ee; opacity: .75; } .ck-flow.swell path { fill: #22d3ee; } .ck-flow.swell text { fill: #67e8f9; font-weight: 600; }
 .ck-halo { fill: rgba(245, 185, 66, .14); stroke: rgba(245, 185, 66, .55); }
-.ck-pfl { fill: #fff; font-weight: 700; paint-order: stroke; stroke: #061a2e; stroke-width: .6px; }
+.ck-pfl { fill: #fff; font-weight: 700; paint-order: stroke; stroke: #061a2e; stroke-width: var(--hw, .6px); }  /* --hw: a 2.6 px halo at any zoom */
 .ck-ui { position: absolute; right: 14px; top: 80px; display: grid; gap: 6px; justify-items: end; }
 .ck-b { width: 34px; height: 34px; border-radius: 9px; border: 1px solid #1d4a70; background: rgba(6, 26, 46, .85); color: #e6f1fb; font-size: 18px; display: grid; place-items: center; cursor: pointer; }
 .ck-b.w { width: auto; padding: 0 8px; font-size: 12px; } .ck-b:hover { background: #0c3150; } .ck-b:focus-visible { outline: 2px solid #22d3ee; }
@@ -453,11 +453,15 @@ html[data-edition="me"] #cardWater { align-self: stretch; }
 .ck-trk { fill: none; stroke: currentColor; opacity: .7; stroke-linecap: round; } .ck-tp { fill: currentColor; opacity: .6; }
 .ck-dr { stroke: currentColor; opacity: .85; } .ck-rp { fill: #061a2e; stroke: currentColor; }
 .ck-to { stroke: #f5b942; opacity: .7; } .ck-sel { fill: none; stroke: #fff; opacity: .8; }
-.ck-vl text { fill: #e6f1fb; paint-order: stroke; stroke: #061a2e; stroke-width: .5px; font-variant-numeric: tabular-nums; } .ck-vl text.n { fill: currentColor; font-weight: 700; }
+.ck-vl text { fill: #e6f1fb; paint-order: stroke; stroke: #061a2e; stroke-width: var(--hw, .5px); font-variant-numeric: tabular-nums; } .ck-vl text.n { fill: currentColor; font-weight: 700; }
 .ck-vl.old text { fill: #8fb0cc; }
 .ck-ais { color: #94a3b8; } .ck-ais path, .ck-ais circle { fill: currentColor; fill-opacity: .55; stroke: currentColor; }
 .ck-ais.mine path, .ck-ais.mine circle { fill-opacity: .95; stroke: #fff; } .ck-ail text { fill: #b5c4d4; } .ck-ail.mine text { fill: #fff; font-weight: 700; }
 .ck-key i.ais { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; }
+.ck-op path { fill: #8fb0cc; fill-opacity: .55; stroke: #b9cfe3; stroke-linecap: round; } .ck-op.fl path { fill: #f5b942; fill-opacity: .8; stroke: #f5b942; }
+.ck-opl { fill: #9fbad3; paint-order: stroke; stroke: #061a2e; stroke-width: var(--hw, .4px); font-variant-numeric: tabular-nums; }
+.ck-b.w.on { border-color: #22d3ee; color: #67e8f9; } .ck-b.w[data-ck="plat"]:not(.on) { color: var(--ink-3); text-decoration: line-through; }
+.ck-key i.op { width: 10px; height: 6px; border-radius: 1px; background: #8fb0cc; } .ck-key small { color: #8fb0cc; }
 .ck-new line, .ck-new path { stroke: #f5b942; } .ck-new circle { fill: rgba(245, 185, 66, .18); stroke: #f5b942; }
 @media (max-width: 900px) { .vs-split, .vs-split.rep { grid-template-columns: 1fr; } .vs-map, .vs-map iframe, .vs-map webview, .ck { min-height: 420px; } }
 @media (prefers-reduced-motion: reduce) { .vs-pin { transition: none; } }

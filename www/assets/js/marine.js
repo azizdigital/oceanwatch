@@ -1157,6 +1157,18 @@
           '<path d="M' + (x2 + dx * ah).toFixed(2) + ' ' + (y2 + dy * ah).toFixed(2) + 'L' + (x2 - dy * ah * 0.7).toFixed(2) + ' ' + (y2 + dx * ah * 0.7).toFixed(2) + 'L' + (x2 + dy * ah * 0.7).toFixed(2) + ' ' + (y2 - dx * ah * 0.7).toFixed(2) + 'Z"/>' +
           '<text x="' + (x2 + dx * 16 * u).toFixed(2) + '" y="' + (y2 + dy * 16 * u + 4 * u).toFixed(2) + '" text-anchor="middle" font-size="' + fs(11) + '">' + lbl + '</text></g>';
       };
+      /* other platforms (satellite dataset, 2023): a small rig mark, orange when flaring; distance / bearing from ours when zoomed in */
+      var plats = Vessels.cfg.plat !== false && self.MC_PLATFORMS || [], pn = 0;
+      plats.forEach(function (q) {
+        var a = Geo.inv(P, { lat: q[1], lon: q[0] });
+        if (a.nm < 0.3) return;                                    /* ours, already drawn */
+        var x = X(q[0]), y = Y(q[1]), h = 5.5 * u; pn++;
+        o += '<g class="ck-op' + (q[2] ? ' fl' : '') + '"><title>' + T('Platform', 'Platform') + ' · ' + a.nm.toFixed(1) + ' nm ' + brg3(a.brg) + (q[2] ? T(' · nyalaan gas', ' · gas flare') : '') + '</title>' +
+          '<path d="M' + (x - h).toFixed(2) + ' ' + (y - h * 0.4).toFixed(2) + 'h' + (2 * h).toFixed(2) + 'v' + (0.8 * h).toFixed(2) + 'h' + (-2 * h).toFixed(2) + 'z' +
+          'M' + (x - h * 0.7).toFixed(2) + ' ' + (y + h * 0.4).toFixed(2) + 'l' + (-0.3 * h).toFixed(2) + ' ' + (1.1 * h).toFixed(2) + 'M' + (x + h * 0.7).toFixed(2) + ' ' + (y + h * 0.4).toFixed(2) + 'l' + (0.3 * h).toFixed(2) + ' ' + (1.1 * h).toFixed(2) +
+          'M' + x.toFixed(2) + ' ' + (y - h * 0.4).toFixed(2) + 'v' + (-1.1 * h).toFixed(2) + '" stroke-width="' + fs(1.2) + '"/></g>';
+        if (Chart.span <= 14 && x > x0 && x < x0 + vw && y > y0 && y < y0 + vh) lab += '<text class="ck-opl" x="' + (x + 8 * u).toFixed(2) + '" y="' + (y + 3 * u).toFixed(2) + '" font-size="' + fs(9.5) + '">' + a.nm.toFixed(1) + ' nm ' + brg3(a.brg) + '</text>';
+      });
       if (n0) o += flow(n0.wd, 'swell', 95, T('alun ', 'swell ') + r1(n0.wh) + ' m') + flow(n0.dir, 'wind', 70, r0(n0.w10.m) + ' kt');
       var vl = chartVessels(X, Y, u, fs, Date.now()), self1 = this;
       Ais.load(function () { var bx = $('vsMap'); if (bx && bx.querySelector('svg.ck') && !Vessels.editing) self1.draw(bx); });
@@ -1166,12 +1178,13 @@
         rigIcon('').replace(/^<svg[^>]*>|<\/svg>$/g, '') + '</svg>' +
         '<text class="ck-pfl" x="0" y="' + (ic * 0.45).toFixed(2) + '" text-anchor="middle" font-size="' + fs(12.5) + '">' + esc(P.name) + '</text></g>';
       var nmScale = [1, 2, 5, 10, 20, 50].filter(function (n) { return n / u <= 140; }).pop() || 1;
-      box.innerHTML = '<svg class="ck" viewBox="' + x0.toFixed(3) + ' ' + y0.toFixed(3) + ' ' + vw.toFixed(3) + ' ' + vh.toFixed(3) + '" role="img" aria-label="' + esc(T('Carta sekitar ', 'Chart around ') + P.name) + '">' + o + vl.o + lab + vl.lab + '</svg>' +
+      box.innerHTML = '<svg class="ck" style="--hw:' + (2.6 * u).toFixed(4) + '" viewBox="' + x0.toFixed(3) + ' ' + y0.toFixed(3) + ' ' + vw.toFixed(3) + ' ' + vh.toFixed(3) + '" role="img" aria-label="' + esc(T('Carta sekitar ', 'Chart around ') + P.name) + '">' + o + vl.o + lab + vl.lab + '</svg>' +
         '<div class="ck-ui"><button type="button" class="ck-b" data-ck="in" aria-label="' + T('Zum masuk', 'Zoom in') + '">+</button><button type="button" class="ck-b" data-ck="out" aria-label="' + T('Zum keluar', 'Zoom out') + '">−</button>' +
-        '<button type="button" class="ck-b" data-ck="home" aria-label="' + T('Pusatkan pada platform', 'Centre on the platform') + '">' + rigIcon('ic ic-rig xs') + '</button><button type="button" class="ck-b w" data-ck="port">' + T('Pelabuhan', 'Port') + '</button></div>' +
+        '<button type="button" class="ck-b" data-ck="home" aria-label="' + T('Pusatkan pada platform', 'Centre on the platform') + '">' + rigIcon('ic ic-rig xs') + '</button><button type="button" class="ck-b w" data-ck="port">' + T('Pelabuhan', 'Port') + '</button>' +
+        (self.MC_PLATFORMS ? '<button type="button" class="ck-b w' + (Vessels.cfg.plat !== false ? ' on' : '') + '" data-ck="plat" aria-pressed="' + (Vessels.cfg.plat !== false) + '" title="' + T('Tunjuk / sorok platform lain', 'Show / hide other platforms') + '">' + T('Platform', 'Platforms') + '</button>' : '') + '</div>' +
         '<div class="ck-rose" aria-hidden="true"><svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="27"/><path class="n" d="M30 5l5 25h-10z"/><path d="M30 55l5-25h-10z"/><path d="M5 30l25 5V25zM55 30l-25 5V25z"/><text x="30" y="16" text-anchor="middle">' + (EN() ? 'N' : 'U') + '</text></svg></div>' +
         '<div class="ck-scale"><i style="width:' + (nmScale / u).toFixed(0) + 'px"></i><span>' + nmScale + ' nm</span></div>' +
-        (n0 || Ais.list.length ? '<div class="ck-key">' + (Ais.list.length ? '<span><i class="ais"></i>AIS: ' + Ais.list.length + T(' kapal didengar', ' vessels heard') + '</span>' : '') + (n0 ? '<span><i class="wind"></i>' + T('angin', 'wind') + ' ' + r0(n0.w10.m) + ' kt ' + T('dari ', 'from ') + dir16(n0.dir) + '</span><span><i class="swell"></i>' + T('alun', 'swell') + ' ' + r1(n0.wh) + ' m ' + r0(n0.wt) + ' s ' + T('dari ', 'from ') + dir16(n0.wd) + '</span>' : '') + '</div>' : '');
+        (n0 || Ais.list.length || pn ? '<div class="ck-key">' + (pn ? '<span><i class="op"></i>' + T('Platform lain ', 'Other platforms ') + pn + ' <small>(' + esc(self.MC_PLATFORMS_SRC || '') + ')</small></span>' : '') + (Ais.list.length ? '<span><i class="ais"></i>AIS: ' + Ais.list.length + T(' kapal didengar', ' vessels heard') + '</span>' : '') + (n0 ? '<span><i class="wind"></i>' + T('angin', 'wind') + ' ' + r0(n0.w10.m) + ' kt ' + T('dari ', 'from ') + dir16(n0.dir) + '</span><span><i class="swell"></i>' + T('alun', 'swell') + ' ' + r1(n0.wh) + ' m ' + r0(n0.wt) + ' s ' + T('dari ', 'from ') + dir16(n0.wd) + '</span>' : '') + '</div>' : '');
       this.wire(box);
     },
     wire: function (box) {
@@ -1229,6 +1242,7 @@
     if (!b || !box) return;
     var a = b.getAttribute('data-ck');
     if (a === 'in') Chart.zoom(0.7, box); else if (a === 'out') Chart.zoom(1.4, box); else if (a === 'home') Chart.home(box); else if (a === 'port') Chart.port(box);
+    else if (a === 'plat') { Vessels.cfg.plat = Vessels.cfg.plat === false; Vessels.save(); Chart.draw(box); }
   });
   window.addEventListener('resize', function () { var box = $('vsMap'); if (box && box.querySelector('svg.ck')) Chart.draw(box); });
   /* the page loses focus to the map inside it = the user is moving that map: the pin may no longer be on the platform */
