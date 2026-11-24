@@ -17,11 +17,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  # built in one job and published in the next (GitHub's own pattern): the deploy step then always finds the uploaded site
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -35,5 +33,12 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: www
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v4
