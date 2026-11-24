@@ -166,6 +166,8 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     await r2.locator('[data-k="name"]').fill('JM Perkasa 2'); await r2.locator('[data-k="imo"]').fill('9585833'); await r2.locator('[data-k="type"]').selectOption('av');
     await r2.locator('[data-k="call"]').fill('9m-ab 2');
     await page.click('#vsSave');
+    await expect(page.locator('.vs-pill.on')).toContainText('Irong Barat A');              /* 1.3.2: saving keeps the area view */
+    await page.click('.vs-row [data-vs="v533049100"]');
     await expect(page.locator('.vs-pill[data-vs]')).toHaveCount(3);        /* 1.3.2: area, all, the vessel open now */
     await expect(page.locator('.vs-pill.on')).toContainText('SK Patron');
     await expect(page.locator('.vs-pill.on .vs-st')).toHaveText(/GO|CAUTION|LIMITED|STAY/);
@@ -426,16 +428,19 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
       sessionStorage.setItem('seedow', '1');
       localStorage.setItem('ow_vessels', JSON.stringify({ list: [
         { id: 'v533049100', name: 'SK Patron', mmsi: '533049100', type: 'psv' }, { id: 'v533000486', name: 'JM Perkasa 2', mmsi: '533000486', type: 'crew' },
-        { id: 'v525007132', name: 'Limin Handler', mmsi: '525007132', type: 'ahts' }, { id: 'v533999999', name: 'No AIS', mmsi: '533999999', type: 'tug' }], sel: 'area', src: 'chart' }));
+        { id: 'v525007132', name: 'Limin Handler', mmsi: '525007132', type: 'ahts' }, { id: 'v533999999', name: 'No AIS', mmsi: '533999999', type: 'tug' },
+        { id: 'v533111222', name: 'JM Gemilang', mmsi: '533111222', type: 'psv' }, { id: 'v533222333', name: 'Alkahfi Care', mmsi: '533222333', type: 'fcb' }], sel: 'area', src: 'chart' }));
     });
     const errors = await open(page, 'ow');
     await page.route(/^https:\/\/ais\.openwaters\.io\/v1\/vessels\?mmsi=/, r => { asked.push(r.request().url()); r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ type: 'FeatureCollection', features: [
       feat(533049100, 'SK PATRON', 4.229, 103.511, now - 13 * H, { sog: 6.4, cog: 97.8, destination: 'IRONG BARAT', eta: eta(now + 12 * H) }),
       feat(533000486, 'JM PERKASA 2', 5.40, 104.60, now - 2 * H, { sog: 9.5, cog: 40, destination: 'IRONG BARAT', eta: eta(now + 1 * H) }),
-      feat(525007132, 'LIMIN HANDLER', 1.225, 104.164, now - 5 * 24 * H, { sog: 2.4, cog: 10, destination: 'RSK', eta: eta(now - 4 * 24 * H) })] }) }); });
+      feat(525007132, 'LIMIN HANDLER', 1.225, 104.164, now - 5 * 24 * H, { sog: 2.4, cog: 10, destination: 'RSK', eta: eta(now - 4 * 24 * H) }),
+      feat(533111222, 'JM GEMILANG', 5.20, 104.40, now - 10 * H, { sog: 8, cog: 50, destination: 'ANGSI', eta: eta(now + 5 * H) }),
+      feat(533222333, 'ALKAHFI CARE', 4.30, 103.60, now - 63 * 24 * H, { sog: 0, cog: 0 })] }) }); });
     await page.click('.rbtn[data-view="vessels"]');
     await expect.poll(() => asked.length).toBe(1);
-    expect(asked[0]).toContain('mmsi=533049100,533000486,525007132,533999999');
+    expect(asked[0]).toContain('mmsi=533049100,533000486,525007132,533999999,533111222,533222333');
     /* heard 2 h ago: on the chart where it was heard, carried forward by its speed and course */
     await expect(page.locator('.vs-row:has([data-vs="v533000486"]) .vs-rl')).toContainText('Open Waters');
     /* heard 13 h ago near Kemaman, going to Irong Barat, ETA in 12 h: 52 % along the route */
@@ -444,16 +449,39 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     const rec = await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).reports);
     expect(rec.v533049100[0].src).toBe('owe'); expect(rec.v533049100[0].to.lat).toBeCloseTo(5.5501, 3);
     expect(rec.v533000486[0].src).toBe('ow'); expect(rec.v533000486[0].lat).toBeCloseTo(5.40, 3);
-    expect(rec.v525007132).toBeUndefined();
-    /* stale ETA and unknown vessels are explained, not guessed */
+    /* (A) no estimate possible but heard within 7 days: the last heard position, faded; older (63 days) or no data: not shown */
+    expect(rec.v525007132[0].src).toBe('owl'); expect(rec.v533111222[0].src).toBe('owl'); expect(rec.v533222333).toBeUndefined();
+    await expect(page.locator('.vs-row:has([data-vs="v525007132"]) .vs-rl')).toContainText(/last heard 5 days ago/);
     await expect(page.locator('.vs-row:has([data-vs="v525007132"]) .vs-ro')).toContainText(/destination RSK unknown|stale ETA/);
     await expect(page.locator('.vs-row:has([data-vs="v533999999"]) .vs-ro')).toContainText('no data');
-    await expect(page.locator('#vsMap .ck-vl')).toHaveCount(2);
+    await expect(page.locator('.vs-row:has([data-vs="v533222333"]) .vs-rl')).toContainText('not on the chart yet');
+    await expect(page.locator('#vsMap .ck-vl')).toHaveCount(4);
+    await expect(page.locator('#vsMap .ck-vs.old.t-ahts .ck-hull')).toHaveCount(1);
+    /* (B) my places: the unknown AIS destinations are offered; ANGSI -> the nearest platform; then JM Gemilang is estimated toward it */
+    await page.click('#vsEdit');
+    await expect(page.locator('[data-pl-add="ANGSI"]')).toBeVisible();
+    await expect(page.locator('[data-pl-add="RSK"]')).toBeVisible();
+    await page.click('[data-pl-add="ANGSI"]');
+    const pick = page.locator('.vs-pt tr[data-pi="0"] [data-pk="pick"]');
+    expect(await pick.locator('option').count()).toBeGreaterThan(40);
+    await pick.selectOption({ index: 2 });
+    await expect(page.locator('.vs-pt tr[data-pi="0"] [data-pk="lat"]')).toHaveValue(/°.*′N/);
+    await page.click('#plAdd');
+    await page.locator('.vs-pt tr[data-pi="1"] [data-pk="name"]').fill('sg kuang');
+    await page.click('#vsSave');
+    await expect(page.locator('.vs-err')).toContainText('lat / lon');                   /* a place without a location is refused */
+    await page.locator('.vs-pt tr[data-pi="1"] [data-pk="lat"]').fill('4.52');
+    await page.locator('.vs-pt tr[data-pi="1"] [data-pk="lon"]').fill("103°27.5'E");
+    await page.click('#vsSave');
+    const pl = await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).places);
+    expect(pl.map(x => x.name)).toEqual(['ANGSI', 'SG KUANG']); expect(pl[1].lon).toBeCloseTo(103.4583, 3);
+    await expect.poll(() => page.evaluate(() => { const r = JSON.parse(localStorage.getItem('ow_vessels')).reports.v533111222; return r && r[0].src; })).toBe('owe');
+    await expect(page.locator('.vs-row:has([data-vs="v533111222"]) .vs-rl')).toContainText('Open Waters estimate');
     await expect(page.locator('.vs-auto')).toContainText('every 15 min');
     await expect(page.locator('.vs-note')).toContainText('Open Waters AIS (openwaters.io)');
     /* a fetch now keeps a single Open Waters estimate per vessel; switching off stops it */
     await page.click('#vsOwNow');
-    await expect.poll(() => asked.length).toBe(2);
+    await expect.poll(() => asked.length).toBe(3);
     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).reports.v533049100.filter(r => r.src === 'owe').length)).toBe(1);
     await page.click('#vsOw');
     await expect(page.locator('.vs-auto')).toContainText('off');

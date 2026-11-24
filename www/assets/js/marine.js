@@ -382,7 +382,7 @@
   /* ------------------------------------------------------------------ position reports (1.3.0)
      A vessel's position as the captain reports it (radio / WhatsApp), typed in here: bearing + distance from the platform,
      or lat / lon (both kept in step), or a tap on the chart. Sphere formulas, Earth radius 3440.065 nm. */
-  var R_NM = 3440.065, RAD = Math.PI / 180, DR_MAX = 6, KEEP_N = 10, KEEP_T = 3 * DAY;
+  var R_NM = 3440.065, RAD = Math.PI / 180, DR_MAX = 6, KEEP_N = 10, KEEP_T = 3 * DAY, KEEP_LAST = 7 * DAY;
   var SPEED = { crew: 20, fcb: 18, psv: 10, ahts: 11, tug: 6, errv: 8, av: 7, barge: 5, tanker: 10, other: 10 };
   var Geo = {
     /* the point a distance away on a bearing (destination point) */
@@ -468,7 +468,8 @@
       Vessels.cfg.list.forEach(function (v) { ids[v.id] = true; });
       Object.keys(all).forEach(function (id) {
         var was = (all[id] || []).length;
-        all[id] = ids[id] ? (all[id] || []).filter(function (x) { return x && x.t >= cut && isFinite(x.lat) && isFinite(x.lon); }) : [];
+        /* "last heard" positions from Open Waters are kept 7 days, the rest 3 days */
+        all[id] = ids[id] ? (all[id] || []).filter(function (x) { return x && x.t >= (x.src === 'owl' ? (now || Date.now()) - KEEP_LAST : cut) && isFinite(x.lat) && isFinite(x.lon); }) : [];
         if (all[id].length !== was) changed = true;
         if (!all[id].length) delete all[id];
       });
@@ -489,6 +490,7 @@
     line: function (v, now) {
       var n = this.now(v, now);
       if (!n) return '';
+      if (n.rep.src === 'owl') return n.fromP.nm.toFixed(1) + ' nm · ' + T('terakhir didengar ', 'last heard ') + ago(n.rep.t, now || Date.now());
       if (n.old) return T('laporan lama · ', 'old report · ') + ago(n.rep.t, now || Date.now());
       if (n.eta.here) return T('di platform', 'at the platform');
       return n.eta.nm.toFixed(1) + ' nm · ' + (n.eta.toward === false ? T('tidak menghala ke platform', 'not heading to the platform') : 'ETA ' + dur(n.eta.hours));
@@ -548,7 +550,7 @@
       return '<aside class="vs-list" aria-label="' + T('Kapal saya', 'My vessels') + '"><div class="vs-lh2"><b>' + T('Kapal saya', 'My vessels') + ' <small>' + c.list.length + '</small></b><span>' + on + T(' di Carta', ' on the chart') + '</span></div>' + auto + '<ol>' +
         rows.map(function (r) {
           var x = r.v, ty = typeOf(x.type), rs = r.n && r.n.rep.src;
-          var src = rs === 'mr' ? ' · MarineRadar' : rs === 'vf' ? T(' · anggaran VF', ' · VF estimate') : rs === 'ow' ? ' · Open Waters' : rs === 'owe' ? T(' · anggaran Open Waters', ' · Open Waters estimate') : '';
+          var src = rs === 'mr' ? ' · MarineRadar' : rs === 'vf' ? T(' · anggaran VF', ' · VF estimate') : rs === 'ow' || rs === 'owl' ? ' · Open Waters' : rs === 'owe' ? T(' · anggaran Open Waters', ' · Open Waters estimate') : '';
           return '<li class="vs-row' + (r.n ? r.n.old ? ' old' : '' : ' none') + '"><button type="button" class="vs-rn" data-vs="' + esc(x.id) + '">' + vesselIcon(x.type, 'ic ic-v xs t-' + x.type) +
             '<span class="vs-rt"><b>' + esc(x.name || x.mmsi || x.imo) + '</b><small>' + esc(EN() ? ty[3] : ty[2]) + '</small></span>' + Vessels.jobMini(x) + '</button>' +
             '<div class="vs-rl">' + (r.n ? esc(Reports.line(x, now)) + '<small>' + esc(src) + '</small>' : T('belum di Carta', 'not on the chart yet')) + '</div>' +
@@ -623,7 +625,7 @@
         (n.est ? row(T('Anggaran sekarang', 'Estimated now'), n.eta.nm.toFixed(1) + ' nm ' + T('dari platform', 'from the platform')) : '') +
         row('ETA', n.old ? T('- (laporan lama)', '- (old report)') : n.eta.here ? T('di platform', 'at the platform') : n.eta.toward === false ? T('tidak menghala ke platform', 'not heading to the platform') :
           '<b>' + dur(n.eta.hours) + '</b><br><small>' + n.kn + ' kn' + (n.knFrom === 'type' ? T(' (laju biasa)', ' (usual speed)') : '') + '</small>') +
-        (n.rep.src === 'vf' ? row(T('Sumber', 'Source'), T('Anggaran ikut laluan (VesselFinder)', 'Route estimate (VesselFinder)')) : n.rep.src === 'mr' ? row(T('Sumber', 'Source'), 'MarineRadar (AIS)') : n.rep.src === 'vfp' ? row(T('Sumber', 'Source'), 'VesselFinder (AIS)') : n.rep.src === 'ow' ? row(T('Sumber', 'Source'), 'Open Waters AIS (AISHub)') : n.rep.src === 'owe' ? row(T('Sumber', 'Source'), T('Anggaran ikut laluan (Open Waters)', 'Route estimate (Open Waters)')) : '') +
+        (n.rep.src === 'vf' ? row(T('Sumber', 'Source'), T('Anggaran ikut laluan (VesselFinder)', 'Route estimate (VesselFinder)')) : n.rep.src === 'mr' ? row(T('Sumber', 'Source'), 'MarineRadar (AIS)') : n.rep.src === 'vfp' ? row(T('Sumber', 'Source'), 'VesselFinder (AIS)') : n.rep.src === 'ow' ? row(T('Sumber', 'Source'), 'Open Waters AIS (AISHub)') : n.rep.src === 'owl' ? row(T('Sumber', 'Source'), T('Open Waters - kedudukan terakhir didengar', 'Open Waters - last heard position')) : n.rep.src === 'owe' ? row(T('Sumber', 'Source'), T('Anggaran ikut laluan (Open Waters)', 'Route estimate (Open Waters)')) : '') +
         (n.rep.note ? row(T('Nota', 'Note'), esc(n.rep.note)) : '') + '</dl>' +
         (hist.length > 1 ? '<details class="vs-hist"><summary>' + T('Sejarah ', 'History ') + '(' + hist.length + ')</summary><ol>' + hist.map(function (r) {
           var a = Geo.inv(P, r);
@@ -678,7 +680,28 @@
         '<div class="fld vs-pfld"><label for="vsPlatform">' + T('Nama platform di peta', 'Platform name on the map') + '<small>' + T('ditanda di titik profil ', 'marked at the profile point ') + (+settings().marineLat).toFixed(4) + ', ' + (+settings().marineLon).toFixed(4) + '</small></label>' +
         '<input class="inp" id="vsPlatform" maxlength="40" value="' + esc(Vessels.cfg.platform || '') + '" placeholder="' + esc(Vessels.platform().name) + '"></div>' +
         '<div class="mw-tw"><table class="mw-tb vs-tb"><thead><tr><th>' + T('Nama', 'Name') + '</th><th>MMSI</th><th>IMO</th><th>' + T('Callsign', 'Call sign') + '</th><th>' + T('Jenis', 'Type') + '</th><th>' + T('Laju biasa (kn)', 'Usual speed (kn)') + '</th><th>' + T('Peranan / nota', 'Role / note') + '</th><th>' + T('Kerja (Go / No-Go)', 'Job (Go / No-Go)') + '</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
-        '<div class="relay-btns"><button type="button" class="btn sm" id="vsAdd">+ ' + T('Tambah kapal', 'Add vessel') + '</button><div class="sp"></div><button type="button" class="btn sm" id="vsCancel">' + T('Batal', 'Cancel') + '</button><button type="button" class="btn sm pri" id="vsSave">' + T('Simpan', 'Save') + '</button></div></div></div>';
+        '<div class="relay-btns"><button type="button" class="btn sm" id="vsAdd">+ ' + T('Tambah kapal', 'Add vessel') + '</button></div>' + Vessels.placesEditor() +
+        '<div class="relay-btns"><div class="sp"></div><button type="button" class="btn sm" id="vsCancel">' + T('Batal', 'Cancel') + '</button><button type="button" class="btn sm pri" id="vsSave">' + T('Simpan', 'Save') + '</button></div></div></div>';
+    },
+    /* my places: names an AIS destination may use (ANGSI, SG KUANG, RSK...) -> a platform from the satellite list, or a lat / lon */
+    placesEditor: function () {
+      var P = Vessels.platform(), pl = Vessels.places || [], unk = Object.keys(Ow.unknown || {}).filter(function (u) { return !pl.some(function (x) { return String(x.name || '').toUpperCase() === u; }); });
+      var plats = (self.MC_PLATFORMS || []).map(function (q, i) { var a = Geo.inv(P, { lat: q[1], lon: q[0] }); return { i: i, a: a, q: q }; }).sort(function (x, y) { return x.a.nm - y.a.nm; }).slice(0, 80);
+      var rows = pl.map(function (x, i) {
+        var opts = '<option value="">' + T('Lat / Lon sendiri', 'My own lat / lon') + '</option>' + plats.map(function (o) {
+          var on = isFinite(x.lat) && Math.abs(o.q[1] - x.lat) < 1e-4 && Math.abs(o.q[0] - x.lon) < 1e-4;
+          return '<option value="' + o.i + '"' + (on ? ' selected' : '') + '>' + (o.a.nm < 0.3 ? esc(P.name) : T('Platform ', 'Platform ') + o.a.nm.toFixed(1) + ' nm ' + brg3(o.a.brg)) + (o.q[2] ? ' 🔥' : '') + '</option>';
+        }).join('');
+        return '<tr data-pi="' + i + '"><td><input class="inp" data-pk="name" maxlength="30" value="' + esc(x.name || '') + '" placeholder="' + T('cth ANGSI', 'e.g. ANGSI') + '" autocapitalize="characters"></td>' +
+          '<td><select class="sel" data-pk="pick">' + opts + '</select></td>' +
+          '<td><input class="inp" data-pk="lat" value="' + (isFinite(x.lat) && x.lat !== '' ? Geo.dm(+x.lat, 'lat') : esc(x.latS || '')) + '" placeholder="5°41.5\'N"></td>' +
+          '<td><input class="inp" data-pk="lon" value="' + (isFinite(x.lon) && x.lon !== '' ? Geo.dm(+x.lon, 'lon') : esc(x.lonS || '')) + '" placeholder="104°55\'E"></td>' +
+          '<td><button type="button" class="btn sm" data-pl-del="' + i + '" title="' + T('Padam', 'Delete') + '">✕</button></td></tr>' + (x.msg ? '<tr class="vs-err"><td colspan="5">' + esc(x.msg) + '</td></tr>' : '');
+      }).join('');
+      return '<h4 class="vs-plh">' + T('Tempat saya', 'My places') + ' <small>' + T('nama destinasi AIS → lokasi, untuk anggaran laluan', 'AIS destination name → location, for route estimates') + '</small></h4>' +
+        (unk.length ? '<p class="vs-unk">' + T('Destinasi AIS belum dikenali: ', 'AIS destinations not known yet: ') + unk.map(function (u) { return '<button type="button" class="btn xs" data-pl-add="' + esc(u) + '">+ ' + esc(u) + '</button>'; }).join(' ') + '</p>' : '') +
+        (pl.length ? '<div class="mw-tw"><table class="mw-tb vs-pt"><thead><tr><th>' + T('Nama (seperti dalam AIS)', 'Name (as in AIS)') + '</th><th>' + T('Pilih platform', 'Pick a platform') + '</th><th>Lat</th><th>Lon</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '') +
+        '<div class="relay-btns"><button type="button" class="btn sm" id="plAdd">+ ' + T('Tambah tempat', 'Add a place') + '</button></div>';
     },
     check: function (list) {
       var bad = false, seen = {};
@@ -699,7 +722,16 @@
       return !bad;
     }
   };
+  function readPlaces() {
+    [].forEach.call(document.querySelectorAll('.vs-pt tr[data-pi]'), function (tr) {
+      var x = Vessels.places[+tr.getAttribute('data-pi')], g = function (k) { var el = tr.querySelector('[data-pk="' + k + '"]'); return el ? el.value : ''; };
+      x.name = g('name'); x.latS = g('lat'); x.lonS = g('lon');
+      var la = Geo.parse(x.latS, 'lat'), lo = Geo.parse(x.lonS, 'lon');
+      x.lat = la === null ? '' : la; x.lon = lo === null ? '' : lo;
+    });
+  }
   function readEditor() {
+    if (Vessels.places) readPlaces();
     [].forEach.call(document.querySelectorAll('.vs-tb tr[data-i]'), function (tr) {
       var x = Vessels.editing[+tr.getAttribute('data-i')];
       [].forEach.call(tr.querySelectorAll('[data-k]'), function (el) { x[el.getAttribute('data-k')] = el.value; });
@@ -745,6 +777,9 @@
     place: function (name) {
       var n = String(name || '').toUpperCase().replace(/[^A-Z]/g, ''), P = Vessels.platform(), pn = String(P.name || '').toUpperCase().replace(/[^A-Z]/g, '');
       if (!n) return null;
+      /* my places (Vessel settings), e.g. the AIS destination "ANGSI" -> a platform or a lat / lon */
+      var mine = (Vessels.cfg.places || []).filter(function (pl) { var k = String(pl.name || '').toUpperCase().replace(/[^A-Z]/g, ''); return k.length >= 2 && (n === k || (k.length >= 3 && (n.indexOf(k) >= 0 || k.indexOf(n) >= 0))); })[0];
+      if (mine && isFinite(mine.lat) && isFinite(mine.lon)) return { name: mine.name, lat: +mine.lat, lon: +mine.lon, mine: true };
       var loc = String(settings().locationName || '').toUpperCase().replace(/[^A-Z]/g, '');
       if (n.indexOf('IRONG') >= 0 || (pn && (n.indexOf(pn) >= 0 || pn.indexOf(n) >= 0)) || (loc && n.indexOf(loc) >= 0)) return { name: P.name, lat: P.lat, lon: P.lon, platform: true };
       if (/KEMAMAN|CHUKAI|KSB/.test(n)) return { name: PORT.name, lat: PORT.lat, lon: PORT.lon };
@@ -778,7 +813,7 @@
        share = (now - last heard) / (ETA - last heard).
      A stale ETA (more than a day past) or an unknown destination gives no estimate - the list says why. */
   var Ow = {
-    EVERY: 15 * 60000, at: 0, busy: false, err: '', info: {},
+    EVERY: 15 * 60000, at: 0, busy: false, err: '', info: {}, unknown: {},
     on: function () { return Vessels.cfg.ow !== false; },
     /* AIS ETA "11-24 14:00" (UTC, no year) -> ms, the year nearest to when it was heard */
     eta: function (s, near) {
@@ -795,11 +830,16 @@
       var at = { lat: +c[1], lon: +c[0] }, sog = num(p.sog), cog = num(p.cog), age = (now - seen) / HOUR, where = Vf.place(p.destination);
       var heard = T('dikesan ', 'heard ') + ago(seen, now);
       if (age <= DR_MAX) return { rep: { t: Math.min(seen, now), lat: +at.lat.toFixed(5), lon: +at.lon.toFixed(5), sog: sog !== null && sog < 102 ? sog : null, cog: cog !== null && cog < 360 ? Math.round(cog) % 360 : null, src: 'ow', note: 'Open Waters: ' + heard + (p.destination ? ' → ' + p.destination : '') }, line: heard };
-      var eta = this.eta(p.eta, seen);
-      if (!p.destination) return { why: heard + T(' · tiada destinasi', ' · no destination') };
-      if (!where) return { why: heard + ' · ' + T('destinasi ', 'destination ') + p.destination + T(' tak dikenali', ' unknown') };
-      if (!eta || eta <= seen) return { why: heard + ' · ' + T('ETA tiada / lapuk', 'no / stale ETA') };
-      if (now - eta > DAY) return { why: heard + ' · ' + T('ETA lapuk (', 'stale ETA (') + ago(eta, now) + ')' };
+      var eta = this.eta(p.eta, seen), self0 = this;
+      /* no estimate possible: the last heard position, faded, if it is at most 7 days old */
+      var last = function (why) {
+        if (now - seen > KEEP_LAST) return { why: why };
+        return { why: why, line: why, rep: { t: seen, lat: +at.lat.toFixed(5), lon: +at.lon.toFixed(5), sog: null, cog: null, src: 'owl', note: 'Open Waters: ' + heard + (p.destination ? ' → ' + p.destination : '') } };
+      };
+      if (!p.destination) return last(heard + T(' · tiada destinasi', ' · no destination'));
+      if (!where) { self0.unknown[String(p.destination).trim().toUpperCase()] = true; return last(heard + ' · ' + T('destinasi ', 'destination ') + p.destination + T(' tak dikenali', ' unknown')); }
+      if (!eta || eta <= seen) return last(heard + ' · ' + T('ETA tiada / lapuk', 'no / stale ETA'));
+      if (now - eta > DAY) return last(heard + ' · ' + T('ETA lapuk (', 'stale ETA (') + ago(eta, now) + ')');
       var leg = Geo.inv(at, where);
       if (leg.nm < 2) return { why: heard + T(' · sudah di ', ' · already at ') + where.name };
       var share = Math.max(0, Math.min(1, (now - seen) / (eta - seen))), pos = Geo.dest(at, leg.brg, leg.nm * share);
@@ -816,7 +856,7 @@
         .then(function (j) {
           var by = {}, t = Date.now(), all = Reports.all();
           (j.features || []).forEach(function (f) { var m = String(f.properties && f.properties.mmsi || ''); if (m) by[m.padStart(9, '0')] = f; });
-          self0.info = {};
+          self0.info = {}; self0.unknown = {};
           list.forEach(function (v) {
             var f = by[v.mmsi];
             if (!f) { self0.info[v.id] = T('tiada data', 'no data'); return; }
@@ -824,7 +864,7 @@
             self0.info[v.id] = r.line || r.why;
             if (!r.rep) return;
             /* only one Open Waters estimate kept per vessel; a newer report of yours stays on top */
-            all[v.id] = (all[v.id] || []).filter(function (x) { return x.src !== 'owe'; });
+            all[v.id] = (all[v.id] || []).filter(function (x) { return x.src !== 'owe' && x.src !== 'owl'; });
             Reports.add(v.id, r.rep);
           });
           self0.busy = false; self0.done = Date.now(); Vessels.save();
@@ -1009,7 +1049,7 @@
         : '<circle class="ck-hull" cx="' + x.toFixed(2) + '" cy="' + y.toFixed(2) + '" r="' + fs(7) + '" stroke-width="' + fs(1.6) + '"/>';
       o += hull + '</g>';
       lab += '<g class="ck-vl ' + cls + '"><text x="' + (x + 16 * u).toFixed(2) + '" y="' + (y - 2 * u).toFixed(2) + '" font-size="' + fs(12.5) + '" class="n">' + esc(v.name) + '</text>' +
-        '<text x="' + (x + 16 * u).toFixed(2) + '" y="' + (y + 12 * u).toFixed(2) + '" font-size="' + fs(11) + '">' + esc(Reports.line(v, now)) + (n.rep.src === 'vf' ? T(' · anggaran VF', ' · VF estimate') : n.rep.src === 'owe' ? T(' · anggaran OW', ' · OW estimate') : (n.rep.src === 'mr' ? ' · MarineRadar' : n.rep.src === 'ow' ? ' · Open Waters' : '') + (n.est ? T(' · anggaran', ' · estimated') : '')) + '</text></g>';
+        '<text x="' + (x + 16 * u).toFixed(2) + '" y="' + (y + 12 * u).toFixed(2) + '" font-size="' + fs(11) + '">' + esc(Reports.line(v, now)) + (n.rep.src === 'vf' ? T(' · anggaran VF', ' · VF estimate') : n.rep.src === 'owe' ? T(' · anggaran OW', ' · OW estimate') : (n.rep.src === 'mr' ? ' · MarineRadar' : n.rep.src === 'ow' || n.rep.src === 'owl' ? ' · Open Waters' : '') + (n.est ? T(' · anggaran', ' · estimated') : '')) + '</text></g>';
     });
     /* vessels heard on AIS (when any): mine by name, others small */
     var mine = {};
@@ -1047,17 +1087,27 @@
     if ((b = t.closest('[data-vs-open]'))) { MC.openExternal(Vessels.fullUrl(Vessels.sel(), b.getAttribute('data-vs-open'))); return; }
     if (t.closest('#vsCenter')) { var mb = $('vsMap'); if (mb) mb.removeAttribute('data-url'); Vessels.render(); return; }
     if (t.closest('#vsFull')) { MC.openExternal(Vessels.fullUrl(Vessels.sel(), Vessels.cfg.src === 'mt' ? 'mt' : 'vf')); return; }
-    if (t.closest('#vsEdit')) { Vessels.editing = Vessels.cfg.list.map(function (x) { return Object.assign({}, x); }); if (!Vessels.editing.length) Vessels.editing.push({ type: 'crew' }); Vessels.render(); return; }
+    if (t.closest('#vsEdit')) { Vessels.places = (Vessels.cfg.places || []).map(function (x) { return Object.assign({}, x); }); Vessels.editing = Vessels.cfg.list.map(function (x) { return Object.assign({}, x); }); if (!Vessels.editing.length) Vessels.editing.push({ type: 'crew' }); Vessels.render(); return; }
     if (t.closest('#vsAdd')) { readEditor(); if (Vessels.editing.length >= 20) return MC.toast(T('Maksimum 20 kapal', 'At most 20 vessels'), '', 'warning'); Vessels.editing.push({ type: 'crew' }); Vessels.render(); return; }
     if ((b = t.closest('[data-vs-del]'))) { readEditor(); Vessels.editing.splice(+b.getAttribute('data-vs-del'), 1); Vessels.render(); return; }
-    if (t.closest('#vsCancel')) { Vessels.editing = null; Vessels.render(); return; }
+    if (t.closest('#vsCancel')) { Vessels.editing = null; Vessels.places = null; Vessels.render(); return; }
+    if (t.closest('#plAdd')) { readEditor(); if (Vessels.places.length >= 30) return; Vessels.places.push({ name: '' }); Vessels.render(); return; }
+    if ((b = t.closest('[data-pl-add]'))) { readEditor(); Vessels.places.push({ name: b.getAttribute('data-pl-add') }); Vessels.render(); return; }
+    if ((b = t.closest('[data-pl-del]'))) { readEditor(); Vessels.places.splice(+b.getAttribute('data-pl-del'), 1); Vessels.render(); return; }
     if (t.closest('#vsSave')) {
       readEditor();
       var list = Vessels.editing.filter(function (x) { return String(x.name || '').trim() || x.mmsi || x.imo; });
+      var places = (Vessels.places || []).map(function (x) { return { name: String(x.name || '').trim().toUpperCase().slice(0, 30), lat: x.lat, lon: x.lon, latS: x.latS, lonS: x.lonS }; }).filter(function (x) { return x.name || x.latS || x.lonS; });
+      var pbad = false;
+      places.forEach(function (x) { x.msg = !x.name ? T('Isi nama tempat.', 'Fill in the place name.') : (x.lat === '' || x.lon === '') ? T('Pilih platform atau isi lat / lon yang sah.', 'Pick a platform or fill in a valid lat / lon.') : ''; if (x.msg) pbad = true; });
+      if (pbad) { Vessels.places = places; Vessels.editing = list.length ? list : [{ type: 'crew' }]; Vessels.render(); MC.toast(T('Semak tempat bertanda', 'Check the marked places'), '', 'warning'); return; }
       if (!Vessels.check(list)) { Vessels.editing = list.length ? list : [{ type: 'crew' }]; Vessels.render(); MC.toast(T('Semak baris bertanda', 'Check the marked rows'), '', 'warning'); return; }
       Vessels.cfg.list = list.map(function (x, i) { return { id: 'v' + (x.mmsi || x.imo), name: x.name, mmsi: x.mmsi, imo: x.imo, call: x.call || '', type: x.type || 'other', kn: x.kn ? +x.kn : '', role: x.role, job: x.job || '' }; });
       Vessels.cfg.platform = String(($('vsPlatform') || {}).value || '').trim().slice(0, 40);
-      if (!Vessels.cfg.list.some(function (x) { return x.id === Vessels.cfg.sel; })) Vessels.cfg.sel = Vessels.cfg.list[0] ? Vessels.cfg.list[0].id : 'area';
+      Vessels.cfg.places = places.map(function (x) { return { name: x.name, lat: +(+x.lat).toFixed(5), lon: +(+x.lon).toFixed(5) }; });
+      Vessels.places = null; Ow.load(true);
+      var keep = Vessels.cfg.sel === 'area' || Vessels.cfg.sel === 'all';                 /* saving from the area view stays there */
+      if (!keep && !Vessels.cfg.list.some(function (x) { return x.id === Vessels.cfg.sel; })) Vessels.cfg.sel = Vessels.cfg.list[0] ? Vessels.cfg.list[0].id : 'area';
       Vessels.save(); Vessels.editing = null; Vessels.render(); MC.toast(T('Kapal disimpan ✓', 'Vessels saved ✓'), Vessels.cfg.list.length + ''); return;
     }
   });
@@ -1071,6 +1121,11 @@
     else if (id === 'rpSog' || id === 'rpCog') { repRead(); Vessels.rep.err = ''; if ($('rpSay')) $('rpSay').innerHTML = repSay(); var bx = $('vsMap'); if (bx) Chart.draw(bx); }
   });
   document.addEventListener('change', function (e) {
+    if (e.target.getAttribute && e.target.getAttribute('data-pk') === 'pick') {
+      var tr = e.target.closest('tr'), q = (self.MC_PLATFORMS || [])[+e.target.value];
+      if (tr && q) { tr.querySelector('[data-pk="lat"]').value = Geo.dm(q[1], 'lat'); tr.querySelector('[data-pk="lon"]').value = Geo.dm(q[0], 'lon'); }
+      return;
+    }
     if (e.target.id === 'vsOw') { Vessels.cfg.ow = !!e.target.checked; Vessels.save(); if (Vessels.cfg.ow) Ow.load(true); Vessels.render(); return; }
     if (e.target.id === 'rpVes' && Vessels.rep) { repRead(); var vv = Vessels.cfg.list.filter(function (x) { return x.id === Vessels.rep.id; })[0]; if ($('rpSog')) $('rpSog').placeholder = T('biasa ', 'usual ') + Reports.speedOf(vv); if ($('rpSay')) $('rpSay').innerHTML = repSay(); }
     if (e.target.id === 'vsZoom') { Vessels.cfg.zoom = +e.target.value; Vessels.save(); Vessels.render(); }

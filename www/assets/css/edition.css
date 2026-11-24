@@ -403,6 +403,9 @@ html[data-edition="me"] #cardWater { align-self: stretch; }
 .vs-list.empty { padding: 14px; color: var(--ink-3); font-size: 13px; }
 .vs-lh2 { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 12px; border-bottom: 1px solid var(--line); }
 .vs-lh2 b small { color: var(--ink-3); font-weight: 600; } .vs-lh2 span { font-size: 12px; color: var(--ink-3); }
+.vs-plh { margin: 18px 0 6px; font-size: 15px; } .vs-plh small { font-weight: 400; color: var(--ink-3); font-size: 12px; margin-left: 6px; }
+.vs-unk { font-size: 12.5px; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.vs-pt td { vertical-align: middle; } .vs-pt .sel { min-width: 200px; }
 .vs-auto { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--ink-3); }
 .vs-auto label { display: inline-flex; align-items: center; gap: 5px; color: var(--ink-2); font-weight: 600; cursor: pointer; } .vs-auto span { flex: 1; } .vs-auto .bad { color: var(--st-danger); }
 .vs-ro { padding-left: 42px; font-size: 11px; color: var(--ink-3); line-height: 1.35; }

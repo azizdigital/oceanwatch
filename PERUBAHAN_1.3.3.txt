@@ -1,0 +1,18 @@
+Sentinel OceanWATCH 1.3.3
+=========================
+Fewer vessels "not on the chart yet"
+
+Last heard position (Open Waters)
+- When Open Waters heard a vessel in the last 7 days but no route estimate is possible (no destination, a destination
+  the app does not know, or an ETA more than a day past), the vessel is now drawn where it was last heard, faded, with
+  "last heard 2 days ago". Not carried forward (no speed / course guess). Older than 7 days: not drawn; the list says why.
+- Kept 7 days; replaced on every Open Waters check. Your own reports still come first.
+
+My places (Vessel settings)
+- New section at the bottom of Vessel settings: AIS destination name -> location.
+- AIS destinations the app did not know on the last check (e.g. ANGSI, RSK, SG KUANG) are offered as "+ NAME" buttons.
+- "Pick platform": the 80 nearest platforms from the satellite dataset, with distance / bearing from your platform
+  (orange flame = gas flare), or "own Lat / Lon" (decimal or degrees-minutes like 4°31.2'N).
+- Saved places are matched first (names compared without spaces / dots), so a vessel heading to ANGSI gets an Open
+  Waters route estimate toward your chosen point. A place without a valid location is refused on Save.
+- Saving the settings from the area view now stays on the area view.

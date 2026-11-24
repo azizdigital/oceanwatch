@@ -8,7 +8,7 @@
 ## Pasang di PC (Windows)
 1. Pasang **Node.js 22 LTS** (nodejs.org) jika belum ada.
 2. Ekstrak zip, buka folder yang ada `package.json`, klik bar alamat, taip `cmd`, Enter.
-3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.3.2.exe** (pasang) dan **Sentinel OceanWATCH 1.3.2.exe** (portable).
+3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.3.3.exe** (pasang) dan **Sentinel OceanWATCH 1.3.3.exe** (portable).
 4. Buka app → **Settings › Import from Dashboard Cuaca** — profil & tetapan dibaca terus dari app PC Dashboard Cuaca.
 5. Boleh buka serentak dengan Dashboard Cuaca dan app satu lagi (port 30060, folder data `%APPDATA%\Sentinel OceanWATCH`). Pilih **Kekal di tray** dalam Tetapan supaya alert terus berbunyi bila tetingkap ditutup.
 
@@ -35,6 +35,8 @@ Semua model (6 model angin, 4 model ombak, 2 ensembel) digabung jadi satu cerita
 - **Kotak tampal di atas Carta** (1.3.2): tampal halaman kapal MarineRadar / VesselFinder terus di situ — kapal dikenal ikut MMSI/IMO dan terus masuk Carta, tanpa borang.
 - **Platform lain** (1.3.2): 145 platform dalam 150 nm dari data satelit 2023 (OOGPs, Si et al. 2026, CC-BY-4.0); oren = ada nyalaan gas. Butang **Platform** di Carta = tunjuk / sorok. Zum masuk untuk jarak & bearing setiap satu. Tiada nama dalam data; data sehingga 105.54°E dan tahun 2023.
 - **Auto Open Waters** (1.3.2): setiap 15 minit app tanya Open Waters (percuma, peribadi) untuk semua MMSI anda — dikesan < 6 jam = kedudukan sebenar; lebih lama + destinasi & ETA = anggaran laluan; selain itu baris kapal tulis sebabnya. Suis dan ↻ dalam senarai Kapal saya.
+- **Kedudukan terakhir didengar** (1.3.3): kalau Open Waters dengar kapal dalam 7 hari lepas tapi tak boleh anggar laluan (destinasi tak dikenal / ETA lapuk), kapal ditunjuk pudar di tempat terakhir didengar — "terakhir didengar 2 hari lalu". Lebih 7 hari = tak ditunjuk.
+- **Tempat saya** (1.3.3): dalam **Tetapan kapal**, bahagian bawah. Destinasi AIS yang app tak kenal (cth ANGSI, RSK, SG KUANG) keluar sebagai butang **+ NAMA** — tekan, kemudian **Pilih platform** dari senarai platform satelit terdekat (jarak & bearing dari platform anda) atau taip Lat / Lon sendiri. Simpan → kapal yang menghala ke situ terus dianggar laluannya.
 - Tekan satu kapal: **Carta / VesselFinder / MarineTraffic**, dengan panel kanan — laporan terakhir, anggaran, ETA, **Sejarah** (✕ padam satu laporan) dan butang Lapor kedudukan.
 - **Semua kapal saya**: satu peta VesselFinder setiap kapal — kapal itu sahaja, dengan trek 24 jam.
 - Kad kapal yang dipautkan ke kerja tunjuk status kerja itu sekarang.
