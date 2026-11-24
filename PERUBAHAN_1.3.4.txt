@@ -1,0 +1,6 @@
+Sentinel OceanWATCH 1.3.4
+=========================
+- Sites with an in-app stand-in (e.g. Met Malaysia marine warnings, tides) that refuse to be shown inside the app: the app's own
+  card again, with an "Original site ↗" button (1.3.x opened a new tab straight away).
+- Relay v6 script (Settings › Site relay › Copy): the shared relay can also run the land apps' GitHub copies on a schedule (e.g. hourly)
+  (Cron Trigger + GitHub token, optional). Nothing changes for vessels / AIS.

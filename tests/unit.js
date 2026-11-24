@@ -210,9 +210,9 @@ test('assemble + alerts on full fixture', () => {
   };
   const snap = core.assemble(raw, {}, null, NOW);
   assert.strictEqual(snap.sources.openMeteo.ok, true);
-  assert.ok(snap.stations.length >= 5);
+  assert.ok(snap.stations.length >= 4);
   assert.strictEqual(snap.stations[0].status, 'warning');               /* sorted worst first */
-  assert.ok(snap.stations.filter(s => s.source === 'data.gov.my').every(s => s.stale)); /* Feb 2024 data marked stale */
+  assert.ok(!snap.stations.some(s => s.source === 'data.gov.my'));      /* 1.1.4: Feb 2024 data (> 3 days old) is not shown at all */
   const alerts = core.evaluateAlerts(snap, {}, [], NOW);
   const keys = alerts.map(a => a.key.split(':')[0]);
   assert.ok(keys.includes('water')); assert.ok(keys.includes('rain3h')); assert.ok(keys.includes('met'));
@@ -341,7 +341,7 @@ test('relay worker v4: /KEY/mirror asks GitHub to run the mirror (GitHub backup)
   const W = await require('./relay-harness').loadWorker('k3y', ['publicinfobanjir.water.gov.my']);
   assert.ok(W.VERSION >= 4);
   const ask = env => W.handle(new Request('https://relay.test/k3y/mirror'), env).then(r => r.json());
-  assert.deepStrictEqual(await ask({}), { ok: false, reason: 'no-token' });
+  const nt = await ask({}); assert.strictEqual(nt.ok, false); assert.strictEqual(nt.reason, 'no-token');
   const real = globalThis.fetch, calls = [];
   let lastRun = { status: 'completed', created_at: new Date(Date.now() - 30 * 60000).toISOString() };
   globalThis.fetch = async (u, o) => {
@@ -351,18 +351,19 @@ test('relay worker v4: /KEY/mirror asks GitHub to run the mirror (GitHub backup)
     return new Response('?', { status: 500 });
   };
   try {
-    const a = await ask({ GH_TOKEN: 'ghp_x' });
-    assert.ok(a.ok && a.started, JSON.stringify(a));
-    const repo = (global.EDITION && global.EDITION.repo) || (fs.existsSync(path.join(__dirname, '..', 'tools', 'editions.js')) && Object.values(require('../tools/editions')).length === 1 ? Object.values(require('../tools/editions'))[0].repo : 'azizdigital/dashboard-cuaca');
+    const repo = 'azizdigital/monsoon-eye';                          /* relay v6: GH_REPO / GH_REPOS name them (one here) */
+    const a = await ask({ GH_TOKEN: 'ghp_x', GH_REPO: repo });
+    assert.ok(a.ok && a.repos[repo].started, JSON.stringify(a));
     assert.strictEqual(calls[1].u, 'https://api.github.com/repos/' + repo + '/actions/workflows/mirror.yml/dispatches');
     assert.strictEqual(calls[1].m, 'POST'); assert.strictEqual(calls[1].auth, 'Bearer ghp_x'); assert.deepStrictEqual(JSON.parse(calls[1].body), { ref: 'main' });
     /* right after: not again */
-    const b = await ask({ GH_TOKEN: 'ghp_x' });
-    assert.strictEqual(b.skipped, 'recent'); assert.strictEqual(calls.length, 2);
+    const b = await ask({ GH_TOKEN: 'ghp_x', GH_REPO: repo });
+    assert.strictEqual(b.repos[repo].skipped, 'recent'); assert.strictEqual(calls.length, 2);
     /* a wrong token is reported */
     const W2 = await require('./relay-harness').loadWorker('k3y', ['x']);
     globalThis.fetch = async () => new Response('{}', { status: 401 });
-    assert.deepStrictEqual(await W2.handle(new Request('https://relay.test/k3y/mirror'), { GH_TOKEN: 'bad' }).then(r => r.json()), { ok: false, reason: 'token', status: 401 });
+    const bad = await W2.handle(new Request('https://relay.test/k3y/mirror'), { GH_TOKEN: 'bad', GH_REPO: repo }).then(r => r.json());
+    assert.strictEqual(bad.ok, false); assert.strictEqual(bad.reason, 'token'); assert.strictEqual(bad.repos[repo].status, 401);
     /* the wrong key is not the mirror */
     const W3 = await require('./relay-harness').loadWorker('k3y', ['x']);
     assert.strictEqual((await W3.handle(new Request('https://relay.test/nope/mirror'), { GH_TOKEN: 'x' })).status, 404);
@@ -439,7 +440,7 @@ test('collector run: snapshot, history, alert log, ack, failure fallback', async
   });
   const s1 = await col.run('test');
   col.stop();
-  assert.ok(s1.stations.length >= 5);
+  assert.ok(s1.stations.length >= 4);
   assert.ok(rung.length === 1 && rung[0].length >= 3);
   assert.ok(fs.existsSync(path.join(dir, 'data', 'snapshot-kemaman.json')));
   assert.strictEqual(store.history(1).length, 1);
@@ -539,7 +540,7 @@ test('server + API: files, traversal blocked, CSRF header, settings, history, SS
     assert.ok([403, 404].includes((await req(port, 'GET', '/%2e%2e/%2e%2e/etc/passwd')).status));
     assert.ok([403, 404].includes((await req(port, 'GET', '/.hidden')).status));
     const snap = JSON.parse((await req(port, 'GET', '/api/snapshot')).body);
-    assert.ok(snap.stations.length >= 5 && snap.settings.refreshMin === 10);
+    assert.ok(snap.stations.length >= 4 && snap.settings.refreshMin === 10);
     assert.strictEqual((await req(port, 'POST', '/api/settings', { rain3hMm: 5 })).status, 403);   /* no X-MC header */
     const saved = JSON.parse((await req(port, 'POST', '/api/settings', { rain3hMm: 5, refreshMin: 15 }, { 'X-MC': '1' })).body);
     assert.strictEqual(saved.rain3hMm, 5); assert.strictEqual(store.settings().refreshMin, 15);
@@ -650,6 +651,36 @@ test('relay v2 removes ads; ad-heavy sites go through the relay when wanted', as
   assert.strictEqual(core.relayAdsFor(core.siteById('windy'), s), false);
   assert.strictEqual(core.relayAdsFor(core.siteById('tideforecast'), Object.assign({}, s, { relayAds: false })), false);
   assert.strictEqual(core.relayAdsFor(core.siteById('tideforecast'), core.cleanSettings({})), false);
+});
+
+test('relay v6: pokes the GitHub mirror of each land app (monsoon-eye, dashboard-cuaca), by itself on a Cron Trigger, once in 10 min', async () => {
+  const { pathToFileURL } = require('url');
+  const src = fs.readFileSync(path.join(__dirname, '..', 'www', 'relay-worker.js'), 'utf8').replace("'__KEY__'", '"k1234567"').replace('__HOSTS__', '["example.com"]');
+  const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'mc-w6-')), 'w.mjs');
+  fs.writeFileSync(file, src);
+  const w = await import(pathToFileURL(file).href);
+  assert.ok(w.VERSION >= 6);
+  assert.deepStrictEqual(w.mirrorRepos({}), ['azizdigital/monsoon-eye', 'azizdigital/dashboard-cuaca']);
+  assert.deepStrictEqual(w.mirrorRepos({ GH_REPOS: 'a/b, c/d bad' }), ['a/b', 'c/d']);
+  assert.strictEqual((await w.pokeAll({}, Date.now())).reason, 'no-token');
+  const calls = [], old = global.fetch, now = Date.now();
+  global.fetch = async (u, o) => {
+    calls.push((o && o.method || 'GET') + ' ' + u);
+    if (/\/runs\?/.test(u)) return new Response(JSON.stringify({ workflow_runs: [{ status: 'completed', created_at: new Date(now - 3 * 3600000).toISOString() }] }), { status: 200 });
+    return new Response(null, { status: 204 });
+  };
+  try {
+    let done = null;
+    await w.default.scheduled({}, { GH_TOKEN: 't' }, { waitUntil: p => { done = p; } });
+    const r = await done;
+    assert.ok(r.ok && r.repos['azizdigital/monsoon-eye'].started && r.repos['azizdigital/dashboard-cuaca'].started);
+    assert.ok(calls.some(c => c === 'POST https://api.github.com/repos/azizdigital/monsoon-eye/actions/workflows/mirror.yml/dispatches'));
+    assert.ok(calls.some(c => c === 'POST https://api.github.com/repos/azizdigital/dashboard-cuaca/actions/workflows/mirror.yml/dispatches'));
+    const n = calls.length;
+    const again = await (await w.handle(new Request('https://relay.test/k1234567/mirror'), { GH_TOKEN: 't' })).json();
+    assert.strictEqual(calls.length, n, 'not again within 10 minutes');
+    assert.strictEqual(again.repos['azizdigital/monsoon-eye'].skipped, 'recent');
+  } finally { global.fetch = old; }
 });
 
 test('relay v5: vessel positions from aisstream.io (key kept in Cloudflare), only the asked vessels, kept 2 minutes', async () => {

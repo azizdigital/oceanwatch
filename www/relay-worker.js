@@ -15,6 +15,8 @@
    GitHub backup (relay v4, optional): https://<your-relay>.workers.dev/<KEY>/mirror asks GitHub to run the app's mirror now
    (it reads JPS & tides and saves the copy in the branch "data"), at most once every 10 minutes. The app calls it each time it
    reads JPS live through this relay. Needs a Worker secret GH_TOKEN: a GitHub fine-grained token for the oceanwatch repository only, permission "Actions: Read and write". Optional variable GH_REPO (default azizdigital/oceanwatch).
+   relay v6: also by itself, with a Cron Trigger (e.g. every hour: "0 * * * *"): the mirror of every repository in GH_REPOS (comma
+   separated; default azizdigital/monsoon-eye and azizdigital/oceanwatch - one token for both, "Actions: Read and write").
    Relative and "/"-addresses inside the page come back through the relay by themselves (page path, or the Referer).
 
    Vessel positions (relay v5, optional, Sentinel OceanWATCH): https://<your-relay>.workers.dev/<KEY>/ais?mmsi=<9 digits,...>&box=<lat,lon,lat,lon>
@@ -24,7 +26,7 @@
 const KEY = '__KEY__';
 const HOSTS = __HOSTS__;
 
-const VERSION = 5;
+const VERSION = 6;
 /* small per-site fixes (e.g. JPS: open with your district chosen), kept in the web app on GitHub so they can change
    without pasting this script again */
 const TWEAKS = '__TWEAKS__';
@@ -117,27 +119,41 @@ function rewriteText(text, origin, proto) {
   return text.replace(re, (all, pre, p, host) => pre + origin + '/' + KEY + '/' + (p ? p.replace(':', '') : (proto || 'https')) + '/' + host);
 }
 
-/* GitHub backup: run the mirror workflow, not more than once in MIRROR_GAP (also checked on GitHub, since a Worker forgets) */
+/* GitHub backup: run the mirror workflow, not more than once in MIRROR_GAP (also checked on GitHub, since a Worker forgets).
+   relay v6: every repository in GH_REPOS (or GH_REPO, or the two land apps below), and by itself on a Cron Trigger (e.g. every hour)
+   - GitHub's own 15-minute schedule runs late, sometimes only twice a day. */
 const MIRROR_GAP = 10 * 60000;
-let lastPoke = 0;
+const MIRROR_REPOS = ['azizdigital/monsoon-eye', 'azizdigital/' + 'dashboard-cuaca'];
+const lastPoke = {};
+function mirrorRepos(env) {
+  const list = String((env && (env.GH_REPOS || env.GH_REPO)) || '').split(/[\s,]+/).filter(x => /^[\w.-]+\/[\w.-]+$/.test(x));
+  return list.length ? list : MIRROR_REPOS;
+}
+async function pokeAll(env, now) {
+  const repos = mirrorRepos(env), out = {};
+  for (const r of repos) out[r] = await pokeOne(env, now, r);
+  const vals = Object.values(out);
+  return { ok: vals.some(v => v.ok), reason: vals.every(v => !v.ok) ? vals[0].reason : undefined, repos: out };
+}
+async function pokeMirror(env, now) { return json(await pokeAll(env, now)); }
 const json = (o, st) => new Response(JSON.stringify(o), { status: st || 200, headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'cache-control': 'no-store' } });
-async function pokeMirror(env, now) {
-  const token = env && env.GH_TOKEN, repo = (env && env.GH_REPO) || 'azizdigital/oceanwatch';
-  if (!token) return json({ ok: false, reason: 'no-token' });
-  if (now - lastPoke < MIRROR_GAP) return json({ ok: true, skipped: 'recent', next: lastPoke + MIRROR_GAP });
+async function pokeOne(env, now, repo) {
+  const token = env && env.GH_TOKEN;
+  if (!token) return { ok: false, reason: 'no-token' };
+  if (now - (lastPoke[repo] || 0) < MIRROR_GAP) return { ok: true, skipped: 'recent', next: lastPoke[repo] + MIRROR_GAP };
   const gh = (path, opt) => fetch('https://api.github.com/repos/' + repo + '/actions/workflows/mirror.yml' + path, Object.assign({
     headers: { authorization: 'Bearer ' + token, accept: 'application/vnd.github+json', 'user-agent': 'dashboard-cuaca-relay', 'x-github-api-version': '2022-11-28', 'content-type': 'application/json' } }, opt || {}));
   try {
     const runs = await gh('/runs?per_page=1');
-    if (runs.status === 401 || runs.status === 403 || runs.status === 404) return json({ ok: false, reason: 'token', status: runs.status });
+    if (runs.status === 401 || runs.status === 403 || runs.status === 404) return { ok: false, reason: 'token', status: runs.status };
     const last = runs.ok ? ((await runs.json()).workflow_runs || [])[0] : null;
     const t = last ? Date.parse(last.created_at) : 0;
-    if (last && (last.status !== 'completed' || now - t < MIRROR_GAP)) { lastPoke = Math.max(lastPoke, t); return json({ ok: true, skipped: last.status !== 'completed' ? 'running' : 'recent', last: last.created_at }); }
+    if (last && (last.status !== 'completed' || now - t < MIRROR_GAP)) { lastPoke[repo] = Math.max(lastPoke[repo] || 0, t); return { ok: true, skipped: last.status !== 'completed' ? 'running' : 'recent', last: last.created_at }; }
     const r = await gh('/dispatches', { method: 'POST', body: JSON.stringify({ ref: 'main' }) });
-    if (r.status !== 204) return json({ ok: false, reason: 'github', status: r.status });
-    lastPoke = now;
-    return json({ ok: true, started: new Date(now).toISOString() });
-  } catch (e) { return json({ ok: false, reason: 'github', error: String(e && e.message || e) }); }
+    if (r.status !== 204) return { ok: false, reason: 'github', status: r.status };
+    lastPoke[repo] = now;
+    return { ok: true, started: new Date(now).toISOString() };
+  } catch (e) { return { ok: false, reason: 'github', error: String(e && e.message || e) }; }
 }
 
 /* AIS (relay v5): listen to aisstream.io for the asked vessels / area, then answer what was heard */
@@ -286,5 +302,9 @@ async function handle(request, env, ctx) {
   return new Response(res.body, { status: res.status, headers: out });
 }
 
-export default { fetch: (request, env, ctx) => handle(request, env, ctx) };
-export { handle, rewriteText, targetFromPath, relayPath, allowed, stripAds, adHost, ais, VERSION };
+/* relay v6: Cron Trigger (Cloudflare › the Worker › Settings › Triggers, e.g. every hour) = run the GitHub mirrors */
+export default {
+  fetch: (request, env, ctx) => handle(request, env, ctx),
+  scheduled: (event, env, ctx) => { const p = pokeAll(env, Date.now()); if (ctx && ctx.waitUntil) ctx.waitUntil(p); return p; }
+};
+export { handle, rewriteText, targetFromPath, relayPath, allowed, stripAds, adHost, ais, pokeAll, mirrorRepos, VERSION };

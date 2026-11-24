@@ -45,6 +45,52 @@ if (E['monsoon-eye']) test.describe('Monsoon EYE', () => {
     }
     expect(errors).toEqual([]);
   });
+  test('1.1.4: Water Level page shows the GitHub copy at once while the relay reads live; Info Banjir = app card + "Laman asal"; data age colours; MET land warning level & end; dead gauges hidden', async ({ page }) => {
+    const now = Date.now(), iso = t => new Date(t).toISOString().slice(0, 19);
+    const pad = n => String(n).padStart(2, '0'), myt = t => { const d = new Date(t + 8 * 3600000); return pad(d.getUTCDate()) + '/' + pad(d.getUTCMonth() + 1) + '/' + d.getUTCFullYear() + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()); };
+    let series = 0;
+    /* the relay: JPS 5-minute series, slow (2 s each); everything else fails (the dashboard then uses the GitHub copy) */
+    await page.route(/relay\.test\/k3y-me-114\//, async r => {
+      const u = r.request().url();
+      if (/\/mirror$/.test(u)) return r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"ok":false,"reason":"no-token"}' });
+      if (/searchresultwaterleveldtlead/.test(u)) {
+        series++; await new Promise(f => setTimeout(f, 2000));
+        const v = []; for (let t = now - 3 * 3600000; t <= now; t += 900000) v.push({ dt: myt(t), clean: '10.5' });
+        return r.fulfill({ status: 200, contentType: 'text/html', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ info: { name: 'x', count: v.length }, values: v }) });
+      }
+      if (/searchresultrainfall/.test(u)) { await new Promise(f => setTimeout(f, 2000)); return r.fulfill({ status: 200, contentType: 'text/html', headers: { 'access-control-allow-origin': '*' }, body: '{"count":0},]}No result' }); }
+      return r.fulfill({ status: 502, body: 'no' });
+    });
+    /* MET: continuous rain warning for the whole state, as on 24 Nov 2026 */
+    const warnings = () => [{
+      warning_issue: { issued: iso(now - 3 * 3600000), title_bm: 'Amaran Hujan Berterusan', title_en: 'Continuous Rain Warning' }, valid_from: iso(now - 6 * 3600000), valid_to: iso(now + 3 * 86400000),
+      heading_en: 'CONTINUOUS RAIN WARNING (ALERT)', heading_bm: 'AMARAN HUJAN BERTERUSAN (WASPADA)',
+      text_en: 'Continuous rain is expected to occur over the states of Kelantan (Tumpat) • Terengganu until Friday.', text_bm: 'Hujan berterusan dijangka berlaku di negeri Kelantan (Tumpat) • Terengganu sehingga Jumaat.' }];
+    await page.addInitScript(() => { if (!sessionStorage.getItem('r')) { sessionStorage.setItem('r', '1'); localStorage.setItem('me_settings', JSON.stringify({ relayUrl: 'https://relay.test', relayKey: 'k3y-me-114' })); } });
+    const errors = await open(page, 'me', { warnings, jps: j => { j.waterAt = new Date(now - 5 * 3600000).toISOString(); j.rainAt = new Date(now - 45 * 60000).toISOString(); } });
+    /* data age: 5 hours = red, 45 min = amber */
+    await expect(page.locator('#waterSub')).toHaveClass(/age-bad/);
+    await expect(page.locator('#rainStSub')).toHaveClass(/age-warn/);
+    /* MET land warning: level and until when */
+    await expect(page.locator('#dashTiles')).toContainText(/Waspada.*hingga|Alert.*until/);
+    await expect(page.locator('#dashHero')).not.toContainText(/model mungkin kurang anggar|can be short of heavy monsoon rain/);   /* the models agree (108 mm) */
+    await page.evaluate(() => { MC.state.risk.rain = 5; MC.EXT.dash(); });
+    await expect(page.locator('#dashHero')).toContainText(/model mungkin kurang anggar|can be short of heavy monsoon rain/);       /* MET warns, models see 5 mm */
+    /* Water Level: the GitHub copy shows at once; the live readings come in afterwards */
+    await page.click('.rbtn[data-site-go="waterlevel"]');
+    const km = page.frameLocator('#siteHost iframe');
+    await expect(km.locator('.km-cnt').first()).toBeVisible({ timeout: 4000 });
+    await expect(km.locator('#kmLive')).toBeVisible();
+    await expect(km.locator('#kmLive')).toHaveCount(0, { timeout: 30000 });
+    await expect(km.locator('.km-head')).toContainText(/Langsung \(relay\)|Live \(relay\)/);
+    expect(series).toBeGreaterThan(3);
+    /* Info Banjir Terengganu (answers only from Malaysia): the app's own card, with the original site one tap away */
+    await page.click('.rbtn[data-view="dashboard"]');
+    await page.evaluate(() => MC.Sites.show('infobanjir', true));
+    await expect(page.locator('.toast.orig a')).toHaveAttribute('href', /infobanjir\.terengganu\.gov\.my/);
+    await expect(page.locator('#view-dashboard')).toBeVisible();
+    expect(errors).toEqual([]);
+  });
   test('add a district: wrong links are caught, the district becomes a profile', async ({ page }) => {
     const errors = await open(page, 'me');
     await page.route(/api\.data\.gov\.my\/weather\/forecast\?contains=Ds/, r => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify([{ location: { location_id: 'Ds065', location_name: 'Kemaman' } }]) }));

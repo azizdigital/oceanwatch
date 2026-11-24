@@ -306,6 +306,9 @@ details.old summary { cursor: pointer; font-size: 12px; color: var(--ink-3); pad
 .toasts { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 95; max-width: min(380px, calc(100vw - 32px)); }
 .toast { background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 11px; font-size: 13px; box-shadow: var(--shadow); animation: tin .2s ease; line-height: 1.4; }
 .toast b { display: block; }
+.age-ok::before, .age-warn::before, .age-bad::before { content: "●"; margin-right: 4px; }
+.age-ok::before { color: var(--st-normal); } .age-warn { color: var(--st-alert); } .age-warn::before { color: var(--st-alert); } .age-bad { color: var(--st-danger); font-weight: 600; } .age-bad::before { color: var(--st-danger); }
+.toast.orig { display: flex; align-items: center; gap: 10px; } .toast.orig b { flex: 1; } .toast.orig .btn { flex: none; color: var(--ink); background: var(--bg); text-decoration: none; }
 .toast.critical { background: var(--st-danger); color: #fff; } .toast.warning { background: var(--st-warning); color: #fff; }
 .toast.mute { pointer-events: auto; } .toast.mute .row { display: flex; gap: 8px; margin-top: 8px; } .toast.mute .btn { background: rgba(255,255,255,.18); color: #fff; border-color: rgba(255,255,255,.4); } .toast.mute .btn.pri { background: #fff; color: #9a3412; }
 @keyframes tin { from { transform: translateY(8px); opacity: 0; } }

@@ -56,6 +56,14 @@
     $('toasts').appendChild(t);
     setTimeout(function () { t.remove(); }, ms || 5000);
   }
+  /* a note with a real link to the original site (a link the user taps is never blocked as a pop-up) */
+  function origNote(title, url) {
+    var t = document.createElement('div');
+    t.className = 'toast orig';
+    t.innerHTML = '<b>' + esc(title) + '</b><a class="btn sm" href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(L('Laman asal ↗')) + '</a>';
+    $('toasts').appendChild(t);
+    setTimeout(function () { t.remove(); }, 9000);
+  }
   function fetchT(url, ms, opts) {
     var ac = new AbortController(), t = setTimeout(function () { ac.abort(); }, ms || 15000);
     return fetch(url, Object.assign({ signal: ac.signal, cache: 'no-store' }, opts || {})).finally(function () { clearTimeout(t); });
@@ -418,18 +426,15 @@
         var alt = C.altFor(site, state.settings);
         /* Monsoon EYE / OceanWATCH: a site tapped in the list opens the real site in a new tab (it cannot be shown inside the app
            without the relay); the app's own card (stand-in) only when the new tab was blocked */
-        if (alt && alt.kind === 'view' && tapped && C.ED) {
-          var nw = null;
-          try { nw = window.open(siteUrl(site), '_blank'); } catch (e) { nw = null; }
-          if (nw) { try { nw.opener = null; } catch (e2) { /* */ } toast(L('Dibuka di tab baru'), site.name); return; }
-        }
+        /* 1.1.4: back to the stand-in card (as in Dashboard Cuaca); the real site is one tap away ("Laman asal ↗") */
         if (alt && alt.kind === 'view') {
           /* e.g. Met Malaysia: the app's own MET forecast & warnings (official MET data) */
           show(alt.view);
           var card = $(alt.anchor);
           if (!card || !card.offsetParent) card = $('cardWarn');
           if (card) setTimeout(function () { card.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' }); card.classList.add('flash'); setTimeout(function () { card.classList.remove('flash'); }, 1600); }, 60);
-          toast(L('Laman ganti: ') + L(alt.title), '');
+          if (C.ED) origNote(L('Laman ganti: ') + L(alt.title), siteUrl(site));
+          else toast(L('Laman ganti: ') + L(alt.title), '');
           return;
         }
         if (!alt && tapped) {
@@ -1494,8 +1499,12 @@
     if (J.waterUrl) $('waterLink').href = J.waterUrl;
     if (J.rainUrl) $('rainLink').href = J.rainUrl;
     var how = J.live ? L('terus melalui relay ') : L('mirror GitHub ');
+    /* 1.1.4: coloured by age - green up to 30 min, amber up to 3 hours, red after (GitHub runs its 15-minute copy late, sometimes hours) */
+    var ageCls = function (t) { var m = t ? (Date.now() - t) / 60000 : 1e9; return m <= 30 ? 'age-ok' : m <= 180 ? 'age-warn' : 'age-bad'; };
     $('waterSub').textContent = 'JPS Public Infobanjir · ' + how + (J.waterAt ? C.timeAgo(J.waterAt) : '');
     $('rainStSub').textContent = 'JPS Public Infobanjir · ' + how + (J.rainAt ? C.timeAgo(J.rainAt) : '');
+    $('waterSub').className = ($('waterSub').className.replace(/\s*age-\w+/g, '') + ' ' + ageCls(J.waterAt)).trim();
+    $('rainStSub').className = ($('rainStSub').className.replace(/\s*age-\w+/g, '') + ' ' + ageCls(J.rainAt)).trim();
     var mine = function (r) { return jpsOpen.all || !st.waterDistrict || String(r.district || '').toLowerCase().replace(/[^a-z]/g, '') === String(st.waterDistrict).toLowerCase().replace(/[^a-z]/g, ''); };
     var d8 = function (iso, sec) { return iso ? iso.slice(8, 10) + '/' + iso.slice(5, 7) + '/' + iso.slice(0, 4) + ' ' + iso.slice(11, sec ? 19 : 16) : '-'; };
     var n2 = function (v) { return v === null || v === undefined ? '-' : (+v).toFixed(2); }, n1 = function (v) { return v === null || v === undefined ? '-' : (+v).toFixed(1); };

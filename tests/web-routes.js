@@ -19,7 +19,7 @@ async function sources(page, opts = {}) {
   await page.route(/^https:\/\/marine-api\.open-meteo\.com\//, r => off(r, () => json(r, F.shiftOpenMeteo('om-marine.json', now))));
   await page.route(/^https:\/\/ensemble-api\.open-meteo\.com\//, r => off(r, () => json(r, F.shiftOpenMeteo('om-ensemble-gfs.json', now))));
   await page.route(/^https:\/\/flood-api\.open-meteo\.com\//, r => { const g = F.glofas(r.request().url(), now); if (g) return json(r, g); return json(r, F.shiftOpenMeteo('om-flood.json', now - 7 * 86400000)); });
-  await page.route(/^https:\/\/api\.data\.gov\.my\/weather\/warning/, r => json(r, F.warnings(now)));
+  await page.route(/^https:\/\/api\.data\.gov\.my\/weather\/warning/, r => json(r, opts.warnings ? opts.warnings(now) : F.warnings(now)));
   await page.route(/^https:\/\/api\.data\.gov\.my\/weather\/forecast/, r => json(r, F.metForecast(now).map(x => Object.assign(x, { location: { location_id: 'Ds065', location_name: 'Kemaman' } }))));
   await page.route(/^https:\/\/api\.data\.gov\.my\/flood-warning/, r => json(r, []));
   const K = F.kemaman(now);

@@ -108,6 +108,10 @@
         t: tr && tr.rising ? ', ' + L('naik') : tr && tr.rate < -0.01 ? ', ' + L('turun') : '' }) + (td !== null && st.status !== 'danger' ? ' · ' + L('{d} m ke Bahaya', { d: f(Math.max(0, td), 2) }) : '') + '.');
     }
     if (r.rain !== null && r.rain !== undefined) bits.push(L('Hujan {m} mm dijangka dalam 24 jam', { m: f(r.rain, 0) }) + (r.by && r.by.length > 1 ? ' (' + L('{h} daripada {n} model ≥ 30 mm', { h: r.heavy, n: r.by.length }) + ')' : '') + '.');
+    /* 1.1.4: MET warns of rain but the 5 models see little - say so, the models can be short of heavy monsoon rain */
+    var rainW = ((snap.met || {}).warnings || []).filter(function (w) { return /hujan|rain|banjir|flood/i.test([w.title_bm, w.title_en, w.heading_bm, w.heading_en].join(' ')); })[0];
+    if (rainW && r.rain !== null && r.rain !== undefined && r.rain < 20)
+      bits.push(L('MET: {w}{d}, tapi model hanya {m} mm — model mungkin kurang anggar hujan monsun; pantau paras sungai.', { w: '<b>' + esc(A().metTitle(rainW)) + '</b>', d: rainW.to ? ' ' + L('hingga {d}', { d: C.fmtDate(rainW.to) }) : '', m: f(r.rain, 0) }));
     bits.push(loud.length ? '<b>' + esc(loud[0].title) + '</b>' + (loud.length > 1 ? ' (+' + (loud.length - 1) + ')' : '') + '.' : L('Tiada amaran awal banjir buat masa ini.'));
     var tide = nextHighTide(snap, now), metW = r.metW || [];
     var facts = [

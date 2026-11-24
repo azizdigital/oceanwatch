@@ -875,6 +875,12 @@
         (windy.from || windy.to ? ' ' + metRange(windy.from, windy.to) : ''));
     }
     if (!compact && sm.mine.length) parts.push(sm.mine.map(function (x) { return x.area; }).join(', '));
+    /* Monsoon EYE 1.1.4: a land warning says its level (from the heading, e.g. "(WASPADA)") and until when */
+    if (ED && ED.kind === 'land' && !windy) {
+      var lvl = (/\(([^)]+)\)\s*$/.exec(String(en ? (wn.heading_en || wn.heading_bm || '') : (wn.heading_bm || wn.heading_en || ''))) || [])[1];
+      if (lvl) parts.unshift(lvl.charAt(0).toUpperCase() + lvl.slice(1).toLowerCase());
+      if (!sm.thunderUntil && wn.to) parts.push(L('hingga {d}', { d: fmtDate(wn.to) }));
+    }
     if (!parts.length) return '';
     var s = parts.join(' · ');
     return s.charAt(0).toUpperCase() + s.slice(1);
@@ -1075,6 +1081,10 @@
     else stations = mergeStations(ib || prevSt.filter(function (x) { return x.source !== 'data.gov.my'; }), gov || prevSt.filter(function (x) { return x.source === 'data.gov.my'; }));
     var staleMs = s.staleHours * 3600000;
     stations.forEach(function (st) { st.stale = !st.updated || now - st.updated > staleMs; });
+    /* 1.1.4: a gauge silent for more than 3 days is gone (data.gov.my stopped in Feb 2024 and still sends its last readings, with
+       muddled thresholds); it is not shown and gets no status. Kept only when every gauge is that old (better than an empty card). */
+    var alive = stations.filter(function (st) { return st.updated && now - st.updated <= DEAD_MS; });
+    if (alive.length) stations = alive;
     snap.stations = stations;
     snap.rainStations = off.ibRain ? [] : (ibr || prev.rainStations || []);
     snap.rainStations.forEach(function (st) { st.stale = !st.updated || now - st.updated > staleMs; });
@@ -1187,6 +1197,7 @@
   function lg() { return I18N && I18N.lang() === 'ms' ? 'ms' : 'en'; }
   function fmtDate(ms) { if (!ms) return '-'; var p = myt(ms); return DAYS[lg()][p.wd] + ' ' + p.d + ' ' + MONTHS[lg()][p.mo - 1]; }
   function fmtDateTime(ms) { if (!ms) return '-'; var p = myt(ms); return p.d + ' ' + MONTHS[lg()][p.mo - 1] + ' ' + p.y + ', ' + fmtTime(ms); }
+  var DEAD_MS = 3 * 86400000;
   function timeAgo(ms, now) {
     if (!ms) return '-';
     var s = Math.round(((now || Date.now()) - ms) / 1000);
