@@ -403,6 +403,9 @@ html[data-edition="me"] #cardWater { align-self: stretch; }
 .vs-list.empty { padding: 14px; color: var(--ink-3); font-size: 13px; }
 .vs-lh2 { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 12px; border-bottom: 1px solid var(--line); }
 .vs-lh2 b small { color: var(--ink-3); font-weight: 600; } .vs-lh2 span { font-size: 12px; color: var(--ink-3); }
+.vs-auto { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--ink-3); }
+.vs-auto label { display: inline-flex; align-items: center; gap: 5px; color: var(--ink-2); font-weight: 600; cursor: pointer; } .vs-auto span { flex: 1; } .vs-auto .bad { color: var(--st-danger); }
+.vs-ro { padding-left: 42px; font-size: 11px; color: var(--ink-3); line-height: 1.35; }
 .vs-list ol { list-style: none; margin: 0; padding: 4px; overflow-y: auto; display: grid; gap: 2px; }
 .vs-row { display: grid; gap: 4px; padding: 8px; border-radius: 9px; } .vs-row:hover { background: color-mix(in srgb, #22d3ee 5%, transparent); }
 .vs-rn { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 8px; border: 0; background: none; padding: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }

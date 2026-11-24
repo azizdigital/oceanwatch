@@ -401,6 +401,51 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     expect(g.prem.pos.lat).toBeCloseTo(5.304, 3); expect(g.prem.cog).toBe(45); expect(g.prem.sog).toBe(9.8);
     expect(errors).toEqual([]);
   });
+  test('Open Waters (1.3.2): every 15 min, heard <6 h = where heard, older = estimate along the route to its AIS destination, stale ETA explained', async ({ page }) => {
+    let asked = [];
+    const now = Date.now(), H = 3600000, iso = t => new Date(t).toISOString().slice(0, 19) + 'Z';
+    const eta = t => { const d = new Date(t); return String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0') + ' ' + String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); };
+    const feat = (mmsi, name, lat, lon, seen, p) => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [lon, lat] }, properties: Object.assign({ mmsi, name, seen: iso(seen), source: 'aishub' }, p) });
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem('seedow')) return;
+      sessionStorage.setItem('seedow', '1');
+      localStorage.setItem('ow_vessels', JSON.stringify({ list: [
+        { id: 'v533049100', name: 'SK Patron', mmsi: '533049100', type: 'psv' }, { id: 'v533000486', name: 'JM Perkasa 2', mmsi: '533000486', type: 'crew' },
+        { id: 'v525007132', name: 'Limin Handler', mmsi: '525007132', type: 'ahts' }, { id: 'v533999999', name: 'No AIS', mmsi: '533999999', type: 'tug' }], sel: 'area', src: 'chart' }));
+    });
+    const errors = await open(page, 'ow');
+    await page.route(/^https:\/\/ais\.openwaters\.io\/v1\/vessels\?mmsi=/, r => { asked.push(r.request().url()); r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ type: 'FeatureCollection', features: [
+      feat(533049100, 'SK PATRON', 4.229, 103.511, now - 13 * H, { sog: 6.4, cog: 97.8, destination: 'IRONG BARAT', eta: eta(now + 12 * H) }),
+      feat(533000486, 'JM PERKASA 2', 5.40, 104.60, now - 2 * H, { sog: 9.5, cog: 40, destination: 'IRONG BARAT', eta: eta(now + 1 * H) }),
+      feat(525007132, 'LIMIN HANDLER', 1.225, 104.164, now - 5 * 24 * H, { sog: 2.4, cog: 10, destination: 'RSK', eta: eta(now - 4 * 24 * H) })] }) }); });
+    await page.click('.rbtn[data-view="vessels"]');
+    await expect.poll(() => asked.length).toBe(1);
+    expect(asked[0]).toContain('mmsi=533049100,533000486,525007132,533999999');
+    /* heard 2 h ago: on the chart where it was heard, carried forward by its speed and course */
+    await expect(page.locator('.vs-row:has([data-vs="v533000486"]) .vs-rl')).toContainText('Open Waters');
+    /* heard 13 h ago near Kemaman, going to Irong Barat, ETA in 12 h: 52 % along the route */
+    await expect(page.locator('.vs-row:has([data-vs="v533049100"]) .vs-rl')).toContainText('Open Waters estimate');
+    await expect(page.locator('.vs-row:has([data-vs="v533049100"]) .vs-ro')).toContainText('52%');
+    const rec = await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).reports);
+    expect(rec.v533049100[0].src).toBe('owe'); expect(rec.v533049100[0].to.lat).toBeCloseTo(5.5501, 3);
+    expect(rec.v533000486[0].src).toBe('ow'); expect(rec.v533000486[0].lat).toBeCloseTo(5.40, 3);
+    expect(rec.v525007132).toBeUndefined();
+    /* stale ETA and unknown vessels are explained, not guessed */
+    await expect(page.locator('.vs-row:has([data-vs="v525007132"]) .vs-ro')).toContainText(/destination RSK unknown|stale ETA/);
+    await expect(page.locator('.vs-row:has([data-vs="v533999999"]) .vs-ro')).toContainText('no data');
+    await expect(page.locator('#vsMap .ck-vl')).toHaveCount(2);
+    await expect(page.locator('.vs-auto')).toContainText('every 15 min');
+    await expect(page.locator('.vs-note')).toContainText('Open Waters AIS (openwaters.io)');
+    /* a fetch now keeps a single Open Waters estimate per vessel; switching off stops it */
+    await page.click('#vsOwNow');
+    await expect.poll(() => asked.length).toBe(2);
+    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).reports.v533049100.filter(r => r.src === 'owe').length)).toBe(1);
+    await page.click('#vsOw');
+    await expect(page.locator('.vs-auto')).toContainText('off');
+    await expect(page.locator('.vs-ro')).toHaveCount(0);
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).ow)).toBe(false);
+    expect(errors).toEqual([]);
+  });
   test('AIS: nothing heard or no relay = nothing shown, no error', async ({ page }) => {
     await page.route(/relay\.test\/k3y-ais-131\/ais\?/, r => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ ok: false, reason: 'no-key' }) }));
     await page.addInitScript(() => { localStorage.setItem('ow_settings', JSON.stringify({ relayUrl: 'https://relay.test', relayKey: 'k3y-ais-131' })); });

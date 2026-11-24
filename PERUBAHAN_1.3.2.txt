@@ -12,3 +12,13 @@ Vessels page, tidier with many vessels
   IMO) goes straight onto the chart - no form. An unknown MMSI or a page without MMSI is explained.
 - MarineRadar pages that only say "was last reported ... at <lat>, <lon>": speed and course are read from the page's info box
   ("5.3 kn / SPEED", "45.0° / COURSE").
+
+Automatic positions from Open Waters AIS (openwaters.io - free for personal use, no key; data from AISHub)
+- Every 15 minutes while the Vessels page is open (and on ↻), one request for all your vessels' MMSI.
+- Heard in the last 6 hours: put where it was heard, then carried forward by its speed and course.
+- Heard longer ago but sailing to a known place (AIS destination + ETA): estimated along the straight line from where it
+  was last heard: share = (now - last heard) / (ETA - last heard). Marked "Open Waters estimate".
+- Unknown destination, stale ETA (more than a day past) or no data: nothing guessed; the list says why.
+- One Open Waters estimate is kept per vessel; your own reports stay. "Auto Open Waters" can be switched off.
+- Checked 24 Nov 2026: in the last 90 days Open Waters heard none of these vessels within 20 nm of Irong Barat
+  (shore receivers near Kemaman only), so offshore positions are estimates; a MarineRadar paste is more exact when fresh.

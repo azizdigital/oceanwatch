@@ -542,12 +542,17 @@
       if (!c.list.length) return '<aside class="vs-list empty"><p>' + T('Belum ada kapal. Tekan ⚙ Tetapan kapal untuk tambah (nama + MMSI).', 'No vessels yet. Press ⚙ Vessel settings to add them (name + MMSI).') + '</p></aside>';
       var rows = c.list.map(function (x) { var n = Reports.now(x, now); return { v: x, n: n, d: n ? n.eta.nm + (n.old ? 1000 : 0) : 1e9 }; }).sort(function (a, b) { return a.d - b.d; });
       var on = rows.filter(function (r) { return r.n; }).length;
-      return '<aside class="vs-list" aria-label="' + T('Kapal saya', 'My vessels') + '"><div class="vs-lh2"><b>' + T('Kapal saya', 'My vessels') + ' <small>' + c.list.length + '</small></b><span>' + on + T(' di Carta', ' on the chart') + '</span></div><ol>' +
+      var auto = '<div class="vs-auto"><label><input type="checkbox" id="vsOw"' + (Ow.on() ? ' checked' : '') + '> ' + T('Auto Open Waters', 'Auto Open Waters') + '</label><span>' +
+        (!Ow.on() ? T('mati', 'off') : Ow.busy ? T('sedang ambil…', 'fetching…') : Ow.err ? '<b class="bad">' + T('gagal', 'failed') + '</b>' : Ow.done ? T('setiap 15 min · ', 'every 15 min · ') + hh(Ow.done) : '') + '</span>' +
+        (Ow.on() ? '<button type="button" class="btn xs" id="vsOwNow" aria-label="' + T('Ambil sekarang', 'Fetch now') + '">↻</button>' : '') + '</div>';
+      return '<aside class="vs-list" aria-label="' + T('Kapal saya', 'My vessels') + '"><div class="vs-lh2"><b>' + T('Kapal saya', 'My vessels') + ' <small>' + c.list.length + '</small></b><span>' + on + T(' di Carta', ' on the chart') + '</span></div>' + auto + '<ol>' +
         rows.map(function (r) {
-          var x = r.v, ty = typeOf(x.type), src = r.n && r.n.rep.src === 'mr' ? ' · MarineRadar' : r.n && r.n.rep.src === 'vf' ? T(' · anggaran VF', ' · VF estimate') : '';
+          var x = r.v, ty = typeOf(x.type), rs = r.n && r.n.rep.src;
+          var src = rs === 'mr' ? ' · MarineRadar' : rs === 'vf' ? T(' · anggaran VF', ' · VF estimate') : rs === 'ow' ? ' · Open Waters' : rs === 'owe' ? T(' · anggaran Open Waters', ' · Open Waters estimate') : '';
           return '<li class="vs-row' + (r.n ? r.n.old ? ' old' : '' : ' none') + '"><button type="button" class="vs-rn" data-vs="' + esc(x.id) + '">' + vesselIcon(x.type, 'ic ic-v xs t-' + x.type) +
             '<span class="vs-rt"><b>' + esc(x.name || x.mmsi || x.imo) + '</b><small>' + esc(EN() ? ty[3] : ty[2]) + '</small></span>' + Vessels.jobMini(x) + '</button>' +
             '<div class="vs-rl">' + (r.n ? esc(Reports.line(x, now)) + '<small>' + esc(src) + '</small>' : T('belum di Carta', 'not on the chart yet')) + '</div>' +
+            (Ow.on() && Ow.info[x.id] ? '<div class="vs-ro">Open Waters: ' + esc(Ow.info[x.id]) + '</div>' : '') +
             '<div class="vs-ra">' + (x.mmsi ? '<button type="button" class="btn xs" data-rp-mr="' + esc(x.id) + '">MarineRadar ↗</button>' : '') +
             '<button type="button" class="btn xs" data-rp-new="' + esc(x.id) + '">' + T('Lapor', 'Report') + '</button></div></li>';
         }).join('') + '</ol></aside>';
@@ -573,6 +578,7 @@
       if (rp) src = 'chart';
       var now = Date.now();
       if (Reports.prune(now)) Vessels.save();
+      Ow.load();
       /* the top: three small tabs (area, all my vessels, the vessel open now) + settings; the vessels themselves are a list beside the chart */
       var pill = function (id, on, icon, label, extra) { return '<button type="button" class="vs-pill' + (on ? ' on' : '') + '" data-vs="' + esc(id) + '">' + icon + '<span>' + label + '</span>' + (extra || '') + '</button>'; };
       var fleet = pill('area', area, rigIcon('ic ic-rig xs'), T('Kawasan ', 'Around ') + esc(P.name)) +
@@ -600,7 +606,7 @@
       else body = (c.list.length ? Vessels.pasteBar() : '') + '<div class="vs-split area"><div class="vs-map' + (src === 'chart' ? ' chart' : '') + '" id="vsMap"></div>' + Vessels.listPanel(now) + '</div>';
       host.innerHTML = '<div class="vs-tabs">' + fleet + '</div><section class="vs-stage card">' + bar + body +
         '<p class="muted vs-note">' + (src === 'chart' ? T('Carta OceanWATCH: kapal di carta ini ialah kedudukan yang anda lapor (bukan AIS langsung); garis putus-putus = anggaran dari laju & haluan, paling lama 6 jam. Kedudukan AIS langsung ada di VesselFinder / MarineTraffic.',
-          'OceanWATCH chart: vessels here are the positions you reported (not live AIS); the dashed line is the estimate from speed & course, at most 6 h. Live AIS positions are on VesselFinder / MarineTraffic.')
+          'OceanWATCH chart: vessels here are the positions you reported (not live AIS); the dashed line is the estimate from speed & course, at most 6 h. Live AIS positions are on VesselFinder / MarineTraffic.') + (Ow.on() ? ' ' + T('Data AIS auto: Open Waters AIS (openwaters.io) · AISHub.', 'Auto AIS data: Open Waters AIS (openwaters.io) · AISHub.') : '')
           : T('Peta percuma VesselFinder / MarineTraffic (AIS). Kapal di luar liputan AIS darat mungkin tunjuk kedudukan lama.', 'Free VesselFinder / MarineTraffic maps (AIS). A vessel out of shore AIS range may show an old position.')) + '</p></section>';
       if (all && !rp) c.list.forEach(function (x) { Vessels.map(x, src, document.querySelector('[data-vs-map="' + x.id + '"]'), 360); });
       else if (src === 'chart') { var cb = $('vsMap'); if (!Chart.cx && !Chart.cy) Chart.span = Math.max(Chart.span, Chart.fitSpan(cb, 4)); Chart.draw(cb); }   /* every reported vessel in view */
@@ -617,7 +623,7 @@
         (n.est ? row(T('Anggaran sekarang', 'Estimated now'), n.eta.nm.toFixed(1) + ' nm ' + T('dari platform', 'from the platform')) : '') +
         row('ETA', n.old ? T('- (laporan lama)', '- (old report)') : n.eta.here ? T('di platform', 'at the platform') : n.eta.toward === false ? T('tidak menghala ke platform', 'not heading to the platform') :
           '<b>' + dur(n.eta.hours) + '</b><br><small>' + n.kn + ' kn' + (n.knFrom === 'type' ? T(' (laju biasa)', ' (usual speed)') : '') + '</small>') +
-        (n.rep.src === 'vf' ? row(T('Sumber', 'Source'), T('Anggaran ikut laluan (VesselFinder)', 'Route estimate (VesselFinder)')) : n.rep.src === 'mr' ? row(T('Sumber', 'Source'), 'MarineRadar (AIS)') : n.rep.src === 'vfp' ? row(T('Sumber', 'Source'), 'VesselFinder (AIS)') : '') +
+        (n.rep.src === 'vf' ? row(T('Sumber', 'Source'), T('Anggaran ikut laluan (VesselFinder)', 'Route estimate (VesselFinder)')) : n.rep.src === 'mr' ? row(T('Sumber', 'Source'), 'MarineRadar (AIS)') : n.rep.src === 'vfp' ? row(T('Sumber', 'Source'), 'VesselFinder (AIS)') : n.rep.src === 'ow' ? row(T('Sumber', 'Source'), 'Open Waters AIS (AISHub)') : n.rep.src === 'owe' ? row(T('Sumber', 'Source'), T('Anggaran ikut laluan (Open Waters)', 'Route estimate (Open Waters)')) : '') +
         (n.rep.note ? row(T('Nota', 'Note'), esc(n.rep.note)) : '') + '</dl>' +
         (hist.length > 1 ? '<details class="vs-hist"><summary>' + T('Sejarah ', 'History ') + '(' + hist.length + ')</summary><ol>' + hist.map(function (r) {
           var a = Geo.inv(P, r);
@@ -765,6 +771,69 @@
         from: a, dest: b, note: T('Anggaran VF: ', 'VF estimate: ') + a.name + ' ATD ' + lt(o.atd) + ' → ' + b.name + ' ETA ' + lt(o.eta) + ' (' + Math.round(share * 100) + '%)' };
     }
   };
+
+  /* Open Waters AIS (openwaters.io: free for personal use, no key; data from AISHub and open networks). Every 15 minutes:
+     a vessel heard in the last 6 hours goes on the chart where it was heard; one heard longer ago that is sailing to a known
+     place (its AIS destination + ETA) is estimated along the straight line from where it was last heard:
+       share = (now - last heard) / (ETA - last heard).
+     A stale ETA (more than a day past) or an unknown destination gives no estimate - the list says why. */
+  var Ow = {
+    EVERY: 15 * 60000, at: 0, busy: false, err: '', info: {},
+    on: function () { return Vessels.cfg.ow !== false; },
+    /* AIS ETA "11-24 14:00" (UTC, no year) -> ms, the year nearest to when it was heard */
+    eta: function (s, near) {
+      var m = String(s || '').match(/^(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2})/);
+      if (!m || +m[1] < 1 || +m[1] > 12 || +m[2] < 1) return null;
+      var y = new Date(near).getUTCFullYear(), best = null;
+      [y - 1, y, y + 1].forEach(function (yy) { var t = Date.UTC(yy, +m[1] - 1, +m[2], +m[3], +m[4]); if (best === null || Math.abs(t - near) < Math.abs(best - near)) best = t; });
+      return best;
+    },
+    /* one vessel's Open Waters record -> a report to keep, or a reason */
+    judge: function (v, f, now) {
+      var p = f.properties || {}, c = f.geometry && f.geometry.coordinates, seen = Date.parse(p.seen || '');
+      if (!c || !isFinite(c[0]) || !isFinite(c[1]) || !isFinite(seen)) return { why: T('tiada kedudukan', 'no position') };
+      var at = { lat: +c[1], lon: +c[0] }, sog = num(p.sog), cog = num(p.cog), age = (now - seen) / HOUR, where = Vf.place(p.destination);
+      var heard = T('dikesan ', 'heard ') + ago(seen, now);
+      if (age <= DR_MAX) return { rep: { t: Math.min(seen, now), lat: +at.lat.toFixed(5), lon: +at.lon.toFixed(5), sog: sog !== null && sog < 102 ? sog : null, cog: cog !== null && cog < 360 ? Math.round(cog) % 360 : null, src: 'ow', note: 'Open Waters: ' + heard + (p.destination ? ' → ' + p.destination : '') }, line: heard };
+      var eta = this.eta(p.eta, seen);
+      if (!p.destination) return { why: heard + T(' · tiada destinasi', ' · no destination') };
+      if (!where) return { why: heard + ' · ' + T('destinasi ', 'destination ') + p.destination + T(' tak dikenali', ' unknown') };
+      if (!eta || eta <= seen) return { why: heard + ' · ' + T('ETA tiada / lapuk', 'no / stale ETA') };
+      if (now - eta > DAY) return { why: heard + ' · ' + T('ETA lapuk (', 'stale ETA (') + ago(eta, now) + ')' };
+      var leg = Geo.inv(at, where);
+      if (leg.nm < 2) return { why: heard + T(' · sudah di ', ' · already at ') + where.name };
+      var share = Math.max(0, Math.min(1, (now - seen) / (eta - seen))), pos = Geo.dest(at, leg.brg, leg.nm * share);
+      return { rep: { t: Math.floor(now / 60000) * 60000, lat: +pos.lat.toFixed(5), lon: +pos.lon.toFixed(5), sog: share < 1 && sog !== null && sog > 0 && sog < 102 ? sog : null, cog: share < 1 ? Math.round(leg.brg) % 360 : null,
+        src: 'owe', to: { lat: +where.lat.toFixed(5), lon: +where.lon.toFixed(5) }, note: T('Anggaran Open Waters: ', 'Open Waters estimate: ') + heard + ' → ' + where.name + ' ETA ' + hh(eta) + ' (' + Math.round(share * 100) + '%)' }, line: heard + ' · ' + Math.round(share * 100) + '%' };
+    },
+    /* ask Open Waters for all my vessels (one request), keep what it gives */
+    load: function (force) {
+      var c = Vessels.cfg, self0 = this, now = Date.now(), list = c.list.filter(function (v) { return /^\d{9}$/.test(v.mmsi || ''); });
+      if (!this.on() || this.busy || !list.length || typeof fetch !== 'function' || (!force && now - this.at < this.EVERY)) return;
+      this.busy = true; this.at = now; this.err = '';
+      fetch('https://ais.openwaters.io/v1/vessels?mmsi=' + list.slice(0, 50).map(function (v) { return v.mmsi; }).join(','), { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (j) {
+          var by = {}, t = Date.now(), all = Reports.all();
+          (j.features || []).forEach(function (f) { var m = String(f.properties && f.properties.mmsi || ''); if (m) by[m.padStart(9, '0')] = f; });
+          self0.info = {};
+          list.forEach(function (v) {
+            var f = by[v.mmsi];
+            if (!f) { self0.info[v.id] = T('tiada data', 'no data'); return; }
+            var r = self0.judge(v, f, t);
+            self0.info[v.id] = r.line || r.why;
+            if (!r.rep) return;
+            /* only one Open Waters estimate kept per vessel; a newer report of yours stays on top */
+            all[v.id] = (all[v.id] || []).filter(function (x) { return x.src !== 'owe'; });
+            Reports.add(v.id, r.rep);
+          });
+          self0.busy = false; self0.done = Date.now(); Vessels.save();
+          if (state.view === 'vessels' && !Vessels.editing && !Vessels.rep) Vessels.render();
+        })
+        .catch(function (e) { self0.busy = false; self0.err = String(e && e.message || e); if (state.view === 'vessels' && !Vessels.editing && !Vessels.rep) Vessels.render(); });
+    }
+  };
+  setInterval(function () { if (state.view === 'vessels') Ow.load(); }, 60000);
   /* the report form, beside the chart (the chart can be tapped to set the position) */
   function repDefaultWhen(now) { var d = local(now || Date.now()); return d.toISOString().slice(0, 16); }
   function repWhen(s) { var t = Date.parse(String(s || '') + ':00+08:00'); return isFinite(t) ? t : null; }
@@ -940,7 +1009,7 @@
         : '<circle class="ck-hull" cx="' + x.toFixed(2) + '" cy="' + y.toFixed(2) + '" r="' + fs(7) + '" stroke-width="' + fs(1.6) + '"/>';
       o += hull + '</g>';
       lab += '<g class="ck-vl ' + cls + '"><text x="' + (x + 16 * u).toFixed(2) + '" y="' + (y - 2 * u).toFixed(2) + '" font-size="' + fs(12.5) + '" class="n">' + esc(v.name) + '</text>' +
-        '<text x="' + (x + 16 * u).toFixed(2) + '" y="' + (y + 12 * u).toFixed(2) + '" font-size="' + fs(11) + '">' + esc(Reports.line(v, now)) + (n.rep.src === 'vf' ? T(' · anggaran VF', ' · VF estimate') : (n.rep.src === 'mr' ? ' · MarineRadar' : '') + (n.est ? T(' · anggaran', ' · estimated') : '')) + '</text></g>';
+        '<text x="' + (x + 16 * u).toFixed(2) + '" y="' + (y + 12 * u).toFixed(2) + '" font-size="' + fs(11) + '">' + esc(Reports.line(v, now)) + (n.rep.src === 'vf' ? T(' · anggaran VF', ' · VF estimate') : n.rep.src === 'owe' ? T(' · anggaran OW', ' · OW estimate') : (n.rep.src === 'mr' ? ' · MarineRadar' : n.rep.src === 'ow' ? ' · Open Waters' : '') + (n.est ? T(' · anggaran', ' · estimated') : '')) + '</text></g>';
     });
     /* vessels heard on AIS (when any): mine by name, others small */
     var mine = {};
@@ -969,6 +1038,7 @@
     if ((b = t.closest('[data-rp-mr]'))) { var mv = Vessels.cfg.list.filter(function (x) { return x.id === b.getAttribute('data-rp-mr'); })[0]; if (mv) { MC.openExternal(Vessels.fullUrl(mv, 'mr')); repOpen(mv.id); setTimeout(function () { if ($('rpVf')) $('rpVf').focus(); }, 50); } return; }
     if (t.closest('#rpCancel') || t.closest('#rpCancel2')) { Vessels.rep = null; Vessels.render(); return; }
     if (t.closest('#rpSave')) { repSave(); return; }
+    if (t.closest('#vsOwNow')) { Ow.load(true); Vessels.render(); return; }
     if (t.closest('#rpMrOpen')) { repRead(); var vm = Vessels.cfg.list.filter(function (x) { return x.id === Vessels.rep.id; })[0]; MC.openExternal(Vessels.fullUrl(vm, 'mr')); return; }
     if (t.closest('#rpVfOpen')) { repRead(); var vv = Vessels.cfg.list.filter(function (x) { return x.id === Vessels.rep.id; })[0]; MC.openExternal(Vessels.fullUrl(vv, 'vf')); return; }
     if ((b = t.closest('[data-rp-del]'))) { var sv = Vessels.sel(); if (sv) { Reports.del(sv.id, +b.getAttribute('data-rp-del')); Vessels.render(); } return; }
@@ -1001,6 +1071,7 @@
     else if (id === 'rpSog' || id === 'rpCog') { repRead(); Vessels.rep.err = ''; if ($('rpSay')) $('rpSay').innerHTML = repSay(); var bx = $('vsMap'); if (bx) Chart.draw(bx); }
   });
   document.addEventListener('change', function (e) {
+    if (e.target.id === 'vsOw') { Vessels.cfg.ow = !!e.target.checked; Vessels.save(); if (Vessels.cfg.ow) Ow.load(true); Vessels.render(); return; }
     if (e.target.id === 'rpVes' && Vessels.rep) { repRead(); var vv = Vessels.cfg.list.filter(function (x) { return x.id === Vessels.rep.id; })[0]; if ($('rpSog')) $('rpSog').placeholder = T('biasa ', 'usual ') + Reports.speedOf(vv); if ($('rpSay')) $('rpSay').innerHTML = repSay(); }
     if (e.target.id === 'vsZoom') { Vessels.cfg.zoom = +e.target.value; Vessels.save(); Vessels.render(); }
     if (e.target.id === 'vsTrack') { Vessels.cfg.track = e.target.checked; Vessels.save(); Vessels.render(); }
@@ -1178,7 +1249,7 @@
     if (state.view === 'weather') Weather.render();
     if (state.view === 'vessels' && !Vessels.editing) [].forEach.call(document.querySelectorAll('#vesselsHost .vs-it'), function () { /* job chips refresh on next open */ });
   };
-  MC.EXT.Marine = { Weather: Weather, Vessels: Vessels, periods: periods, sentence: sentence, Geo: Geo, Reports: Reports, SPEED: SPEED, dur: dur, Ais: Ais, Vf: Vf };
+  MC.EXT.Marine = { Weather: Weather, Vessels: Vessels, periods: periods, sentence: sentence, Geo: Geo, Reports: Reports, SPEED: SPEED, dur: dur, Ais: Ais, Vf: Vf, Ow: Ow };
   if (state.view === 'weather') Weather.render();
   if (state.view === 'vessels') Vessels.render();
 })();

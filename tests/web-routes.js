@@ -13,6 +13,8 @@ async function sources(page, opts = {}) {
     if ((opts.offFail || []).some(x => u.includes('models=' + x))) return json(r, { error: true, reason: 'bad model' }, 400);
     return json(r, F.offshore(u, now));
   };
+  /* Open Waters AIS (OceanWATCH 1.3.2): nothing heard unless a test says otherwise */
+  await page.route(/^https:\/\/ais\.openwaters\.io\//, r => json(r, { type: 'FeatureCollection', features: [] }));
   await page.route(/^https:\/\/api\.open-meteo\.com\//, r => off(r, () => json(r, F.forecast(now, { gust: opts.gust }))));
   await page.route(/^https:\/\/marine-api\.open-meteo\.com\//, r => off(r, () => json(r, F.shiftOpenMeteo('om-marine.json', now))));
   await page.route(/^https:\/\/ensemble-api\.open-meteo\.com\//, r => off(r, () => json(r, F.shiftOpenMeteo('om-ensemble-gfs.json', now))));
