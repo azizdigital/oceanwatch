@@ -8,7 +8,7 @@
 ## Pasang di PC (Windows)
 1. Pasang **Node.js 22 LTS** (nodejs.org) jika belum ada.
 2. Ekstrak zip, buka folder yang ada `package.json`, klik bar alamat, taip `cmd`, Enter.
-3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.3.1.exe** (pasang) dan **Sentinel OceanWATCH 1.3.1.exe** (portable).
+3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.3.2.exe** (pasang) dan **Sentinel OceanWATCH 1.3.2.exe** (portable).
 4. Buka app → **Settings › Import from Dashboard Cuaca** — profil & tetapan dibaca terus dari app PC Dashboard Cuaca.
 5. Boleh buka serentak dengan Dashboard Cuaca dan app satu lagi (port 30060, folder data `%APPDATA%\Sentinel OceanWATCH`). Pilih **Kekal di tray** dalam Tetapan supaya alert terus berbunyi bila tetingkap ditutup.
 
@@ -31,6 +31,8 @@ Semua model (6 model angin, 4 model ombak, 2 ensembel) digabung jadi satu cerita
     - **MarineRadar** (percuma) beri **kedudukan sebenar** + laju + haluan; masa laporan = sekarang − umur data ("Updated 3 hours" = 3 jam lalu), lepas tu garis anggaran bawa ke sekarang. Bertanda "MarineRadar".
     - **VesselFinder** (sandaran, tiada lat/lon percuma): app anggar di laluan lurus pelabuhan lepas → destinasi: bahagian perjalanan = (sekarang − ATD) ÷ (ETA − ATD). Bertanda "anggaran VF".
   - **AIS**: kalau relay v5 dengan kunci aisstream ada, Carta tunjuk kapal AIS yang didengar sekitar ~45 nm (kapal anda ikut nama). Tiada yang didengar = tiada apa-apa dipapar (aisstream belum ada penerima dekat Irong Barat).
+- **Senarai "Kapal saya"** (1.3.2) di tepi Carta (di bawah Carta bila iPad menegak): kapal di Carta dahulu (paling dekat dahulu), kemudian laporan lama, kemudian "belum di Carta" — setiap satu ada butang **MarineRadar ↗** (buka halaman kapal + borang lapor) dan **Lapor**. Status kerja ditunjuk satu perkataan (GO / CAUTION / NO-GO).
+- **Kotak tampal di atas Carta** (1.3.2): tampal halaman kapal MarineRadar / VesselFinder terus di situ — kapal dikenal ikut MMSI/IMO dan terus masuk Carta, tanpa borang.
 - Tekan satu kapal: **Carta / VesselFinder / MarineTraffic**, dengan panel kanan — laporan terakhir, anggaran, ETA, **Sejarah** (✕ padam satu laporan) dan butang Lapor kedudukan.
 - **Semua kapal saya**: satu peta VesselFinder setiap kapal — kapal itu sahaja, dengan trek 24 jam.
 - Kad kapal yang dipautkan ke kerja tunjuk status kerja itu sekarang.

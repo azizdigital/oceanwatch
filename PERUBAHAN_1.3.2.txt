@@ -1,0 +1,12 @@
+Sentinel OceanWATCH 1.3.2
+=========================
+Vessels page, tidier with many vessels
+- The big vessel cards on top are gone. The top now has small tabs: Around <platform>, All vessels (n), the vessel open
+  now (with its job status), and Vessel settings.
+- "My vessels" is a list beside the chart (below it on an iPad held upright): vessel icon, name, type, the job status
+  as one word (GO / CAUTION / NO-GO), and distance / ETA when it is on the chart. Vessels on the chart come first,
+  nearest first; then the old reports; then those "not on the chart yet".
+- Each vessel not on the chart yet has a "MarineRadar" button (opens its MarineRadar page and the report form for it)
+  and a "Report" button.
+- A paste box above the chart: paste a MarineRadar / VesselFinder vessel page there and the vessel (found by its MMSI /
+  IMO) goes straight onto the chart - no form. An unknown MMSI or a page without MMSI is explained.

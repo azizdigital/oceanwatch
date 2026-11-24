@@ -527,6 +527,36 @@
       /* the status first, so it stays readable when a long job name is cut to fit the card */
       return '<span class="chip s' + st + ' vs-job" title="' + esc(it.name + ': ' + word) + '"><b>' + word + '</b> · ' + esc(it.name) + '</span>';
     },
+    /* the job status as one small word (GO / CAUTION / NO-GO), for the list */
+    jobMini: function (v) {
+      if (!v.job) return '';
+      var J = MC.EXT.Jobs && MC.EXT.Jobs.get(), it = null, col = -1;
+      if (J) J.items.forEach(function (x, i) { if (x.id === v.job) { it = x; col = i; } });
+      if (!it) return '';
+      var cc = J.cells[0][col], st = cc && cc.st !== null ? cc.st : -1, word = st < 0 ? '-' : col === 0 ? ['GO', 'CAUTION', 'LIMITED', 'STAY IN LQ'][st] : ['GO', 'CAUTION', 'NO-GO'][st];
+      return '<span class="vs-st s' + st + '" title="' + esc(it.name + ': ' + word) + '">' + word + '</span>';
+    },
+    /* my vessels beside the chart: those on the chart first (nearest first), then those not on it yet */
+    listPanel: function (now) {
+      var c = Vessels.cfg;
+      if (!c.list.length) return '<aside class="vs-list empty"><p>' + T('Belum ada kapal. Tekan ⚙ Tetapan kapal untuk tambah (nama + MMSI).', 'No vessels yet. Press ⚙ Vessel settings to add them (name + MMSI).') + '</p></aside>';
+      var rows = c.list.map(function (x) { var n = Reports.now(x, now); return { v: x, n: n, d: n ? n.eta.nm + (n.old ? 1000 : 0) : 1e9 }; }).sort(function (a, b) { return a.d - b.d; });
+      var on = rows.filter(function (r) { return r.n; }).length;
+      return '<aside class="vs-list" aria-label="' + T('Kapal saya', 'My vessels') + '"><div class="vs-lh2"><b>' + T('Kapal saya', 'My vessels') + ' <small>' + c.list.length + '</small></b><span>' + on + T(' di Carta', ' on the chart') + '</span></div><ol>' +
+        rows.map(function (r) {
+          var x = r.v, ty = typeOf(x.type), src = r.n && r.n.rep.src === 'mr' ? ' · MarineRadar' : r.n && r.n.rep.src === 'vf' ? T(' · anggaran VF', ' · VF estimate') : '';
+          return '<li class="vs-row' + (r.n ? r.n.old ? ' old' : '' : ' none') + '"><button type="button" class="vs-rn" data-vs="' + esc(x.id) + '">' + vesselIcon(x.type, 'ic ic-v xs t-' + x.type) +
+            '<span class="vs-rt"><b>' + esc(x.name || x.mmsi || x.imo) + '</b><small>' + esc(EN() ? ty[3] : ty[2]) + '</small></span>' + Vessels.jobMini(x) + '</button>' +
+            '<div class="vs-rl">' + (r.n ? esc(Reports.line(x, now)) + '<small>' + esc(src) + '</small>' : T('belum di Carta', 'not on the chart yet')) + '</div>' +
+            '<div class="vs-ra">' + (x.mmsi ? '<button type="button" class="btn xs" data-rp-mr="' + esc(x.id) + '">MarineRadar ↗</button>' : '') +
+            '<button type="button" class="btn xs" data-rp-new="' + esc(x.id) + '">' + T('Lapor', 'Report') + '</button></div></li>';
+        }).join('') + '</ol></aside>';
+    },
+    /* paste a MarineRadar / VesselFinder page straight onto the chart: the vessel is found by its MMSI / IMO */
+    pasteBar: function () {
+      return '<div class="vs-paste"><textarea class="inp" id="vsPaste" rows="1" placeholder="' + T('Tampal halaman kapal MarineRadar / VesselFinder di sini — kapal dikenal ikut MMSI dan terus masuk Carta', 'Paste a MarineRadar / VesselFinder vessel page here — the vessel is found by its MMSI and goes straight onto the chart') + '"></textarea>' +
+        '<div class="vs-psay" id="vsPasteSay" aria-live="polite">' + (Vessels.pasteSay || '') + '</div></div>';
+    },
     jobOptions: function (cur) {
       var J = MC.EXT.Jobs && MC.EXT.Jobs.get(), items = J ? J.items : [];
       return '<option value="">' + T('— tiada —', '— none —') + '</option>' + items.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === cur ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('');
@@ -543,18 +573,12 @@
       if (rp) src = 'chart';
       var now = Date.now();
       if (Reports.prune(now)) Vessels.save();
-      var card = function (id, on, icon, name, sub, extra) {
-        return '<button type="button" class="vs-fc' + (on ? ' on' : '') + '" data-vs="' + esc(id) + '">' + icon + '<span class="vs-fc-t"><b>' + name + '</b><small>' + sub + '</small>' + (extra || '') + '</span></button>';
-      };
-      var fleet = card('area', area, rigIcon('ic ic-rig'), T('Kawasan ', 'Around ') + esc(P.name), T('carta & semua kapal sekitar', 'chart & every vessel around')) +
-        (c.list.length > 1 ? card('all', all, '<span class="vs-stack">' + c.list.slice(0, 3).map(function (x) { return vesselIcon(x.type); }).join('') + '</span>', T('Semua kapal saya', 'All my vessels'), c.list.length + ' ' + T('peta, satu setiap kapal', 'maps, one per vessel')) : '') +
-        c.list.map(function (x) {
-          var ty = typeOf(x.type);
-          var pl = Reports.line(x, now), old = pl && Reports.now(x, now).old;
-          return card(x.id, v && v.id === x.id, vesselIcon(x.type), esc(x.name || x.mmsi || x.imo), esc(EN() ? ty[3] : ty[2]) + (x.call ? ' · ' + esc(x.call) : ''),
-            (pl ? '<small class="vs-fc-pos' + (old ? ' old' : '') + '">' + esc(pl) + '</small>' : '') + Vessels.job(x));
-        }).join('') +
-        '<button type="button" class="vs-fc add" id="vsEdit"><span class="vs-plus">+</span><span class="vs-fc-t"><b>' + (c.list.length ? T('Tetapan kapal', 'Vessel settings') : T('Tambah kapal', 'Add vessels')) + '</b><small>' + T('nama, MMSI / IMO, jenis', 'name, MMSI / IMO, type') + '</small></span></button>';
+      /* the top: three small tabs (area, all my vessels, the vessel open now) + settings; the vessels themselves are a list beside the chart */
+      var pill = function (id, on, icon, label, extra) { return '<button type="button" class="vs-pill' + (on ? ' on' : '') + '" data-vs="' + esc(id) + '">' + icon + '<span>' + label + '</span>' + (extra || '') + '</button>'; };
+      var fleet = pill('area', area, rigIcon('ic ic-rig xs'), T('Kawasan ', 'Around ') + esc(P.name)) +
+        (c.list.length > 1 ? pill('all', all, '<span class="vs-stack xs">' + c.list.slice(0, 3).map(function (x) { return vesselIcon(x.type); }).join('') + '</span>', T('Semua kapal', 'All vessels') + ' <small>' + c.list.length + '</small>') : '') +
+        (v ? pill(v.id, true, vesselIcon(v.type, 'ic ic-v xs t-' + v.type), esc(v.name), Vessels.jobMini(v)) : '') +
+        '<button type="button" class="vs-pill set" id="vsEdit"><span class="vs-gear" aria-hidden="true">⚙</span><span>' + (c.list.length ? T('Tetapan kapal', 'Vessel settings') : T('Tambah kapal', 'Add vessels')) + '</span></button>';
       var srcs = (all ? [] : [['chart', T('Carta', 'Chart')]]).concat([['vf', 'VesselFinder'], ['mt', 'MarineTraffic']]);
       var title = area ? rigIcon('ic ic-rig sm') + '<div><b>' + esc(P.name) + '</b><span>' + P.lat.toFixed(4) + ' N, ' + P.lon.toFixed(4) + ' E</span></div>'
         : all ? '<div><b>' + T('Semua kapal saya', 'All my vessels') + '</b><span>' + T('setiap peta tunjuk kapal itu sahaja', 'each map shows that vessel only') + '</span></div>'
@@ -573,8 +597,8 @@
       if (rp) body = '<div class="vs-split rep"><div class="vs-map chart tap" id="vsMap"></div>' + repForm() + '</div>';
       else if (all) { /* above */ }
       else if (v) body = '<div class="vs-split"><div class="vs-map' + (src === 'chart' ? ' chart' : '') + '" id="vsMap"></div>' + Vessels.detail(v, now) + '</div>';
-      else body = '<div class="vs-map' + (src === 'chart' ? ' chart' : '') + '" id="vsMap"></div>';
-      host.innerHTML = '<div class="vs-fleet" role="list">' + fleet + '</div><section class="vs-stage card">' + bar + body +
+      else body = (c.list.length ? Vessels.pasteBar() : '') + '<div class="vs-split area"><div class="vs-map' + (src === 'chart' ? ' chart' : '') + '" id="vsMap"></div>' + Vessels.listPanel(now) + '</div>';
+      host.innerHTML = '<div class="vs-tabs">' + fleet + '</div><section class="vs-stage card">' + bar + body +
         '<p class="muted vs-note">' + (src === 'chart' ? T('Carta OceanWATCH: kapal di carta ini ialah kedudukan yang anda lapor (bukan AIS langsung); garis putus-putus = anggaran dari laju & haluan, paling lama 6 jam. Kedudukan AIS langsung ada di VesselFinder / MarineTraffic.',
           'OceanWATCH chart: vessels here are the positions you reported (not live AIS); the dashed line is the estimate from speed & course, at most 6 h. Live AIS positions are on VesselFinder / MarineTraffic.')
           : T('Peta percuma VesselFinder / MarineTraffic (AIS). Kapal di luar liputan AIS darat mungkin tunjuk kedudukan lama.', 'Free VesselFinder / MarineTraffic maps (AIS). A vessel out of shore AIS range may show an old position.')) + '</p></section>';
@@ -822,6 +846,26 @@
     r.vfSay = '<span class="ok">✓ ' + esc(e.note) + '</span>' + (e.real && e.at < now - DR_MAX * HOUR ? '<br><span class="warn">' + T('Data lebih 6 jam: kapal akan tunjuk sebagai laporan lama.', 'Data over 6 hours old: the vessel shows as an old report.') + '</span>' : '') + (!e.real && o.received ? '<br><small>' + T('Kedudukan AIS di VesselFinder: ', 'AIS position on VesselFinder: ') + esc(o.received) + '</small>' : '') + warn;
     if ($('rpVfSay')) $('rpVfSay').innerHTML = r.vfSay;
   }
+  /* the paste box above the chart: find the vessel, work out the position, save it - no form */
+  function quickPaste(text) {
+    var now = Date.now(), c = Vessels.cfg, say = function (h) { Vessels.pasteSay = h; if ($('vsPasteSay')) $('vsPasteSay').innerHTML = h; };
+    if (!String(text || '').trim()) { say(''); return; }
+    var o = Vf.parse(text, now);
+    var v = o.mmsi && c.list.filter(function (x) { return x.mmsi === o.mmsi; })[0] || o.imo && c.list.filter(function (x) { return x.imo === o.imo; })[0];
+    if (!o.mmsi && !o.imo) { say('<span class="bad">' + T('Tiada MMSI / IMO dalam teks - salin seluruh halaman kapal (Ctrl+A).', 'No MMSI / IMO in the text - copy the whole vessel page (Ctrl+A).') + '</span>'); return; }
+    if (!v) { say('<span class="bad">' + T('Kapal MMSI ', 'Vessel MMSI ') + esc(o.mmsi || o.imo) + T(' tiada dalam senarai anda (⚙ Tetapan kapal).', ' is not in your list (⚙ Vessel settings).') + '</span>'); return; }
+    var e = Vf.estimate(o, now);
+    if (e.why) { say('<span class="bad">' + esc(v.name) + ': ' + esc(e.why) + '</span>'); return; }
+    var t = Math.min(now, Math.max(now - KEEP_T + 60000, Math.round((e.at || now) / 60000) * 60000));
+    var rec = { t: t, lat: +e.pos.lat.toFixed(5), lon: +e.pos.lon.toFixed(5), sog: e.sog !== null && e.sog !== undefined ? e.sog : null, cog: e.cog !== null && e.cog !== undefined ? Math.round(e.cog) % 360 : null, note: e.note.slice(0, 120), src: e.src || 'vf' };
+    if (e.to) rec.to = { lat: +e.to.lat.toFixed(5), lon: +e.to.lon.toFixed(5) };
+    Reports.add(v.id, rec);
+    Chart.cx = 0; Chart.cy = 0;
+    var n = Reports.now(v, now);
+    Vessels.pasteSay = '<span class="ok">✓ ' + esc(v.name) + ': ' + esc(Reports.line(v, now)) + '</span> <small>' + esc(e.note) + '</small>' + (n && n.old ? ' <span class="warn">' + T('(data lebih 6 jam)', '(data over 6 hours old)') + '</span>' : '');
+    Vessels.render();
+    MC.toast(T('Masuk Carta ✓', 'On the chart ✓'), v.name);
+  }
   function repOpen(id) {
     var c = Vessels.cfg, v = c.list.filter(function (x) { return x.id === id; })[0] || Vessels.sel() || c.list[0];
     if (!v) return;
@@ -919,6 +963,7 @@
     if (!t.closest || !t.closest('#vesselsHost')) return;
     if (t.closest('#vsRep')) { repOpen(Vessels.sel() ? Vessels.sel().id : ''); return; }
     if ((b = t.closest('[data-rp-new]'))) { repOpen(b.getAttribute('data-rp-new')); return; }
+    if ((b = t.closest('[data-rp-mr]'))) { var mv = Vessels.cfg.list.filter(function (x) { return x.id === b.getAttribute('data-rp-mr'); })[0]; if (mv) { MC.openExternal(Vessels.fullUrl(mv, 'mr')); repOpen(mv.id); setTimeout(function () { if ($('rpVf')) $('rpVf').focus(); }, 50); } return; }
     if (t.closest('#rpCancel') || t.closest('#rpCancel2')) { Vessels.rep = null; Vessels.render(); return; }
     if (t.closest('#rpSave')) { repSave(); return; }
     if (t.closest('#rpMrOpen')) { repRead(); var vm = Vessels.cfg.list.filter(function (x) { return x.id === Vessels.rep.id; })[0]; MC.openExternal(Vessels.fullUrl(vm, 'mr')); return; }
@@ -945,6 +990,7 @@
   });
   document.addEventListener('input', function (e) {
     var id = e.target.id;
+    if (id === 'vsPaste') { clearTimeout(Vessels.pasteT); var tv = e.target.value; Vessels.pasteT = setTimeout(function () { quickPaste(tv); }, 250); return; }
     if (!Vessels.rep) return;
     if (id === 'rpVf') repVf(e.target.value);
     else if (id === 'rpBrg' || id === 'rpNm') repSync('brg');

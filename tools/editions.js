@@ -5,7 +5,7 @@ module.exports = {
     "id": "oceanwatch",
     "short": "ow",
     "kind": "offshore",
-    "version": "1.3.1",
+    "version": "1.3.2",
     "pc": {
       "port": 30060,
       "appId": "local.oceanwatch.aziz",

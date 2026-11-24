@@ -391,6 +391,33 @@ html[data-edition="me"] #cardWater { align-self: stretch; }
 .vs-ed .mw-tb td { white-space: normal; }
 .vs-err td { color: var(--st-danger); font-size: 12px; padding-top: 0; }
 .vs-pfld { max-width: 420px; margin: 4px 0 10px; }
+/* 1.3.2 vessels page: small tabs on top, my vessels as a list beside the chart, a paste box above it */
+.vs-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.vs-pill { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--fill); color: var(--ink-2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.vs-pill:hover { border-color: #1d4a70; color: var(--ink); } .vs-pill.on { border-color: #22d3ee; background: color-mix(in srgb, #22d3ee 12%, var(--fill)); color: var(--ink); }
+.vs-pill small { color: var(--ink-3); font-weight: 600; margin-left: 2px; } .vs-pill .ic-rig.xs { width: 20px; height: 20px; } .vs-pill .ic-v.xs { width: 34px; height: 15px; }
+.vs-pill.set { margin-left: auto; border-style: dashed; } .vs-gear { font-size: 15px; line-height: 1; }
+.vs-stack.xs { display: grid; } .vs-stack.xs .ic-v { width: 26px; height: 8px; margin: -1px 0; }
+.vs-split.area { grid-template-columns: 1fr 300px; }
+.vs-list { display: flex; flex-direction: column; min-height: 0; max-height: 560px; border: 1px solid var(--line); border-radius: 12px; background: var(--fill); overflow: hidden; }
+.vs-list.empty { padding: 14px; color: var(--ink-3); font-size: 13px; }
+.vs-lh2 { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.vs-lh2 b small { color: var(--ink-3); font-weight: 600; } .vs-lh2 span { font-size: 12px; color: var(--ink-3); }
+.vs-list ol { list-style: none; margin: 0; padding: 4px; overflow-y: auto; display: grid; gap: 2px; }
+.vs-row { display: grid; gap: 4px; padding: 8px; border-radius: 9px; } .vs-row:hover { background: color-mix(in srgb, #22d3ee 5%, transparent); }
+.vs-rn { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 8px; border: 0; background: none; padding: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.vs-rn .ic-v.xs { width: 34px; height: 15px; } .vs-rt { display: grid; min-width: 0; } .vs-rt b { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .vs-rt small { font-size: 11px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vs-rl { padding-left: 42px; font-size: 12px; color: #67e8f9; font-variant-numeric: tabular-nums; } .vs-rl small { color: var(--ink-3); }
+.vs-row.none .vs-rl { color: var(--ink-3); font-style: italic; } .vs-row.old .vs-rl { color: var(--ink-3); }
+.vs-ra { padding-left: 42px; display: flex; gap: 6px; } .btn.xs { height: 24px; padding: 0 8px; font-size: 11.5px; border-radius: 7px; }
+.vs-row:not(.none) .vs-ra { display: none; } .vs-row:not(.none):hover .vs-ra, .vs-row:not(.none):focus-within .vs-ra { display: flex; }
+@media (hover: none) { .vs-row:not(.none) .vs-ra { display: flex; } }
+.vs-st { font-size: 10.5px; font-weight: 800; letter-spacing: .02em; padding: 2px 7px; border-radius: 999px; white-space: nowrap; background: var(--surface); color: var(--ink-3); }
+.vs-st.s0 { background: color-mix(in srgb, var(--st-normal) 18%, transparent); color: var(--st-normal); } .vs-st.s1 { background: color-mix(in srgb, var(--st-warning) 18%, transparent); color: var(--st-warning); }
+.vs-st.s2, .vs-st.s3 { background: color-mix(in srgb, var(--st-danger) 18%, transparent); color: var(--st-danger); }
+.vs-paste { display: grid; gap: 4px; margin-bottom: 10px; } .vs-paste textarea { width: 100%; box-sizing: border-box; min-height: 38px; resize: vertical; font-size: 13px; }
+.vs-psay { font-size: 12.5px; } .vs-psay:empty { display: none; } .vs-psay .ok { color: var(--st-normal); font-weight: 600; } .vs-psay .bad { color: var(--st-danger); font-weight: 600; } .vs-psay .warn { color: var(--st-warning); } .vs-psay small { color: var(--ink-3); }
+@media (max-width: 900px) { .vs-split.area { grid-template-columns: 1fr; } .vs-list { max-height: none; } }
 /* 1.3.0 position reports: fleet line, detail block, report form, vessels on the chart */
 .vs-fc-pos { color: #67e8f9 !important; font-variant-numeric: tabular-nums; } .vs-fc-pos.old { color: var(--ink-3) !important; }
 .vs-last { width: 100%; margin-top: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid #1d4a70; background: color-mix(in srgb, #22d3ee 6%, transparent); text-align: left; font-size: 13px; }
