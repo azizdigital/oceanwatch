@@ -15,12 +15,16 @@
    GitHub backup (relay v4, optional): https://<your-relay>.workers.dev/<KEY>/mirror asks GitHub to run the app's mirror now
    (it reads JPS & tides and saves the copy in the branch "data"), at most once every 10 minutes. The app calls it each time it
    reads JPS live through this relay. Needs a Worker secret GH_TOKEN: a GitHub fine-grained token for the oceanwatch repository only, permission "Actions: Read and write". Optional variable GH_REPO (default azizdigital/oceanwatch).
-   Relative and "/"-addresses inside the page come back through the relay by themselves (page path, or the Referer). */
+   Relative and "/"-addresses inside the page come back through the relay by themselves (page path, or the Referer).
+
+   Vessel positions (relay v5, optional, Sentinel OceanWATCH): https://<your-relay>.workers.dev/<KEY>/ais?mmsi=<9 digits,...>&box=<lat,lon,lat,lon>
+   listens to aisstream.io (free AIS stream, needs a free key) for up to ~25 s and answers the last position of each vessel heard.
+   Needs a Worker secret AIS_KEY (aisstream.io › API Keys); the key stays in Cloudflare, never in the app. Answers are kept 2 minutes. */
 
 const KEY = '__KEY__';
 const HOSTS = __HOSTS__;
 
-const VERSION = 4;
+const VERSION = 5;
 /* small per-site fixes (e.g. JPS: open with your district chosen), kept in the web app on GitHub so they can change
    without pasting this script again */
 const TWEAKS = '__TWEAKS__';
@@ -136,10 +140,84 @@ async function pokeMirror(env, now) {
   } catch (e) { return json({ ok: false, reason: 'github', error: String(e && e.message || e) }); }
 }
 
-async function handle(request, env) {
+/* AIS (relay v5): listen to aisstream.io for the asked vessels / area, then answer what was heard */
+const AIS_WAIT = 25000, AIS_KEEP = 120;
+function aisNum(v, lo, hi) { const n = +v; return isFinite(n) && n >= lo && n <= hi ? n : null; }
+async function ais(url, env, ctx) {
+  if (!env || !env.AIS_KEY) return json({ ok: false, reason: 'no-key' });
+  const mmsi = String(url.searchParams.get('mmsi') || '').split(',').map(x => x.replace(/\D/g, '')).filter(x => x.length === 9).slice(0, 50);
+  const b = String(url.searchParams.get('box') || '').split(',').map(Number);
+  const box = b.length === 4 && b.every(isFinite) ? [[Math.min(b[0], b[2]), Math.min(b[1], b[3])], [Math.max(b[0], b[2]), Math.max(b[1], b[3])]] : null;
+  if (!mmsi.length && !box) return json({ ok: false, reason: 'ask' }, 400);
+  const wait = Math.max(5, Math.min(25, +url.searchParams.get('wait') || 20)) * 1000;
+  /* the same question within 2 minutes: the kept answer (aisstream asks to keep connections few) */
+  const cache = caches.default, ck = new Request('https://ais.cache/' + mmsi.join(',') + '/' + (box ? box.flat().join(',') : '') + '/' + wait);
+  const hit = await cache.match(ck);
+  if (hit && url.searchParams.get('debug') !== '1') return new Response(hit.body, hit);
+  let res;
+  try { res = await fetch('https://stream.aisstream.io/v0/stream', { headers: { Upgrade: 'websocket' } }); }
+  catch (e) { return json({ ok: false, reason: 'connect', error: String(e && e.message || e) }); }
+  const ws = res.webSocket;
+  if (!ws) return json({ ok: false, reason: 'connect', status: res.status });
+  ws.accept();
+  const seen = {}, t0 = Date.now(), debug = url.searchParams.get('debug') === '1', raw = [], reading = []; let msgs = 0, err = '';
+  const done = new Promise(resolve => {
+    const stop = setTimeout(resolve, Math.min(wait, AIS_WAIT));
+    /* aisstream sends each message as binary (a Blob in Workers): read it as text first */
+    const take = text => {
+      if (debug && raw.length < 3) raw.push(String(text).slice(0, 600));
+      let m; try { m = JSON.parse(text); } catch (e) { return; }
+      if (m.error) { err = String(m.error); clearTimeout(stop); resolve(); return; }
+      const meta = m.MetaData || {}, id = String(meta.MMSI || ''), msg = m.Message || {};
+      if (!id) return;
+      const v = seen[id] || (seen[id] = { mmsi: id });
+      if (meta.ShipName) v.name = String(meta.ShipName).trim();
+      const pr = msg.PositionReport || msg.StandardClassBPositionReport || msg.ExtendedClassBPositionReport;
+      if (pr) {
+        const lat = aisNum(pr.Latitude, -90, 90), lon = aisNum(pr.Longitude, -180, 180);
+        if (lat !== null && lon !== null) {
+          v.lat = lat; v.lon = lon; v.sog = aisNum(pr.Sog, 0, 102.2); v.cog = aisNum(pr.Cog, 0, 359.9); v.hdg = aisNum(pr.TrueHeading, 0, 359);
+          v.status = pr.NavigationalStatus !== undefined ? pr.NavigationalStatus : null; v.at = meta.time_utc || new Date().toISOString();
+        }
+      }
+      const sd = msg.ShipStaticData;
+      if (sd) { if (sd.Destination) v.dest = String(sd.Destination).trim(); if (sd.CallSign) v.call = String(sd.CallSign).trim(); if (sd.Type !== undefined) v.type = sd.Type; }
+      if (mmsi.length && !box && mmsi.every(x => seen[x] && seen[x].lat !== undefined)) { clearTimeout(stop); resolve(); }
+    };
+    ws.addEventListener('message', ev => {
+      msgs++;
+      const d = ev.data;
+      let read;
+      try { read = typeof d === 'string' ? Promise.resolve(d) : d && typeof d.text === 'function' ? d.text() : Promise.resolve(new TextDecoder().decode(d)); }
+      catch (e) { read = Promise.resolve(''); }
+      reading.push(read.then(take, () => {}));
+    });
+    ws.addEventListener('close', () => { clearTimeout(stop); resolve(); });
+    ws.addEventListener('error', () => { clearTimeout(stop); resolve(); });
+  });
+  const sub = { APIKey: env.AIS_KEY, BoundingBoxes: [box || [[-90, -180], [90, 180]]], FilterMessageTypes: ['PositionReport', 'StandardClassBPositionReport', 'ExtendedClassBPositionReport', 'ShipStaticData'] };
+  if (mmsi.length) sub.FiltersShipMMSI = mmsi;
+  try { ws.send(JSON.stringify(sub)); } catch (e) { return json({ ok: false, reason: 'connect', error: String(e && e.message || e) }); }
+  await done;
+  await Promise.all(reading);
+  try { ws.close(1000, 'done'); } catch (e) { /* closed */ }
+  const vessels = Object.keys(seen).map(k => seen[k]).filter(v => v.lat !== undefined);
+  const answer = err ? { ok: false, reason: 'aisstream', error: err } : { ok: true, at: new Date().toISOString(), seconds: Math.round((Date.now() - t0) / 1000), messages: msgs, vessels };
+  if (debug) { answer.debug = raw; return json(answer); }
+  const out = json(answer);
+  if (!err) {
+    const keep = new Response(out.clone().body, out); keep.headers.set('cache-control', 'max-age=' + AIS_KEEP);
+    const put = cache.put(ck, keep);
+    if (ctx && ctx.waitUntil) ctx.waitUntil(put); else await put;
+  }
+  return out;
+}
+
+async function handle(request, env, ctx) {
   const url = new URL(request.url);
   const origin = url.origin;
   if (url.pathname === '/' + KEY + '/mirror') return pokeMirror(env, Date.now());
+  if (url.pathname === '/' + KEY + '/ais') return ais(url, env, ctx);
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET, HEAD, POST', 'access-control-allow-headers': '*', 'access-control-max-age': '86400' } });
   }
@@ -208,5 +286,5 @@ async function handle(request, env) {
   return new Response(res.body, { status: res.status, headers: out });
 }
 
-export default { fetch: (request, env) => handle(request, env) };
-export { handle, rewriteText, targetFromPath, relayPath, allowed, stripAds, adHost, VERSION };
+export default { fetch: (request, env, ctx) => handle(request, env, ctx) };
+export { handle, rewriteText, targetFromPath, relayPath, allowed, stripAds, adHost, ais, VERSION };

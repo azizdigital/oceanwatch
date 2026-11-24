@@ -339,7 +339,7 @@ test('ad blocker: daily update builds a new engine in a worker, keeps it, uses i
 /* ------------------------------------------------- site relay (Cloudflare Worker) */
 test('relay worker v4: /KEY/mirror asks GitHub to run the mirror (GitHub backup), at most every 10 minutes; no token = says so', async () => {
   const W = await require('./relay-harness').loadWorker('k3y', ['publicinfobanjir.water.gov.my']);
-  assert.strictEqual(W.VERSION, 4);
+  assert.ok(W.VERSION >= 4);
   const ask = env => W.handle(new Request('https://relay.test/k3y/mirror'), env).then(r => r.json());
   assert.deepStrictEqual(await ask({}), { ok: false, reason: 'no-token' });
   const real = globalThis.fetch, calls = [];
@@ -644,12 +644,64 @@ test('relay v2 removes ads; ad-heavy sites go through the relay when wanted', as
   assert.ok(out.includes('var keep=1') && out.includes('/app.js') && out.includes('<p>Tides</p>'));
   assert.ok(/<head><style>/.test(out), 'guard goes first in <head>');
   const root = await w.handle(new Request('https://relay.test/'));
-  assert.ok(/relay v4/.test(await root.text()));
+  assert.ok(/relay v[4-9]/.test(await root.text()));
   const s = core.cleanSettings({ relayUrl: 'https://r.workers.dev', relayKey: 'abcdefgh123' });
   assert.strictEqual(core.relayAdsFor(core.siteById('tideforecast'), s), true);
   assert.strictEqual(core.relayAdsFor(core.siteById('windy'), s), false);
   assert.strictEqual(core.relayAdsFor(core.siteById('tideforecast'), Object.assign({}, s, { relayAds: false })), false);
   assert.strictEqual(core.relayAdsFor(core.siteById('tideforecast'), core.cleanSettings({})), false);
+});
+
+test('relay v5: vessel positions from aisstream.io (key kept in Cloudflare), only the asked vessels, kept 2 minutes', async () => {
+  const { pathToFileURL } = require('url');
+  const src = fs.readFileSync(path.join(__dirname, '..', 'www', 'relay-worker.js'), 'utf8').replace("'__KEY__'", '"k1234567"').replace('__HOSTS__', '["example.com"]');
+  const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'mc-w-')), 'w.mjs');
+  fs.writeFileSync(file, src);
+  const w = await import(pathToFileURL(file).href);
+  assert.ok(w.VERSION >= 5);
+  /* a pretend aisstream.io socket and Cloudflare cache */
+  const store = new Map();
+  global.caches = { default: { match: async r => store.get(r.url) ? store.get(r.url).clone() : undefined, put: async (r, res) => { store.set(r.url, res); } } };
+  let sent = null, connects = 0;
+  const realFetch = global.fetch;
+  global.fetch = async (u, o) => {
+    assert.strictEqual(String(u), 'https://stream.aisstream.io/v0/stream'); assert.strictEqual(o.headers.Upgrade, 'websocket');
+    connects++;
+    const L = {};
+    const ws = { accept() {}, addEventListener(t, f) { (L[t] = L[t] || []).push(f); }, close() {},
+      send(x) { sent = JSON.parse(x);
+        setTimeout(() => {
+          /* aisstream sends binary frames: a Blob in Workers (this was missed in the first v5) */
+          const emit = m => (L.message || []).forEach(f => f({ data: new Blob([JSON.stringify(m)]) }));
+          emit({ MessageType: 'ShipStaticData', MetaData: { MMSI: 533049100, ShipName: 'SK PATRON   ' }, Message: { ShipStaticData: { Destination: 'IRONG BARAT', CallSign: '9MCD5', Type: 52 } } });
+          emit({ MessageType: 'PositionReport', MetaData: { MMSI: 533049100, ShipName: 'SK PATRON', time_utc: '2026-11-24 00:10:00 +0000 UTC' }, Message: { PositionReport: { Latitude: 5.41, Longitude: 104.62, Sog: 9.8, Cog: 44.5, TrueHeading: 45, NavigationalStatus: 0 } } });
+          emit({ MessageType: 'PositionReport', MetaData: { MMSI: 533000486 }, Message: { PositionReport: { Latitude: 91, Longitude: 200, Sog: 0 } } });
+          emit({ MessageType: 'PositionReport', MetaData: { MMSI: 533000486 }, Message: { PositionReport: { Latitude: 5.2, Longitude: 104.5, Sog: 0.1, Cog: 360, TrueHeading: 511 } } });
+        }, 5);
+      } };
+    return { status: 101, webSocket: ws };
+  };
+  try {
+    const no = await (await w.handle(new Request('https://relay.test/k1234567/ais?mmsi=533049100'), {})).json();
+    assert.deepStrictEqual(no, { ok: false, reason: 'no-key' });
+    const env = { AIS_KEY: 'secret-ais' };
+    const r = await (await w.handle(new Request('https://relay.test/k1234567/ais?mmsi=533049100,533000486,12&wait=5'), env, {})).json();
+    assert.strictEqual(sent.APIKey, 'secret-ais');
+    assert.deepStrictEqual(sent.FiltersShipMMSI, ['533049100', '533000486']);
+    assert.ok(r.ok && r.vessels.length === 2, JSON.stringify(r));
+    const sk = r.vessels.find(v => v.mmsi === '533049100');
+    assert.deepStrictEqual([sk.name, sk.lat, sk.lon, sk.sog, sk.cog, sk.hdg, sk.dest, sk.call], ['SK PATRON', 5.41, 104.62, 9.8, 44.5, 45, 'IRONG BARAT', '9MCD5']);
+    const jm = r.vessels.find(v => v.mmsi === '533000486');
+    assert.deepStrictEqual([jm.lat, jm.lon, jm.cog, jm.hdg], [5.2, 104.5, null, null], 'impossible values dropped');
+    assert.ok(r.seconds < 5, 'answers as soon as every asked vessel was heard');
+    assert.ok(!JSON.stringify(r).includes('secret-ais'), 'the key never goes back to the app');
+    await w.handle(new Request('https://relay.test/k1234567/ais?mmsi=533049100,533000486,12&wait=5'), env, {});
+    assert.strictEqual(connects, 1, 'the same question within 2 minutes is answered from the cache');
+    const bad = await w.handle(new Request('https://relay.test/k1234567/ais'), env, {});
+    assert.strictEqual(bad.status, 400);
+    const wrongKey = await w.handle(new Request('https://relay.test/nope1234/ais?mmsi=533049100'), env, {});
+    assert.notStrictEqual(wrongKey.status, 200);
+  } finally { global.fetch = realFetch; delete global.caches; }
 });
 
 /* ------------------------------------------------ offshore model comparison (4.2.0) */

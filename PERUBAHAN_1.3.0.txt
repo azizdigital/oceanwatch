@@ -1,0 +1,29 @@
+Sentinel OceanWATCH 1.3.0
+=========================
+New look: Weather and Vessels pages
+- SVG icons everywhere (platform, each vessel type, arrows, sky) instead of emoji pictures.
+- Weather: the platform at the top with 4 instruments (wind, gust, wave, swell) coloured against your limits, a 72-hour
+  timeline you can tap (each 6-hour period in one sentence), days 4-7, then table / charts / tide tabs.
+- Vessels: a fleet strip at the top (area, all my vessels, each vessel, settings) and a stage below.
+- OceanWATCH chart: the app's own nautical chart (Natural Earth coastline, no map service): the platform, 5 / 10 / 20 / 40 nm
+  rings, the route from Kemaman port, wind and swell now, towns and islands; drag to move, + / - to zoom.
+
+Position reports (vessels on our own chart)
+- "Report a position": give the position the captain reports as bearing + distance from the platform OR lat / lon
+  (decimal or degrees-minutes, e.g. 5°41.5'N); typing one fills the other. Or tap the place on the chart.
+- Optional speed and course. Report time (default now). Note.
+- On the chart: the vessel (top-down, pointing along its course), distance and ETA to the platform, its last 10 reports
+  as a track. With speed and course, a dashed line shows where it should be now (estimate, at most 6 hours).
+  After 6 hours the vessel fades and is marked "old report". Reports older than 3 days are dropped.
+- ETA = distance / speed (straight run). Speed: the reported one, else the usual speed of the vessel's type
+  (crew boat 20 kn, FCB 18, PSV 10, AHTS 11, ERRV 8, AV 7, tug 6, barge 5, tanker 10, other 10), which can be changed
+  per vessel in Vessel settings. A course more than 60° off the platform's bearing says "not heading to the platform".
+- One vessel: the chart, VesselFinder or MarineTraffic; the side panel shows the last report, estimate, ETA and history.
+
+AIS (only if heard)
+- With the relay set (relay v5 with the aisstream.io key in Cloudflare), the chart asks the relay every 2 minutes for AIS
+  vessels within ~45 nm of the platform. Your vessels show by name, others small. Nothing heard = nothing shown.
+  (Tested 24 Nov 2026: aisstream.io has no shore receiver near Irong Barat, so this is usually empty for now.)
+
+Relay script v5 (Settings > Relay > Copy relay script; the same in all 3 apps)
+- /KEY/ais: vessel positions from aisstream.io; the key is a Cloudflare secret AIS_KEY, never in the app.

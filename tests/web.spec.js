@@ -114,7 +114,7 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     }
     expect(errors).toEqual([]);
   });
-  test('Weather page: every model together - story every 6 hours, 3-hour table, 7-day charts, tides (platform + Cukai port)', async ({ page }) => {
+  test('Weather page: every model together - now, 72 hours in 6-hour columns, 3-hour table, 7-day charts, tides (platform + Cukai port)', async ({ page }) => {
     const errors = await open(page, 'ow');
     /* after open(): the newest route wins */
     await page.route(/tide-cukai\.json/, r => { const n = Date.now(), H = 3600000, ev = [];
@@ -122,10 +122,14 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
       r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ place: 'cukai', eventsAt: new Date().toISOString(), events: ev }) }); });
     await page.click('.rbtn[data-view="weather"]');
     await expect(page.locator('.mw-head')).toContainText(/kt/, { timeout: 30000 });
-    await expect(page.locator('.mw-where')).toContainText(/6\/6/);
-    expect(await page.locator('.mw-p').count()).toBeGreaterThanOrEqual(10);
-    await expect(page.locator('.mw-p').first()).toContainText(/\d+ kt \(\d+–\d+\)/);
-    await expect(page.locator('.mw-cmp svg')).toHaveCount(2);
+    await expect(page.locator('.mw-models')).toContainText(/6\/6/);
+    await expect(page.locator('.mw-hero')).toContainText('Irong Barat A');
+    await expect(page.locator('.mw-in')).toHaveCount(4);
+    expect(await page.locator('.mw-in svg.ic').count()).toBe(4);              /* drawn icons, no emoji */
+    expect(await page.locator('.mw-tl-c').count()).toBeGreaterThanOrEqual(10);
+    await page.locator('.mw-tl-c').nth(3).click();
+    await expect(page.locator('.mw-tl-c').nth(3)).toHaveClass(/on/);
+    await expect(page.locator('.mw-tl-say p')).toContainText(/\d+ kt \(\d+–\d+\)/);
     await page.click('[data-mw-tab="table"]');
     expect(await page.locator('.mw-tb tbody tr:not(.mw-dr)').count()).toBeGreaterThanOrEqual(20);
     await page.click('[data-mw-tab="charts"]');
@@ -136,12 +140,19 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     await expect(page.locator('.mw-tb.sm tbody tr').first()).toContainText(/Pasang|Surut|High|Low/);
     expect(errors).toEqual([]);
   });
-  test('Vessels page: own list (checked numbers), one map per vessel showing only that vessel, MarineTraffic switch', async ({ page }) => {
+  test('Vessels page: own chart of the platform, own list (checked numbers), one map per vessel, MarineTraffic switch, platform pinned', async ({ page }) => {
     const maps = [];
     await page.route(/vesselfinder\.com\/aismap|marinetraffic\.com\/en\/ais\/embed/, r => { maps.push(r.request().url()); r.fulfill({ status: 200, contentType: 'text/html', body: '<p>map</p>' }); });
     const errors = await open(page, 'ow');
     await page.click('.rbtn[data-view="vessels"]');
-    await expect(page.locator('.vs-none')).toBeVisible();
+    /* our own chart first: coastline, rings, route from Kemaman port, the platform */
+    await expect(page.locator('#vsMap svg.ck')).toBeVisible();
+    expect(await page.locator('#vsMap .ck-land').count()).toBeGreaterThan(3);
+    await expect(page.locator('#vsMap .ck-ring')).toHaveCount(4);
+    await expect(page.locator('#vsMap .ck-pfl')).toHaveText('Irong Barat A');
+    await expect(page.locator('#vsMap .ck-rt')).toContainText(/\d+ nm · \d+°T/);
+    await page.click('[data-ck="in"]');
+    await expect(page.locator('#vsMap svg.ck')).toBeVisible();
     await page.click('#vsEdit');
     const row = page.locator('.vs-tb tr[data-i]').first();
     await row.locator('[data-k="name"]').fill('SK Patron');
@@ -155,9 +166,11 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     await r2.locator('[data-k="name"]').fill('JM Perkasa 2'); await r2.locator('[data-k="imo"]').fill('9585833'); await r2.locator('[data-k="type"]').selectOption('av');
     await r2.locator('[data-k="call"]').fill('9m-ab 2');
     await page.click('#vsSave');
-    await expect(page.locator('.vs-it')).toHaveCount(4);                 /* all, area, 2 vessels */
-    await expect(page.locator('.vs-it.on')).toContainText('SK Patron');
-    await expect(page.locator('.vs-it.on .chip')).toContainText(/GO|CAUTION|LIMITED|STAY/);
+    await expect(page.locator('.vs-fc[data-vs]')).toHaveCount(4);          /* area, all, 2 vessels */
+    await expect(page.locator('.vs-fc.on')).toContainText('SK Patron');
+    await expect(page.locator('.vs-fc.on .chip')).toContainText(/GO|CAUTION|LIMITED|STAY/);
+    expect(await page.locator('.vs-fc svg.ic-v').count()).toBeGreaterThanOrEqual(2);
+    await expect(page.locator('.vs-det')).toContainText('533049100');
     await expect.poll(() => maps.some(u => /aismap.*mmsi=533049100.*track=true/.test(u))).toBeTruthy();
     await page.click('[data-vs="all"]');
     await expect(page.locator('.vs-grid .vs-cell')).toHaveCount(2);
@@ -167,15 +180,131 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     const kept = await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')));
     expect(kept.list.map(v => v.name)).toEqual(['SK Patron', 'JM Perkasa 2']);
     expect(kept.list[1].call).toBe('9MAB2'); expect(kept.list[1].type).toBe('av');
-    /* around the platform: Irong Barat A pinned over the map, and the app's own platform map with 5 / 10 / 20 nm rings */
+    /* around the platform on an outside map: Irong Barat A pinned over its centre */
     await page.click('[data-vs="area"]');
+    await page.click('[data-vs-src="vf"]');
     await expect(page.locator('#vsMap .vs-pin')).toContainText('Irong Barat A');
+    await expect(page.locator('#vsMap .vs-pin svg.ic-rig')).toBeAttached();
     await expect(page.locator('#vsCenter')).toBeVisible();
-    await page.click('[data-vs-src="osm"]');
-    await expect(page.locator('#vsOsm .vs-pf')).toContainText('Irong Barat A', { timeout: 15000 });
-    await expect(page.locator('#vsOsm .vs-ring')).toHaveCount(3);
     await page.click('[data-vs="v533049100"]');
-    await expect(page.locator('[data-vs-src="osm"]')).toHaveCount(0);
+    await expect(page.locator('[data-vs-src="chart"]')).toHaveCount(1);        /* 1.3.0: one vessel on our chart too */
+    await expect(page.locator('[data-vs-src="vf"]')).toHaveAttribute('aria-selected', 'true');
+    expect(errors).toEqual([]);
+  });
+  test('position reports (1.3.0): formulas, bearing/distance <-> lat/lon, tap, ETA, estimate, history, old report, AIS heard', async ({ page }) => {
+    let aisAsked = 0;
+    await page.route(/relay\.test\/k3y-ais-130\/ais\?/, r => { aisAsked++; r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' },
+      body: JSON.stringify({ ok: true, vessels: [{ mmsi: '533000486', name: 'JM PERKASA 2', lat: 5.60, lon: 104.70, sog: 8.2, cog: 300, hdg: 299, at: '2026-11-24 00:10:00.1 +0000 UTC' }, { mmsi: '111222333', name: 'OTHER SHIP', lat: 5.45, lon: 104.9, sog: 0, cog: 0, hdg: 511 }] }) }); });
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem('seed130')) return;
+      sessionStorage.setItem('seed130', '1');
+      const now = Date.now(), H = 3600000;
+      localStorage.setItem('ow_settings', JSON.stringify({ relayUrl: 'https://relay.test', relayKey: 'k3y-ais-130' }));
+      localStorage.setItem('ow_vessels', JSON.stringify({ list: [
+        { id: 'v533049100', name: 'SK Patron', mmsi: '533049100', type: 'psv' },
+        { id: 'v533000486', name: 'JM Perkasa 2', mmsi: '533000486', type: 'crew', kn: 22 },
+        { id: 'v525007132', name: 'Limin Handler', mmsi: '525007132', type: 'ahts' }], sel: 'area', src: 'chart', zoom: 9, track: true,
+        reports: { v525007132: [{ t: now - 9 * H, lat: 5.81, lon: 104.54, sog: 4, cog: 200 }, { t: now - 4 * 24 * H, lat: 5.7, lon: 104.5, sog: null, cog: null }],
+          gone: [{ t: now - H, lat: 5, lon: 104 }] } }));
+    });
+    const errors = await open(page, 'ow');
+    /* the formulas (destination point, haversine + bearing, deg-min parsing, dead reckoning, ETA) */
+    const g = await page.evaluate(() => {
+      const G = MC.EXT.Marine.Geo, P = { lat: 5.5501, lon: 104.7745 }, d = G.dest(P, 45, 12), back = G.inv(P, d);
+      const rep = { t: Date.now() - 2 * 3600000, lat: P.lat, lon: P.lon, sog: 10, cog: 90 };
+      return { d, back, dm: G.dm(d.lat, 'lat') + ' ' + G.dm(d.lon, 'lon'), p1: G.parse("5°41.5'N", 'lat'), p2: G.parse('104 55 E', 'lon'), p3: G.parse('5.6915', 'lat'), p4: G.parse('5°41.5′S', 'lat'),
+        p5: G.parse('104°E', 'lat'), p6: G.parse('5°61′N', 'lat'), p7: G.parse('104°32.4′B', 'lon'), dr: G.dr(rep, Date.now()), dr7: G.dr(Object.assign({}, rep, { t: Date.now() - 7 * 3600000 }), Date.now()),
+        eta: G.eta(d, P, 20, 225), away: G.eta(d, P, 20, 45), dur: MC.EXT.Marine.dur(1.5) };
+    });
+    expect(g.d.lat).toBeCloseTo(5.6915, 3); expect(g.d.lon).toBeCloseTo(104.9165, 3);
+    expect(g.back.nm).toBeCloseTo(12, 6); expect(g.back.brg).toBeCloseTo(45, 4);
+    expect(g.dm).toBe('5°41.48′N 104°54.99′E');
+    expect(g.p1).toBeCloseTo(5.691667, 5); expect(g.p2).toBeCloseTo(104.916667, 5); expect(g.p3).toBe(5.6915); expect(g.p4).toBeCloseTo(-5.691667, 5);
+    expect(g.p5).toBeNull(); expect(g.p6).toBeNull(); expect(g.p7).toBeCloseTo(-104.54, 5);
+    expect(g.dr.hours).toBeCloseTo(2, 2); expect(g.dr.lat).toBeCloseTo(5.5501, 2); expect(g.dr.lon).toBeCloseTo(104.7745 + 20 / 60 / Math.cos(5.5501 * Math.PI / 180), 2);
+    expect(g.dr7).toBeNull();                                                           /* no estimate after 6 h */
+    expect(g.eta.hours).toBeCloseTo(0.6, 3); expect(g.eta.toward).toBe(true); expect(g.away.toward).toBe(false);
+    expect(g.dur).toBe('1 h 30 min');
+    /* the chart: an old report is faded, reports over 3 days and of removed vessels are dropped */
+    await page.click('.rbtn[data-view="vessels"]');
+    await expect(page.locator('#vsMap .ck-vs.old .ck-hull')).toHaveCount(1);
+    await expect(page.locator('.vs-fc[data-vs="v525007132"] .vs-fc-pos')).toContainText(/old report/);
+    const kept0 = await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).reports);
+    expect(Object.keys(kept0)).toEqual(['v525007132']); expect(kept0.v525007132.length).toBe(1);
+    /* AIS heard through the relay: my vessel by its name, another small, the count in the key */
+    await expect.poll(() => aisAsked).toBeGreaterThan(0);
+    await expect(page.locator('#vsMap .ck-ais.mine')).toHaveCount(1);
+    await expect(page.locator('#vsMap .ck-ais')).toHaveCount(2);
+    await expect(page.locator('#vsMap .ck-ail.mine')).toContainText('JM Perkasa 2 · AIS');
+    await expect(page.locator('#vsMap .ck-key')).toContainText('AIS: 2');
+    /* report: bearing + distance fills lat / lon */
+    await page.click('#vsRep');
+    await page.selectOption('#rpVes', 'v533049100');
+    await page.fill('#rpBrg', '045'); await page.fill('#rpNm', '12');
+    await expect(page.locator('#rpLat')).toHaveValue('5°41.48′N');
+    await expect(page.locator('#rpLon')).toHaveValue('104°54.99′E');
+    await expect(page.locator('#rpSay')).toContainText('12.0 nm');
+    await expect(page.locator('#rpSay')).toContainText('ETA 1 h 12 min');            /* 12 nm at 10 kn (PSV usual speed) */
+    await expect(page.locator('#vsMap .ck-new')).toHaveCount(1);
+    /* lat / lon fills bearing + distance */
+    await page.fill('#rpLat', '5.5501'); await page.fill('#rpLon', "104°46.47'E");
+    await expect(page.locator('#rpNm')).toHaveValue('0.0');
+    await page.fill('#rpLat', '5.55'); await page.fill('#rpLon', '104.95');
+    await expect(page.locator('#rpBrg')).toHaveValue('090');
+    /* a course away from the platform warns */
+    await page.fill('#rpSog', '12'); await page.fill('#rpCog', '090');
+    await expect(page.locator('#rpSay .warn')).toBeVisible();
+    await page.fill('#rpCog', '270');
+    await expect(page.locator('#rpSay .warn')).toHaveCount(0);
+    /* bad values are refused */
+    await page.fill('#rpSog', '55'); await page.click('#rpSave');
+    await expect(page.locator('#rpSay .bad')).toContainText('40');
+    await page.fill('#rpSog', '12');
+    /* a tap on the chart sets the position */
+    const box = await page.locator('#vsMap svg.ck').boundingBox();
+    await page.mouse.click(box.x + box.width * 0.5 + 40, box.y + box.height * 0.5);
+    await expect(page.locator('#rpBrg')).toHaveValue(/^(08\d|09\d)$/);
+    await page.fill('#rpBrg', '090'); await page.fill('#rpNm', '10');
+    await page.click('#rpSave');
+    /* saved: the vessel's own view on the chart, distance / ETA on its card and in the panel */
+    await expect(page.locator('.vs-fc.on')).toContainText('SK Patron');
+    await expect(page.locator('[data-vs-src="chart"]')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('.vs-fc.on .vs-fc-pos')).toContainText(/(9\.\d|10\.0) nm · ETA 5\d min/);
+    await expect(page.locator('.vs-last')).toContainText('090°T · 10.0 nm');
+    await expect(page.locator('#vsMap .ck-vs.sel .ck-hull')).toHaveCount(1);
+    await expect(page.locator('#vsMap .ck-to')).toHaveCount(1);
+    /* a second report: history of 2, a track; one deleted */
+    await page.click('[data-rp-new="v533049100"]');
+    await page.fill('#rpWhen', await page.evaluate(() => new Date(Date.now() + 8 * 3600000 - 30 * 60000).toISOString().slice(0, 16)));
+    await page.fill('#rpBrg', '100'); await page.fill('#rpNm', '15');
+    await page.click('#rpSave');
+    await expect(page.locator('.vs-hist summary')).toContainText('2');
+    await expect(page.locator('#vsMap .ck-trk')).toHaveCount(1);
+    const k = await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).reports.v533049100);
+    expect(k.length).toBe(2); expect(k[0].t).toBeGreaterThan(k[1].t); expect(k[0].sog).toBe(12); expect(k[0].cog).toBe(270);
+    await page.locator('.vs-hist summary').click();
+    await page.locator('[data-rp-del]').last().click();
+    await expect(page.locator('.vs-hist')).toHaveCount(0);
+    /* usual speed in Vessel settings: checked, kept */
+    await page.click('#vsEdit');
+    await page.locator('.vs-tb tr[data-i]').first().locator('[data-k="kn"]').fill('99');
+    await page.click('#vsSave');
+    await expect(page.locator('.vs-err')).toContainText('40');
+    await page.locator('.vs-tb tr[data-i]').first().locator('[data-k="kn"]').fill('11');
+    await page.click('#vsSave');
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).list[0].kn)).toBe(11);
+    expect(errors).toEqual([]);
+  });
+  test('AIS: nothing heard or no relay = nothing shown, no error', async ({ page }) => {
+    await page.route(/relay\.test\/k3y-ais-131\/ais\?/, r => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ ok: false, reason: 'no-key' }) }));
+    await page.addInitScript(() => { localStorage.setItem('ow_settings', JSON.stringify({ relayUrl: 'https://relay.test', relayKey: 'k3y-ais-131' })); });
+    const errors = await open(page, 'ow');
+    await page.click('.rbtn[data-view="vessels"]');
+    await expect(page.locator('#vsMap svg.ck')).toBeVisible();
+    await page.waitForTimeout(500);
+    await expect(page.locator('#vsMap .ck-ais')).toHaveCount(0);
+    await expect(page.locator('#vsMap .ck-key')).not.toContainText('AIS');
+    await expect(page.locator('#vsRep')).toHaveCount(0);                     /* no vessels yet: nothing to report */
     expect(errors).toEqual([]);
   });
   test('Models page has the comparison card and the PDF button', async ({ page }) => {

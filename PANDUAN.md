@@ -8,7 +8,7 @@
 ## Pasang di PC (Windows)
 1. Pasang **Node.js 22 LTS** (nodejs.org) jika belum ada.
 2. Ekstrak zip, buka folder yang ada `package.json`, klik bar alamat, taip `cmd`, Enter.
-3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.2.1.exe** (pasang) dan **Sentinel OceanWATCH 1.2.1.exe** (portable).
+3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.3.0.exe** (pasang) dan **Sentinel OceanWATCH 1.3.0.exe** (portable).
 4. Buka app → **Settings › Import from Dashboard Cuaca** — profil & tetapan dibaca terus dari app PC Dashboard Cuaca.
 5. Boleh buka serentak dengan Dashboard Cuaca dan app satu lagi (port 30060, folder data `%APPDATA%\Sentinel OceanWATCH`). Pilih **Kekal di tray** dalam Tetapan supaya alert terus berbunyi bila tetingkap ditutup.
 
@@ -21,10 +21,15 @@ Semua model (6 model angin, 4 model ombak, 2 ensembel) digabung jadi satu cerita
 - **Graf 7 hari**: angin, ombak, tempoh alun, hujan & ribut petir; kawasan berwarna = julat model, garis merah = had anda.
 - **Pasang surut**: paras laut model di platform + jadual pelabuhan Cukai (Tide Forecast, salinan GitHub Monsoon EYE).
 
-## Tab Kapal (baru 1.2.0)
-- **⚙ Tetapan kapal**: nama + MMSI (9 digit) atau IMO (7 digit); callsign, jenis (termasuk AV — kapal penginapan), peranan / nota dan kerja (Go / No-Go) pilihan. Di sini juga **nama platform** yang ditanda di peta (lalai: Irong Barat A, di titik profil). Nombor di halaman kapal VesselFinder / MarineTraffic. Disimpan dalam peranti ini (maksimum 20).
-- **Semua kapal saya**: satu peta setiap kapal — VesselFinder tunjuk kapal itu sahaja, dengan trek 24 jam, pelabuhan seterusnya, ETA & laju.
-- Tekan satu kapal untuk peta besar; tukar **VesselFinder / MarineTraffic** (MarineTraffic tanda kapal anda tetapi kapal lain turut nampak). **Kawasan** = semua kapal sekitar platform, dengan pin 🛢️ **Irong Barat A** di tengah peta (pin pudar bila peta digerak — tekan **⌖ Pusatkan semula**); **Peta platform** = peta app sendiri (OpenStreetMap) dengan platform dan bulatan 5 / 10 / 20 nm (tiada kapal AIS di peta ini). **Buka laman penuh ↗** untuk butiran.
+## Tab Kapal (baru 1.2.0, rupa baru 1.3.0)
+- **⚙ Tetapan kapal**: nama + MMSI (9 digit) atau IMO (7 digit); callsign, jenis (termasuk AV — kapal penginapan), **laju biasa (kn)**, peranan / nota dan kerja (Go / No-Go) pilihan. Di sini juga **nama platform** yang ditanda di peta (lalai: Irong Barat A, di titik profil). Nombor di halaman kapal VesselFinder / MarineTraffic. Disimpan dalam peranti ini (maksimum 20).
+- **Kawasan** → **Carta** OceanWATCH: carta app sendiri (pantai Natural Earth) — platform, bulatan 5 / 10 / 20 / 40 nm, laluan dari pelabuhan Kemaman, angin & alun sekarang. Seret untuk gerak, + / − untuk zum. Tukar ke **VesselFinder / MarineTraffic** untuk kapal AIS langsung (pin platform di tengah; pin pudar bila peta digerak — tekan **Pusatkan semula**).
+- **+ Lapor kedudukan** (1.3.0): bila kapten maklumkan kedudukan, isi **bearing + jarak dari platform** (cth 045° 12 nm) **atau lat / lon** (5.6915 atau 5°41.5'N) — satu terisi bila yang lain ditaip — atau **ketik tempat di Carta**. Laju & haluan pilihan.
+  - Di Carta: kapal (menghala ikut haluan), **jarak & ETA** ke platform, trek 10 laporan terakhir. Ada laju & haluan → garis putus-putus = **anggaran sekarang** (paling lama 6 jam). Lebih 6 jam → pudar, "laporan lama". Laporan lebih 3 hari dibuang.
+  - ETA = jarak ÷ laju (terus ke platform). Laju = yang dilapor, atau laju biasa jenis kapal (crew boat 20, FCB 18, PSV 10, AHTS 11, ERRV 8, AV 7, tunda 6, barge 5, tanker 10 kn) — boleh ubah dalam Tetapan kapal. Haluan lari lebih 60° → "tidak menghala ke platform".
+  - **AIS**: kalau relay v5 dengan kunci aisstream ada, Carta tunjuk kapal AIS yang didengar sekitar ~45 nm (kapal anda ikut nama). Tiada yang didengar = tiada apa-apa dipapar (aisstream belum ada penerima dekat Irong Barat).
+- Tekan satu kapal: **Carta / VesselFinder / MarineTraffic**, dengan panel kanan — laporan terakhir, anggaran, ETA, **Sejarah** (✕ padam satu laporan) dan butang Lapor kedudukan.
+- **Semua kapal saya**: satu peta VesselFinder setiap kapal — kapal itu sahaja, dengan trek 24 jam.
 - Kad kapal yang dipautkan ke kerja tunjuk status kerja itu sekarang.
 - Semua kapal dalam satu peta perlukan akaun Fleet VesselFinder / MarineTraffic (tidak percuma) — sebab itu satu peta setiap kapal.
 
@@ -33,7 +38,7 @@ Semua model (6 model angin, 4 model ombak, 2 ensembel) digabung jadi satu cerita
 |---|---|
 | **Home** | Kotak jawapan Go / Caution / No-Go (LQ atau kerja pilihan), 7 nombor utama, **Jobs today** (setiap kerja × blok 3 jam), graf ombak & angin, skor risiko, amaran MET laut |
 | **Cuaca / Weather** | Semua model digabung: cerita 6 jam, jadual 3 jam, graf 7 hari, pasang surut |
-| **Kapal / Vessels** | Kapal anda di peta VesselFinder / MarineTraffic |
+| **Kapal / Vessels** | Carta sendiri dengan laporan kedudukan, ETA & AIS (bila didengar); peta VesselFinder / MarineTraffic |
 | **Jobs** | Jadual penuh Go / Caution / No-Go, weather window, **had operasi** setiap kerja (boleh ubah) |
 | **Models** | Perbandingan 6 model angin + 4 model ombak + ensemble, 3/7/14 hari, **PDF A4 gaya AMT** |
 | **Sites** | 13 laman (Windy ombak/angin/alun, Nullschool, AIS, radar, satelit, kilat, ribut, Ramalan Marin MET) |

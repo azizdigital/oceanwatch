@@ -12,3 +12,6 @@ Filter lists compiled into lib/adblock-engine.bin and downloaded again daily by 
   uBlock Origin scriptlet resources, packaged by Ghostery. GPL-3.0.
 
 The app is for personal use. The lists are used unchanged; rebuild the shipped copy with: npm run adblock:build
+
+Natural Earth (www/assets/js/coast-east.js, Sentinel OceanWATCH chart)
+  Coastline from Natural Earth 1:10m land and minor islands, clipped and simplified. Public domain - "Made with Natural Earth".
