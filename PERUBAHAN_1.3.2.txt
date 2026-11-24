@@ -10,3 +10,5 @@ Vessels page, tidier with many vessels
   and a "Report" button.
 - A paste box above the chart: paste a MarineRadar / VesselFinder vessel page there and the vessel (found by its MMSI /
   IMO) goes straight onto the chart - no form. An unknown MMSI or a page without MMSI is explained.
+- MarineRadar pages that only say "was last reported ... at <lat>, <lon>": speed and course are read from the page's info box
+  ("5.3 kn / SPEED", "45.0° / COURSE").

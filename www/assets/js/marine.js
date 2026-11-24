@@ -724,6 +724,9 @@
       if ((m = t.match(/Course\s*\/\s*Speed\s*([\d.]+)\s*°?\s*\/\s*([\d.]+)\s*kn/i))) { o.cog = +m[1]; o.sog = +m[2]; }
       else if ((m = t.match(/(?:speed of|making)\s*([\d.]+)\s*(?:knots|kn)\b/i))) o.sog = +m[1];
       if (o.cog === undefined && (m = t.match(/on a course of\s*([\d.]+)\s*°/i))) o.cog = +m[1];
+      /* MarineRadar's info box ("5.3 kn / SPEED", "45.0° / 42° / COURSE / HEADING"), when the sentence has no speed */
+      if (o.sog === undefined && (m = t.match(/([\d.]+)\s*kn\s*\n\s*SPEED\b/i))) o.sog = +m[1];
+      if (o.cog === undefined && (m = t.match(/([\d.]+)\s*°\s*\n(?:\s*\/\s*[\d.]+\s*°?\s*\n)?\s*COURSE\b/i))) o.cog = +m[1];
       o.mr = /marineradar/i.test(t) || /Updated\s+[^\n]*\busing\s+(terrestrial|satellite)\s+data/i.test(t);
       if ((m = t.match(/Updated\s+(\d+)\s*(min(?:ute)?s?|h(?:ou)?rs?|hours?|days?)\b/i))) o.age = +m[1] * (/^d/i.test(m[2]) ? 24 : /^h/i.test(m[2]) ? 1 : 1 / 60);
       else if (/Updated\s+(just now|now|\d+\s*s(ec(ond)?s?)?\b)/i.test(t)) o.age = 0;

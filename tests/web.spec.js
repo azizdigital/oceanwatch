@@ -383,7 +383,9 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     expect(mrec.src).toBe('mr'); expect(mrec.lat).toBeCloseTo(4.7882, 3); expect(mrec.to).toBeUndefined();
     /* the last known position more than 6 hours old (JM PERKASA 2 style): warned, kept as an old report */
     const old = await page.evaluate(() => { const M = MC.EXT.Marine; return M.Vf.estimate(M.Vf.parse('JM PERKASA 2 was last reported under way in the South China Sea, at 5.0142° N, 105.2792° E, on common.stamp.\nUpdated 7 hours using terrestrial data\nMMSI 533000486'), Date.now()); });
-    expect(old.real).toBe(true); expect(old.sog).toBeNull(); expect((Date.now() - old.at) / 3600000).toBeCloseTo(7, 2);
+    expect(old.real).toBe(true); expect(old.sog).toBeNull();
+    const box = await page.evaluate(() => { const M = MC.EXT.Marine; return M.Vf.parse('SK PATRON was last reported under way in the South China Sea, at 4.7882° N, 104.0438° E, on common.stamp.\nUpdated 9 hours using terrestrial data\nUnder way using engine\nCURRENT NAVIGATIONAL STATUS\n5.3 kn\nSPEED\n45.0°\n/ 42°\nCOURSE / HEADING\nMMSI 533049100'); });
+    expect(box.sog).toBe(5.3); expect(box.cog).toBe(45); expect(box.age).toBe(9); expect((Date.now() - old.at) / 3600000).toBeCloseTo(7, 2);
     /* the estimate never runs past the destination; unknown places and missing times are explained */
     const g = await page.evaluate(() => {
       const M = MC.EXT.Marine, P = { lat: 5.5501, lon: 104.7745 }, start = M.Geo.dest(P, 225, 5);
