@@ -27,7 +27,7 @@ const NOW = Date.UTC(2026, 10, 17, 12, 20); /* 17 Nov 2026 20:20 MYT */
 
 /* ---------------------------------------------------------------- core */
 test('relay key: typed by the user, URL-safe characters only, a bad key is never replaced or kept', () => {
-  assert.strictEqual(core.relayKeyProblem('2412Aziz21'), '');
+  assert.strictEqual(core.relayKeyProblem('Contoh2024Key'), '');
   assert.strictEqual(core.relayKeyProblem('2412Azi-21.x~y_z'), '');
   assert.ok(/@/.test(core.relayKeyProblem('2412Azi@21')));
   assert.ok(core.relayKeyProblem('2412 Aziz'));
