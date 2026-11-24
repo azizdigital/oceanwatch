@@ -1,0 +1,22 @@
+Sentinel OceanWATCH 1.3.1
+=========================
+Vessels page
+- The job status on a vessel card stays inside the card: the status first (GO / CAUTION / NO-GO), then the job name, cut
+  with "..." when long (the full text shows when you point at it).
+- Report a position > "From MarineRadar / VesselFinder": open the vessel's page with the MarineRadar or VesselFinder button,
+  copy the whole page (Ctrl+A, Ctrl+C / long-press > Select All > Copy) and paste it in the box. The vessel is picked by
+  its MMSI / IMO.
+  MarineRadar (free page) shows the real position: lat / lon, speed and course are used as they are; the report time is
+  "now - the age of the data" ("Updated 3 hours" = 3 hours ago), then the dashed estimate carries it forward (at most
+  6 hours; older data shows as an old report). Marked "MarineRadar" on the chart.
+- VesselFinder (fallback): open the vessel's VesselFinder page, copy the whole page
+  (Ctrl+A, Ctrl+C / long-press > Select All > Copy) and paste it in the box. The free page has no coordinates, so the app
+  estimates the position along the straight route from the last port to the destination:
+    share of the trip = (now - departure ATD) / (ETA - departure ATD)   (VesselFinder times are UTC)
+  The vessel is put at that share of the route, heading along it, at the speed VesselFinder shows; the vessel is picked
+  by its MMSI / IMO. Known places: Irong Barat (the platform), Kemaman (port), the towns on the chart. Marked
+  "VF estimate" on the chart, "Route estimate (VesselFinder)" in the panel. The estimate from speed never runs past the
+  destination. A page with coordinates (VesselFinder Premium) is used as it is.
+- The chart opens wide enough to show every reported vessel.
+- Coastline: a wider area (99-109 E, 0.3-9.5 N: the Gulf of Thailand and the South China Sea islands), and the straight
+  cut line at the edge of the coastline data (101°45'E) is gone.

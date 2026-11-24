@@ -8,7 +8,7 @@
 ## Pasang di PC (Windows)
 1. Pasang **Node.js 22 LTS** (nodejs.org) jika belum ada.
 2. Ekstrak zip, buka folder yang ada `package.json`, klik bar alamat, taip `cmd`, Enter.
-3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.3.0.exe** (pasang) dan **Sentinel OceanWATCH 1.3.0.exe** (portable).
+3. `npm install` → `npm run dist`. Dalam folder `dist` ada **Sentinel OceanWATCH Setup 1.3.1.exe** (pasang) dan **Sentinel OceanWATCH 1.3.1.exe** (portable).
 4. Buka app → **Settings › Import from Dashboard Cuaca** — profil & tetapan dibaca terus dari app PC Dashboard Cuaca.
 5. Boleh buka serentak dengan Dashboard Cuaca dan app satu lagi (port 30060, folder data `%APPDATA%\Sentinel OceanWATCH`). Pilih **Kekal di tray** dalam Tetapan supaya alert terus berbunyi bila tetingkap ditutup.
 
@@ -27,6 +27,9 @@ Semua model (6 model angin, 4 model ombak, 2 ensembel) digabung jadi satu cerita
 - **+ Lapor kedudukan** (1.3.0): bila kapten maklumkan kedudukan, isi **bearing + jarak dari platform** (cth 045° 12 nm) **atau lat / lon** (5.6915 atau 5°41.5'N) — satu terisi bila yang lain ditaip — atau **ketik tempat di Carta**. Laju & haluan pilihan.
   - Di Carta: kapal (menghala ikut haluan), **jarak & ETA** ke platform, trek 10 laporan terakhir. Ada laju & haluan → garis putus-putus = **anggaran sekarang** (paling lama 6 jam). Lebih 6 jam → pudar, "laporan lama". Laporan lebih 3 hari dibuang.
   - ETA = jarak ÷ laju (terus ke platform). Laju = yang dilapor, atau laju biasa jenis kapal (crew boat 20, FCB 18, PSV 10, AHTS 11, ERRV 8, AV 7, tunda 6, barge 5, tanker 10 kn) — boleh ubah dalam Tetapan kapal. Haluan lari lebih 60° → "tidak menghala ke platform".
+  - **Dari MarineRadar / VesselFinder** (1.3.1): tekan **MarineRadar ↗** (atau **VesselFinder ↗**), salin seluruh halaman kapal (Ctrl+A, Ctrl+C / iPad: tekan lama › Pilih Semua › Salin), tampal dalam kotak. Kapal dipilih ikut MMSI/IMO.
+    - **MarineRadar** (percuma) beri **kedudukan sebenar** + laju + haluan; masa laporan = sekarang − umur data ("Updated 3 hours" = 3 jam lalu), lepas tu garis anggaran bawa ke sekarang. Bertanda "MarineRadar".
+    - **VesselFinder** (sandaran, tiada lat/lon percuma): app anggar di laluan lurus pelabuhan lepas → destinasi: bahagian perjalanan = (sekarang − ATD) ÷ (ETA − ATD). Bertanda "anggaran VF".
   - **AIS**: kalau relay v5 dengan kunci aisstream ada, Carta tunjuk kapal AIS yang didengar sekitar ~45 nm (kapal anda ikut nama). Tiada yang didengar = tiada apa-apa dipapar (aisstream belum ada penerima dekat Irong Barat).
 - Tekan satu kapal: **Carta / VesselFinder / MarineTraffic**, dengan panel kanan — laporan terakhir, anggaran, ETA, **Sejarah** (✕ padam satu laporan) dan butang Lapor kedudukan.
 - **Semua kapal saya**: satu peta VesselFinder setiap kapal — kapal itu sahaja, dengan trek 24 jam.

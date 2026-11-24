@@ -332,8 +332,9 @@ html[data-edition="me"] #cardWater { align-self: stretch; }
 .vs-fc.on { border-color: #22d3ee; background: linear-gradient(180deg, rgba(34, 211, 238, .10), transparent); box-shadow: inset 0 -3px 0 #22d3ee; }
 .vs-fc:focus-visible { outline: 2px solid #22d3ee; outline-offset: 2px; }
 .vs-fc .ic-rig { width: 38px; height: 38px; } .vs-fc .ic-v { width: 58px; height: 26px; }
-.vs-fc-t { display: grid; gap: 2px; min-width: 0; } .vs-fc-t b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.vs-fc-t small { font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .vs-fc-t .chip { justify-self: start; margin-top: 2px; }
+.vs-fc-t { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; min-width: 0; flex: 1 1 auto; } .vs-fc-t b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vs-fc-t small { font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .vs-fc-t .chip { justify-self: stretch; margin-top: 2px; }
+.chip.vs-job { display: block; line-height: 22px; max-width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; box-sizing: border-box; } .chip.vs-job b { font-weight: 800; }
 .vs-fc.add { border-style: dashed; min-width: 190px; } .vs-plus { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; color: #22d3ee; border: 1px dashed #22d3ee; }
 .vs-stack { display: grid; } .vs-stack .ic-v { width: 46px; height: 13px; margin: -1px 0; }
 .chip.s0 { background: var(--soft-normal); color: var(--st-normal); } .chip.s1 { background: var(--soft-alert); color: var(--st-alert); }
@@ -368,7 +369,7 @@ html[data-edition="me"] #cardWater { align-self: stretch; }
 .ck { width: 100%; height: 100%; min-height: 520px; display: block; touch-action: none; cursor: grab; user-select: none; }
 .ck.grab { cursor: grabbing; }
 .ck-g { stroke: #1a4266; opacity: .65; } .ck-gl { fill: #6f93b4; font-variant-numeric: tabular-nums; }
-.ck-land { fill: #1a2c40; stroke: #4d7da3; stroke-linejoin: round; }
+.ck-land { fill: #1a2c40; stroke: none; } .ck-coast { fill: none; stroke: #4d7da3; stroke-linejoin: round; stroke-linecap: round; }
 .ck-ring { fill: none; stroke: #22d3ee; opacity: .55; } .ck-rl { fill: #67e8f9; opacity: .85; }
 .ck-route { stroke: #f5b942; stroke-linecap: round; opacity: .9; } .ck-port { fill: #061a2e; stroke: #f5b942; } .ck-rt { fill: #f5d58a; font-weight: 600; }
 .ck-town { fill: #cbd5e1; } .ck-pl { fill: #c8d6e5; } .ck-pl.isle { fill: #8fb0cc; font-style: italic; } .ck-pl.port { fill: #f5d58a; font-weight: 600; }
@@ -411,6 +412,8 @@ html[data-edition="me"] #cardWater { align-self: stretch; }
 .rp-in .inp { padding-right: 34px; font-variant-numeric: tabular-nums; }
 .rp-g { margin: 0; padding: 8px 10px 10px; border: 1px solid var(--line); border-radius: 10px; } .rp-g legend { padding: 0 4px; font-size: 12px; font-weight: 700; color: var(--ink-2); }
 .rp-tap { margin: 6px 0 0; font-size: 12px; color: #67e8f9; }
+.rp-vf { display: grid; gap: 6px; } .rp-vfb { display: flex; flex-wrap: wrap; gap: 6px; } .rp-vf textarea { width: 100%; min-height: 44px; resize: vertical; font-size: 13px; box-sizing: border-box; }
+.rp-vfsay { font-size: 12.5px; line-height: 1.45; } .rp-vfsay:empty { display: none; } .rp-vfsay .ok { color: var(--st-normal); font-weight: 600; } .rp-vfsay .bad { color: var(--st-danger); font-weight: 600; } .rp-vfsay .warn { color: var(--st-warning); } .rp-vfsay small { color: var(--ink-3); }
 .rp-say { padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; line-height: 1.55; font-variant-numeric: tabular-nums; }
 .rp-say .bad { color: var(--st-danger); font-weight: 600; } .rp-say .warn { color: var(--st-warning); }
 .rp-b { display: flex; justify-content: flex-end; gap: 8px; }

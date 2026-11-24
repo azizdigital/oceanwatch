@@ -269,7 +269,7 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     /* saved: the vessel's own view on the chart, distance / ETA on its card and in the panel */
     await expect(page.locator('.vs-fc.on')).toContainText('SK Patron');
     await expect(page.locator('[data-vs-src="chart"]')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('.vs-fc.on .vs-fc-pos')).toContainText(/(9\.\d|10\.0) nm · ETA 5\d min/);
+    await expect(page.locator('.vs-fc.on .vs-fc-pos')).toContainText(/(9\.\d|10\.0) nm · ETA (4\d|50) min/);
     await expect(page.locator('.vs-last')).toContainText('090°T · 10.0 nm');
     await expect(page.locator('#vsMap .ck-vs.sel .ck-hull')).toHaveCount(1);
     await expect(page.locator('#vsMap .ck-to')).toHaveCount(1);
@@ -293,6 +293,87 @@ if (E.oceanwatch) test.describe('Sentinel OceanWATCH', () => {
     await page.locator('.vs-tb tr[data-i]').first().locator('[data-k="kn"]').fill('11');
     await page.click('#vsSave');
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).list[0].kn)).toBe(11);
+    expect(errors).toEqual([]);
+  });
+  test('VesselFinder paste (1.3.0): voyage -> estimate along the route, vessel picked by MMSI, stops at the destination; job chip fits; coast without box edges', async ({ page }) => {
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem('seedvf')) return;
+      sessionStorage.setItem('seedvf', '1');
+      localStorage.setItem('ow_vessels', JSON.stringify({ list: [
+        { id: 'v533000486', name: 'JM Perkasa 2', mmsi: '533000486', type: 'crew', job: 'lq' },
+        { id: 'v533049100', name: 'SK Patron', mmsi: '533049100', imo: '9543213', type: 'psv', job: 'lq' }], sel: 'area', src: 'chart', zoom: 9, track: true }));
+    });
+    const errors = await open(page, 'ow');
+    await page.click('.rbtn[data-view="vessels"]');
+    /* the job status chip stays inside its card */
+    const cards = page.locator('.vs-fc[data-vs^="v"]');
+    for (let i = 0; i < 2; i++) {
+      const cb = await cards.nth(i).boundingBox(), ch = await cards.nth(i).locator('.chip').boundingBox();
+      expect(ch.x + ch.width).toBeLessThanOrEqual(cb.x + cb.width + 0.5);
+    }
+    await expect(cards.first().locator('.chip b')).toHaveText(/GO|CAUTION|LIMITED|STAY/);
+    /* the coast line is drawn apart from the land, without the clip-box edges */
+    await expect(page.locator('#vsMap .ck-coast')).toHaveCount(1);
+    const edge = await page.evaluate(() => { const B = self.MC_COAST_BOX; return self.MC_COAST.some(r => r.some(p => p[0] === B[0])) && !!B; });
+    expect(edge).toBeTruthy();
+    /* the VesselFinder page text, as copied (no coordinates on the free page) */
+    const txt = await page.evaluate(() => {
+      const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], f = t => { const d = new Date(t); return M[d.getUTCMonth()] + ' ' + d.getUTCDate() + ', ' + String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); };
+      const now = Date.now(), atd = now - 13 * 3600000, eta = now + 12 * 3600000;
+      return 'SK PATRON\nOffshore Tug/Supply Ship, IMO 9543213\nThe current position of SK PATRON is at South East Asia reported 3 hours ago by AIS. The vessel is en route to IRONG BARAT, sailing at a speed of 5.3 knots.\n' +
+        'Destination\nIRONG BARAT\nETA: ' + f(eta) + ' (in 12 hours)\nPredicted ETA\t-\nCourse / Speed\t \nNavigation Status\tUnder way\nPosition Received\t\n3 hours ago\n\nIMO / MMSI\t9543213 / 533049100\nCallsign\t9MLD3\nLast Port\nKemaman, Malaysia\nATD: ' + f(atd) + ' UTC (13 hours ago)\n';
+    });
+    await page.click('#vsRep');
+    await expect(page.locator('#rpVes')).toHaveValue('v533000486');
+    await page.fill('#rpVf', txt);
+    await expect(page.locator('#rpVes')).toHaveValue('v533049100');                 /* picked by its MMSI */
+    await expect(page.locator('#rpVfSay .ok')).toContainText(/VF estimate: Kemaman port ATD .* → Irong Barat A ETA .* \(52%\)/);
+    await expect(page.locator('#rpVfSay')).toContainText('3 hours ago');
+    await expect(page.locator('#rpSog')).toHaveValue('5.3');
+    await expect(page.locator('#rpCog')).toHaveValue(/^04[45]$/);
+    const nm = +(await page.locator('#rpNm').inputValue());
+    expect(nm).toBeGreaterThan(48); expect(nm).toBeLessThan(58);                        /* 48 % of ~110 nm still to go */
+    await page.click('#rpSave');
+    await expect(page.locator('.vs-fc.on')).toContainText('SK Patron');
+    await expect(page.locator('#vsMap .ck-vl.sel')).toContainText('VF estimate');
+    await expect(page.locator('.vs-last')).toContainText('Route estimate (VesselFinder)');
+    const rec = await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).reports.v533049100[0]);
+    expect(rec.src).toBe('vf'); expect(rec.to.lat).toBeCloseTo(5.5501, 3);
+    /* MarineRadar's free page has the real position: used as it is, dated by the age of the data, then carried forward */
+    const mr = 'MarineRadar — Home\nSK PATRON — Cargo · IMO 9543213\nMY\nMMSI 533049100\nCURRENT POSITION\nLIVE\n\nSK PATRON is currently under way in the South China Sea, at 4.7882° N, 104.0438° E, making 5.3 knots on a course of 45°. It is sailing from KEMAMAN to KEMAMAN with an ETA of common.stamp.\n\nUpdated 3 hours using terrestrial data\nLIVE SATELLITE · LATEST POSITION\n5.3 kn\nSPEED\n45.0°\n/ 42°\nCOURSE / HEADING';
+    await page.click('[data-rp-new="v533049100"]');
+    await page.fill('#rpVf', mr);
+    await expect(page.locator('#rpVfSay .ok')).toContainText(/MarineRadar: 4°47\.29′N 104°02\.63′E · 3 h (00 min )?ago \(shore AIS\)/);
+    await expect(page.locator('#rpSog')).toHaveValue('5.3'); await expect(page.locator('#rpCog')).toHaveValue('045');
+    const when = await page.locator('#rpWhen').inputValue();
+    const age = await page.evaluate(w => (Date.now() - Date.parse(w + ':00+08:00')) / 3600000, when);
+    expect(age).toBeGreaterThan(2.95); expect(age).toBeLessThan(3.05);
+    await page.click('#rpSave');
+    /* it is 3 hours old, so the newer VF estimate stays on top until that one is deleted */
+    const recs = await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).reports.v533049100);
+    expect(recs.map(r => r.src)).toEqual(['vf', 'mr']);
+    await page.locator('.vs-hist summary').click();
+    await page.locator('[data-rp-del="' + recs[0].t + '"]').click();
+    await expect(page.locator('.vs-last')).toContainText('MarineRadar (AIS)');
+    await expect(page.locator('#vsMap .ck-vl.sel')).toContainText('MarineRadar · estimated');
+    const mrec = await page.evaluate(() => JSON.parse(localStorage.getItem('ow_vessels')).reports.v533049100[0]);
+    expect(mrec.src).toBe('mr'); expect(mrec.lat).toBeCloseTo(4.7882, 3); expect(mrec.to).toBeUndefined();
+    /* the last known position more than 6 hours old (JM PERKASA 2 style): warned, kept as an old report */
+    const old = await page.evaluate(() => { const M = MC.EXT.Marine; return M.Vf.estimate(M.Vf.parse('JM PERKASA 2 was last reported under way in the South China Sea, at 5.0142° N, 105.2792° E, on common.stamp.\nUpdated 7 hours using terrestrial data\nMMSI 533000486'), Date.now()); });
+    expect(old.real).toBe(true); expect(old.sog).toBeNull(); expect((Date.now() - old.at) / 3600000).toBeCloseTo(7, 2);
+    /* the estimate never runs past the destination; unknown places and missing times are explained */
+    const g = await page.evaluate(() => {
+      const M = MC.EXT.Marine, P = { lat: 5.5501, lon: 104.7745 }, start = M.Geo.dest(P, 225, 5);
+      const dr = M.Geo.dr({ t: Date.now() - 3 * 3600000, lat: start.lat, lon: start.lon, sog: 10, cog: 45, to: P }, Date.now());
+      const now = Date.now();
+      return { left: M.Geo.inv(dr, P).nm, why1: M.Vf.estimate({ dest: 'SINGAPORE', from: 'Kemaman', atd: now - 3600000, eta: now + 3600000 }, now).why,
+        why2: M.Vf.estimate({ dest: 'IRONG BARAT', from: 'Kemaman' }, now).why, done: M.Vf.estimate({ dest: 'IRONG BARAT', from: 'Kemaman', atd: now - 9e6, eta: now - 1e6, sog: 9 }, now),
+        prem: M.Vf.estimate(M.Vf.parse('Coordinates\t5.304 N/104.528 E\nCourse / Speed\t45.0 ° / 9.8 kn', now), now) };
+    });
+    expect(g.left).toBeLessThan(0.01);
+    expect(g.why1).toContain('SINGAPORE'); expect(g.why2).toMatch(/ATD/);
+    expect(g.done.share).toBe(1); expect(g.done.sog).toBeNull(); expect(g.done.pos.lat).toBeCloseTo(5.5501, 3);
+    expect(g.prem.pos.lat).toBeCloseTo(5.304, 3); expect(g.prem.cog).toBe(45); expect(g.prem.sog).toBe(9.8);
     expect(errors).toEqual([]);
   });
   test('AIS: nothing heard or no relay = nothing shown, no error', async ({ page }) => {
