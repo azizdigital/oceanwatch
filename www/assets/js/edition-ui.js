@@ -242,8 +242,16 @@
         return '<tr><td class="nm">' + esc(String(x.name).replace(/^Sg\. \S+ di /, '').replace(/^Muara Sg\. \S+ di /, '')) + '<small>' + esc(L('keyakinan {c}%', { c: x.fc.conf === null ? '-' : x.fc.conf })) + (x.fc.dry ? ' · ' + esc(L('ramalan kering')) : '') + '</small></td><td class="now"><b>' + f2(x.fc.level) + '</b></td>' + cell(at(x, 3)) + cell(at(x, 6)) + cell(at(x, 24)) + '</tr>';
       }).join('') : '<tr><td colspan="5" class="muted">' + esc(L('Tiada trend stesen lagi')) + '</td></tr>') + '</tbody></table>';
     var RC = ['r0', 'r1', 'r2', 'r3', 'r4'], hl = function (h) { return h < 48 ? L('{h} j', { h: h }) : L('{d} hari', { d: h / 24 }); };
-    var rnT = fc.rain ? '<table class="pd-t"><thead><tr>' + fc.rain.map(function (w) { return '<th>' + esc(hl(w.h)) + '</th>'; }).join('') + '</tr></thead><tbody><tr>' +
-      fc.rain.map(function (w) { return '<td class="' + (w.cls < 0 ? '' : RC[w.cls]) + '"><b>' + (w.med === null ? '-' : (+w.med).toFixed(w.med < 10 ? 1 : 0)) + '</b><i>' + (w.lo === null ? '' : esc(Math.round(w.lo) + '–' + Math.round(w.hi) + ' · ' + w.n + ' ' + L('model'))) + '</i></td>'; }).join('') + '</tr></tbody></table>' : '<p class="muted">' + esc(L('5 model belum dibaca')) + '</p>';
+    /* 1.1.6: middle + range, then the lowest / highest model and the confidence */
+    var MS = { ecmwf_ifs025: 'ECMWF', gfs_seamless: 'GFS', icon_seamless: 'ICON', jma_seamless: 'JMA', ukmo_seamless: 'UKMO' }, CF = { high: 't', mid: 's', low: 'r' };
+    var mmf = function (v) { return v === null || v === undefined ? '-' : (+v).toFixed(v < 10 ? 1 : 0); };
+    var xr = function (label, fn) { return '<tr class="x"><td class="nm">' + label + '</td>' + fc.rain.map(function (w) { return '<td>' + fn(w) + '</td>'; }).join('') + '</tr>'; };
+    var rnT = fc.rain ? '<table class="pd-t pd-rain"><thead><tr><th></th>' + fc.rain.map(function (w) { return '<th>' + esc(hl(w.h)) + '</th>'; }).join('') + '</tr></thead><tbody><tr><td class="nm">' + esc(L('Nilai tengah')) + '</td>' +
+      fc.rain.map(function (w) { return '<td class="' + (w.cls < 0 ? '' : RC[w.cls]) + '"><b>' + mmf(w.med) + '</b><i>' + (w.lo === null ? '' : esc(mmf(w.lo) + '–' + mmf(w.hi))) + '</i></td>'; }).join('') + '</tr>' +
+      xr('<span class="pd-lo">↓</span> ' + esc(L('Paling rendah')), function (w) { return w.lo === null ? '-' : '<b>' + mmf(w.lo) + '</b><i>' + esc(MS[w.loM] || w.loM || '') + '</i>'; }) +
+      xr('<span class="pd-hi">↑</span> ' + esc(L('Paling tinggi')), function (w) { return w.hi === null ? '-' : '<b>' + mmf(w.hi) + '</b><i>' + esc(MS[w.hiM] || w.hiM || '') + '</i>'; }) +
+      xr(esc(L('Keyakinan')), function (w) { return w.conf === null || w.conf === undefined ? '-' : '<span class="pd-cf ' + CF[w.confLv] + '">' + w.conf + '%</span>'; }) +
+      '</tbody></table>' : '<p class="muted">' + esc(L('5 model belum dibaca')) + '</p>';
     var flT = fc.flow && fc.flow.length ? '<div class="pd-trend">' + fc.flow.map(function (x) { return '<div class="pd-tc"><span>' + esc(L('{d} hari', { d: x.d })) + '</span><b class="' + x.dir + '">' + ({ up: '↑', down: '↓', flat: '→' })[x.dir] + ' ' + (x.pct > 0 ? '+' : '') + x.pct + '%</b><small>' + x.v + ' m³/s</small></div>'; }).join('') + '</div>' : '';
     host.innerHTML = '<div class="pd-row"><div><h4 class="pd-ttl">' + esc(L('Paras sungai (paling hampir Bahaya)')) + '</h4>' + lvT + '</div><div><h4 class="pd-ttl">' + esc(L('Hujan dijangka (mm, nilai tengah model)')) + '</h4>' + rnT +
       (flT ? '<h4 class="pd-ttl">' + esc(L('Aliran sungai GloFAS (bukan paras)')) + '</h4>' + flT : '') + '</div></div>';

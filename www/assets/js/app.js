@@ -1821,10 +1821,11 @@
     forecast: function (snap, sts, tr, now, gl, rains) {
       var R = window.MCRisk, raw = Early.rainCache && Early.rainCache.raw, H1 = 3600000;
       if (!R || !R.forecastLevel) return null;
-      var series = raw ? Object.keys(raw.models || {}).map(function (id) {
+      var ids = [], series = [];
+      if (raw) Object.keys(raw.models || {}).forEach(function (id) {
         var m = raw.models[id], d = m && m.ok && m.data && m.data[0];
-        return d ? d.p.map(function (v, i) { return { t: d.t0 + i * H1, v: v }; }) : null;
-      }).filter(Boolean) : [];
+        if (d) { ids.push(id); series.push(d.p.map(function (v, i) { return { t: d.t0 + i * H1, v: v }; })); }
+      });
       var from = Math.floor(now / H1) * H1;
       var rainH = function (h) {
         return series.map(function (l) { var a = 0, n = 0; l.forEach(function (p) { if (p.t >= from && p.t < from + h * H1 && p.v !== null) { a += p.v; n++; } }); return n >= h * 0.95 ? a : null; })
@@ -1838,7 +1839,7 @@
         return fc ? { name: st.name, alert: st.alert, warning: st.warning, danger: st.danger, fc: fc } : null;
       }).filter(Boolean);
       var rv = snap.river && snap.river.days ? snap.river.days.filter(function (d) { return !d.past; }).map(function (d) { return { d: d.date, v: d.q }; }) : [];
-      return { at: now, levels: levels, rain: series.length ? R.rainWindows(series, now, [3, 24, 72, 168, 336]) : null, models: series.length,
+      return { at: now, levels: levels, rain: series.length ? R.rainWindows(series, now, [3, 24, 72, 168, 336], ids) : null, models: series.length,
         flow: rv.length ? R.flowTrend(rv, rv[0].v, null, [3, 7, 14]) : [] };
     },
     add: function (snap, s, hist, now, viaRelay) {

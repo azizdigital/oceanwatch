@@ -503,3 +503,14 @@ html[data-theme="light"] .pd-t .r1 b { color: #2f7fc0; } html[data-theme="light"
 .kc-mark.fc { fill: var(--surface); stroke: var(--brand-text); stroke-width: 2; }
 .pd-card .pd-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 @media (max-width: 900px) { .pd-card .pd-row { grid-template-columns: 1fr; } }
+
+/* 1.1.6: rain table - lowest / highest model, confidence */
+.pd-t tr.x td { background: none; padding: 2px 4px; font-size: 11.5px; color: var(--ink-2); }
+.pd-t tr.x td.nm { font-weight: 400; color: var(--ink-3); padding-left: 12px; font-size: 11.5px; }
+.pd-t tr.x td b { font-size: 12px; display: inline; font-weight: 600; } .pd-t tr.x td i { display: inline; margin-left: 3px; }
+.pd-t tr.zh td { padding-top: 12px; }
+.pd-lo { color: #7cc4ff; } .pd-hi { color: #e879f9; }
+.pd-cf { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 99px; font-weight: 700; line-height: 1.35; }
+.pd-cf em { display: block; font-style: normal; font-weight: 500; font-size: 10px; }
+.pd-cf.t { background: var(--soft-normal); color: var(--st-normal); } .pd-cf.s { background: var(--soft-alert); color: var(--st-alert); } .pd-cf.r { background: var(--soft-danger); color: var(--st-danger); }
+.pd-card .pd-cf em { display: none; }

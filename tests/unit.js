@@ -688,6 +688,14 @@ test('1.1.5 forecasts: water level 1-24 h (rate, trend, rain factor, dry, floor,
   assert.strictEqual(W(168).n, 3); assert.strictEqual(W(336).n, 2); assert.strictEqual(W(336).med, 336);
   assert.strictEqual(R.rainClass(0.5, 1), 0); assert.strictEqual(R.rainClass(25, 24), 2); assert.strictEqual(R.rainClass(70, 24), 4);
   assert.strictEqual(R.rainClass(140, 168), 2);                          /* 20 mm a day */
+  /* 1.1.6: lowest / highest model and confidence (60 same class + 20 models + 20 time ahead): the worked example 8/18/22/30/45 mm = 76% */
+  const day = mm => { const a = []; for (let t = now - H; t < now + 16 * 24 * H; t += H) a.push({ t, v: mm / 24 }); return a; };
+  const c24 = R.rainWindows([day(8), day(18), day(22), day(30), day(45)], now, [24], ['gfs', 'jma', 'ecmwf', 'ukmo', 'icon'])[0];
+  assert.deepStrictEqual([c24.med, c24.lo, c24.loM, c24.hi, c24.hiM, c24.conf, c24.confLv], [22, 8, 'gfs', 45, 'icon', 76, 'high']);
+  const c14 = R.rainWindows([day(10), day(12)], now, [336], ['ecmwf', 'gfs'])[0];
+  assert.deepStrictEqual([c14.n, c14.conf, c14.confLv], [2, 73, 'high']);      /* 2 models agree: 60 + 8 + 5 */
+  const c7 = R.rainWindows([day(1), day(40)], now, [168])[0];
+  assert.deepStrictEqual([c7.conf, c7.confLv], [48, 'mid']);                   /* they disagree (1 of 2 in the class): 30 + 8 + 10 */
   /* GloFAS: day 2 / 5 against now, % of the 2-year flow */
   const fl = R.flowTrend([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(i => ({ d: 'd' + i, v: 100 + i * 10 })), 100, 200);
   assert.deepStrictEqual(fl.map(x => [x.d, x.pct, x.dir, x.of2]), [[2, 20, 'up', 60], [3, 30, 'up', 65], [5, 50, 'up', 75], [7, 70, 'up', 85], [10, 100, 'up', 100], [14, 140, 'up', 120]]);

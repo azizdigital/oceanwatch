@@ -97,6 +97,7 @@ if (E['monsoon-eye']) test.describe('Monsoon EYE', () => {
     await expect(page.locator('#cardPred .pd-t').first()).toBeVisible({ timeout: 15000 });
     await expect(page.locator('#cardPred .pd-t').first().locator('tbody tr')).toHaveCount(4);
     await expect(page.locator('#cardPred')).toContainText(/3 hari|3 days/);
+    await expect(page.locator('#cardPred .pd-rain tr.x')).toHaveCount(3);          /* 1.1.6: lowest, highest, confidence */
     /* the new page, right after Flood Hub Chukai in the site list */
     const ids = await page.evaluate(() => [].map.call(document.querySelectorAll('[data-site]'), b => b.getAttribute('data-site')));
     expect(ids.indexOf('ramalan')).toBe(ids.indexOf('floodhub') + 1);
@@ -106,7 +107,9 @@ if (E['monsoon-eye']) test.describe('Monsoon EYE', () => {
     await expect(km.locator('#kmPredLv thead th')).toHaveText([/Stesen|Gauge/, /Sekarang|Now/, /1 j|1 h/, /3 j|3 h/, /6 j|6 h/, /12 j|12 h/, /24 j|24 h/, /Keyakinan|Confidence/]);
     await expect(km.locator('#kmPredFlow .pd-tc')).toHaveCount(6);
     await expect(km.locator('#kmPredRain thead th')).toHaveCount(10);
-    await expect(km.locator('#kmPredRain tbody tr')).toHaveCount(5);
+    await expect(km.locator('#kmPredRain tbody tr')).toHaveCount(17);            /* 1.1.6: 4 zones x (middle, lowest, highest, confidence) + models */
+    await expect(km.locator('#kmPredRain tr.x').first()).toContainText(/Paling rendah|Lowest/);
+    await expect(km.locator('#kmPredRain .pd-cf').first()).toContainText('%');
     const head = await km.locator('#kmPredRain tbody tr').last().innerText();
     expect(head).toMatch(/Model/);
     /* a gauge: its sheet with the dashed 24-hour forecast */

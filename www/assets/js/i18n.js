@@ -349,6 +349,8 @@
  "Data lama: {m} minit": "Old data: {m} minutes",
  "Data lama:": "Old data:",
  "hingga {d}": "until {d}",
+ "Paling rendah": "Lowest",
+ "Paling tinggi": "Highest",
  "Normal": "Normal",
  "ringan": "light",
  "lebat": "heavy",

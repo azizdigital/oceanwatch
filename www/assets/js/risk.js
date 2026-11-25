@@ -308,20 +308,29 @@
     return { level: lvl, dry: dry, tidal: tidal, ratio: ratio, steps: steps, conf: pj && pj.conf !== undefined ? pj.conf : null };
   }
   /* rain from now in 1 h .. 14 days, per model: the hours [hour of now, + h); a model counts when it has (nearly) every hour of it.
-     series: [[{ t, v }], ...] one list per model -> [{ h, med, lo, hi, n, cls }] */
-  function rainWindows(series, now, hours) {
+     series: [[{ t, v }], ...] one list per model, ids: the models' names (same order)
+     -> [{ h, med, lo, hi, loM, hiM, n, cls, conf, confLv }]
+     confidence (0-100, approved 25 Nov 2026): 60 x share of models in the same JPS class as the middle value
+       + 20 x models / 5 + time ahead (up to 24 h 20, 2-3 days 15, 7 days 10, 14 days 5); >= 70 high, 40-69 moderate, < 40 low */
+  function rainWindows(series, now, hours, ids) {
     var from = Math.floor(now / HOUR) * HOUR;
     return (hours || RAIN_WINDOWS).map(function (h) {
-      var to = from + h * HOUR, sums = [];
-      (series || []).forEach(function (list) {
+      var to = from + h * HOUR, got = [];
+      (series || []).forEach(function (list, k) {
         if (!list) return;
         var a = 0, n = 0;
         list.forEach(function (p) { if (p.t >= from && p.t < to && num(p.v) !== null) { a += p.v; n++; } });
-        if (n >= Math.max(1, h - 1) && n >= h * 0.95) sums.push(a);
+        if (n >= Math.max(1, h - 1) && n >= h * 0.95) got.push({ v: a, id: ids && ids[k] !== undefined ? ids[k] : k });
       });
-      var m = medOf(sums);
-      return { h: h, med: m === null ? null : Math.round(m * 10) / 10, lo: sums.length ? Math.round(Math.min.apply(null, sums) * 10) / 10 : null,
-        hi: sums.length ? Math.round(Math.max.apply(null, sums) * 10) / 10 : null, n: sums.length, cls: rainClass(m, h) };
+      var sums = got.map(function (x) { return x.v; }), m = medOf(sums), r1 = function (v) { return v === null ? null : Math.round(v * 10) / 10; };
+      var lo = got.reduce(function (a, x) { return !a || x.v < a.v ? x : a; }, null), hi = got.reduce(function (a, x) { return !a || x.v > a.v ? x : a; }, null);
+      var cls = rainClass(m, h), conf = null;
+      if (got.length) {
+        var same = got.filter(function (x) { return rainClass(x.v, h) === cls; }).length / got.length;
+        conf = Math.round(60 * same + 20 * Math.min(1, got.length / 5) + (h <= 24 ? 20 : h <= 72 ? 15 : h <= 168 ? 10 : 5));
+      }
+      return { h: h, med: r1(m), lo: lo ? r1(lo.v) : null, hi: hi ? r1(hi.v) : null, loM: lo ? lo.id : null, hiM: hi ? hi.id : null, n: got.length, cls: cls,
+        conf: conf, confLv: conf === null ? null : conf >= 70 ? 'high' : conf >= 40 ? 'mid' : 'low' };
     });
   }
   /* JPS hourly classes (1-10 light, 11-30 moderate, 31-60 heavy, > 60 very heavy) on the total up to 24 h; on the daily average after */
