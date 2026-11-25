@@ -296,7 +296,7 @@
         if (on) {
           deskWebview();
           var bar = document.createElement('div'); bar.className = 'altbar origbar';
-          bar.innerHTML = '<span>🌐 ' + esc(site.id === 'floodhub' ? L('Laman asal') + ': Google Flood Hub' : L('Laman asal: infobanjir Terengganu')) + '</span><button class="btn sm" type="button">← ' + esc(L(site.id === 'rainfall' ? 'Halaman app (Hujan Kemaman)' : site.id === 'floodhub' ? 'Halaman app (Aliran Sungai Kemaman)' : 'Halaman app (Paras Air Kemaman)')) + '</button>';
+          bar.innerHTML = '<span>🌐 ' + esc(site.id === 'floodhub' || site.id === 'ramalan' ? L('Laman asal') + ': Google Flood Hub' : L('Laman asal: infobanjir Terengganu')) + '</span><button class="btn sm" type="button">← ' + esc(L(site.id === 'rainfall' ? 'Halaman app (Hujan Kemaman)' : site.id === 'floodhub' ? 'Halaman app (Aliran Sungai Kemaman)' : site.id === 'ramalan' ? 'Halaman app (Ramalan Kemaman)' : 'Halaman app (Paras Air Kemaman)')) + '</button>';
           bar.querySelector('button').onclick = function () { fr.showOrig(false); };
           wrap.insertBefore(bar, fr.view); wrap.classList.add('has-alt');
         } else { wrap.classList.remove('has-alt'); deskOwnPage(); }
@@ -1816,6 +1816,31 @@
       if (c && c.key === key && now - c.at < OM.every()) return Promise.resolve(R.rainAhead(c.raw, now));
       return A.collectLand([{ lat: s.lat, lon: s.lon }], Early.get).then(function (raw) { Early.rainCache = { key: key, at: now, raw: raw }; return R.rainAhead(raw, now); }).catch(function () { return {}; });
     },
+    /* 1.1.5: the dashboard's Ramalan card - water level 1-24 h per gauge, rain 3 h-14 days (5 models at the profile place),
+       GloFAS flow in 3, 7, 14 days (same formulas as the Ramalan Kemaman page) */
+    forecast: function (snap, sts, tr, now, gl, rains) {
+      var R = window.MCRisk, raw = Early.rainCache && Early.rainCache.raw, H1 = 3600000;
+      if (!R || !R.forecastLevel) return null;
+      var series = raw ? Object.keys(raw.models || {}).map(function (id) {
+        var m = raw.models[id], d = m && m.ok && m.data && m.data[0];
+        return d ? d.p.map(function (v, i) { return { t: d.t0 + i * H1, v: v }; }) : null;
+      }).filter(Boolean) : [];
+      var from = Math.floor(now / H1) * H1;
+      var rainH = function (h) {
+        return series.map(function (l) { var a = 0, n = 0; l.forEach(function (p) { if (p.t >= from && p.t < from + h * H1 && p.v !== null) { a += p.v; n++; } }); return n >= h * 0.95 ? a : null; })
+          .filter(function (v) { return v !== null; });
+      };
+      var ev = snap.tide && snap.tide.events;
+      var levels = sts.map(function (st) {
+        var t = tr[st.name], c = Early.cache[st.name]; if (!t) return null;
+        var fc = R.forecastLevel(t, st, { now: now, rainH: rainH, obsToday: R.obsRain(rains, st), tide: t.tidal ? ev : null,
+          ratio: t.tidal && ev && c ? R.tideRatio(c.pts, ev, now) : null, project: { glofas: gl } });
+        return fc ? { name: st.name, alert: st.alert, warning: st.warning, danger: st.danger, fc: fc } : null;
+      }).filter(Boolean);
+      var rv = snap.river && snap.river.days ? snap.river.days.filter(function (d) { return !d.past; }).map(function (d) { return { d: d.date, v: d.q }; }) : [];
+      return { at: now, levels: levels, rain: series.length ? R.rainWindows(series, now, [3, 24, 72, 168, 336]) : null, models: series.length,
+        flow: rv.length ? R.flowTrend(rv, rv[0].v, null, [3, 7, 14]) : [] };
+    },
     add: function (snap, s, hist, now, viaRelay) {
       var R = window.MCRisk, A = window.MCAdvisor;
       if (!R) return Promise.resolve();
@@ -1851,6 +1876,7 @@
         var rains = (snap.jps && snap.jps.rain && snap.jps.rain.stations) || snap.rainStations || [];
         snap.early = R.earlyFlood(sts, tr, now, { rivers: rivers, rain4: res[1].rain4, rain24: res[1].rain24, glofas: gl, minConf: s.ewConf, prevLoud: prevLoud,
           obs: function (st) { return R.obsRain(rains, st); } });
+        try { snap.fc = Early.forecast(snap, sts, tr, now, gl, rains); } catch (e) { snap.fc = null; }
       });
     }
   };

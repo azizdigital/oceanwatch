@@ -26,6 +26,7 @@
       { id: 'waterlevel', title: 'Water Level Kemaman', desc: 'Paras air Daerah Kemaman', icon: '📊', url: 'https://infobanjir.terengganu.gov.my/WaterLevel/District/4' },
       { id: 'rainfall', title: 'Rainfall Kemaman', desc: 'Data hujan real-time', icon: '🌧️', url: 'https://infobanjir.terengganu.gov.my/Rainfall/District/4' },
       { id: 'floodhub', title: 'Flood Hub Chukai', desc: 'Aliran sungai & ramalan 30 hari (GloFAS)', icon: '💧', url: 'https://sites.research.google/floods/l/4.226693947058215/103.41916850003622/13.39981973087496/p/ChIJYVEG9-SGyDERjwlnnLGhe5E?layers=1' },
+      { id: 'ramalan', title: 'Ramalan Kemaman', desc: 'Paras 1–24 j · aliran & hujan hingga 14 hari', icon: '🔮', added: true, url: 'https://sites.research.google/floods/l/4.226693947058215/103.41916850003622/13.39981973087496/p/ChIJYVEG9-SGyDERjwlnnLGhe5E?layers=1' },
       { id: 'infobanjir', title: 'Info Banjir Terengganu', desc: 'Portal banjir Terengganu', icon: '🌊', url: 'https://infobanjir.terengganu.gov.my/' },
       { id: 'jpsaras', title: 'JPS Aras Air Terengganu', desc: 'Public Infobanjir (JPS Malaysia) · daerah profil', icon: '📏', profile: true, url: 'https://publicinfobanjir.water.gov.my/aras-air/data-paras-air/?state=TRG&type=NEGERI&lang=en#dcdistrict={district}', added: true },
       { id: 'jpspeta', title: 'JPS Peta Infobanjir', desc: 'Peta hujan & aras air seluruh negara', icon: '🗺️', url: 'https://publicinfobanjir.water.gov.my/main/', added: true }
@@ -75,7 +76,7 @@
   CATEGORIES.forEach(function (c) { c.items.forEach(function (s) { s.category = c.id; SITES.push(s); }); });
   /* sites known to refuse being shown inside another app (seen 19-20 Nov 2026). The web app and the phone without the PC use
      this list; with the PC, its live check decides (snapshot sites[id].frameable). */
-  ['waterlevel', 'rainfall', 'floodhub', 'infobanjir', 'jpsaras', 'jpspeta', 'zoomearth', 'storms', 'metradar', 'metmalaysia', 'vesselfinder',
+  ['waterlevel', 'rainfall', 'floodhub', 'ramalan', 'infobanjir', 'jpsaras', 'jpspeta', 'zoomearth', 'storms', 'metradar', 'metmalaysia', 'vesselfinder',
     'windy', 'windywave', 'windywind', 'webcam', 'camera', 'himawari', 'tideforecast', 'tideschart', 'tides4fishing', 'nadma', 'metmarine'].forEach(function (id) {
     SITES.forEach(function (s) { if (s.id === id) s.noFrame = true; });
   });
@@ -93,6 +94,7 @@
     metmalaysia: { view: 'dashboard', anchor: 'cardMet', title: 'Ramalan & amaran MET di Dashboard (data rasmi MET)' },
     metmarine: { view: 'dashboard', anchor: 'cardWarn', title: 'Amaran laut MET di Dashboard (data rasmi MET)' },
     floodhub: { prefer: true, url: 'kemaman.html?tab=flow', local: true, page: true, title: 'Aliran Sungai Kemaman (GloFAS, ramalan 30 hari)' },
+    ramalan: { prefer: true, url: 'kemaman.html?tab=pred', local: true, page: true, title: 'Ramalan Kemaman (paras, aliran & hujan)' },
     jpspeta: { view: 'dashboard', anchor: 'cardWater', title: 'Paras air JPS di Dashboard (mirror GitHub)' },
     himawari: { prefer: true, url: 'https://www.ventusky.com/?p={lat};{lon};5&l=satellite', title: 'Ventusky - satelit (imej Himawari) - CIRA SLIDER hanya boleh dilihat di lamannya sendiri' },
     windy: { prefer: true, url: WINDY + '&zoom=8&overlay=rain&lat={lat}&lon={lon}&detailLat={lat}&detailLon={lon}', title: 'Windy (versi embed) - hujan & ribut petir' },

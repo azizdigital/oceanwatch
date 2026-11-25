@@ -245,6 +245,102 @@
     return { tier: tier, dry: dry, lv: lv, target: tgt[0], targetName: tgt[1], targetM: target, p4: p4, p24: p24, eta: dry ? null : eta, gap: gap, conf: conf, parts: parts,
       rain24: rain24, upRising: ups.length ? ups.filter(function (x) { return x.rate !== null && x.rate > 0.01; }).length : null, upN: ups.length, glofas: ctx.glofas };
   }
+  /* ------------------------------------------------------------------ forecasts (Monsoon EYE 1.1.5, formulas approved 25 Nov 2026) */
+  var FC_HOURS = [1, 3, 6, 12, 24], RAIN_WINDOWS = [1, 3, 6, 12, 24, 48, 72, 168, 336], FLOW_DAYS = [2, 3, 5, 7, 10, 14];
+  function medOf(a) { a = clean(a || []).sort(function (x, y) { return x - y; }); return a.length ? a[Math.floor((a.length - 1) / 2)] : null; }
+  /* sea level from the tide table (high / low times), cosine between turning points; null outside the table */
+  function tideAt(events, t) {
+    var ev = (events || []).filter(function (e) { return e && isFinite(e.t) && num(e.sea) !== null; }).sort(function (a, b) { return a.t - b.t; });
+    for (var i = 0; i < ev.length - 1; i++) {
+      var a = ev[i], b = ev[i + 1];
+      if (t >= a.t && t <= b.t) { var f = (t - a.t) / (b.t - a.t); return a.sea + (b.sea - a.sea) * (1 - Math.cos(Math.PI * f)) / 2; }
+    }
+    return null;
+  }
+  /* how much of the tide reaches a river-mouth gauge: its range in the last 24 hours / the tide's range then (0 .. 1.2) */
+  function tideRatio(pts, events, now) {
+    var from = now - DAY, v = clean((pts || []).filter(function (p) { return p.t >= from && p.t <= now; }).map(function (p) { return p.v; }));
+    var tv = []; for (var t = from; t <= now; t += HOUR) { var x = tideAt(events, t); if (x !== null) tv.push(x); }
+    if (v.length < 6 || tv.length < 12) return null;
+    var sr = Math.max.apply(null, v) - Math.min.apply(null, v), tr = Math.max.apply(null, tv) - Math.min.apply(null, tv);
+    return tr > 0.2 ? Math.max(0, Math.min(1.2, sr / tr)) : null;
+  }
+  /* water level in 1, 3, 6, 12, 24 hours.
+     river gauges: up to 4 h the recent rate (rate x h); after 4 h the rate moves to the 24-hour trend (a burst does not last a day);
+       a rise after 4 h x rain factor of the models' rain in that time (>= 30 mm 1, >= 5 mm 0.75, else 0.5);
+     dry (models' middle under 5 mm in 24 h and under 10 mm today at the gauge): no rise, a fall goes on with the trend;
+     never under the lowest level of the last 7 days (floor);
+     river-mouth gauges (tidal): now + (tide then - tide now) x the gauge's tide ratio + the 24-hour trend x h.
+     ctx: { now, rainH: function (h) -> [mm per model], obsToday, floor, tide: events, ratio, project: {upstream, glofas} }
+     -> { level, dry, tidal, steps: [{ h, v, lo, hi, lv, dir }], conf } */
+  function forecastLevel(tr, st, ctx) {
+    ctx = ctx || {};
+    if (!tr || num(tr.level) === null) return null;
+    var now = ctx.now || Date.now(), lvl = tr.level, rainH = ctx.rainH || function () { return []; };
+    var r = num(tr.rate) === null ? 0 : tr.rate, L24 = num(tr.rate24) === null ? r / 2 : tr.rate24;
+    var r24m = medOf(rainH(24)), obsT = num(ctx.obsToday);
+    var dry = (r24m === null || r24m < 5) && (obsT === null || obsT < 10);
+    var tidal = !!tr.tidal, ratio = num(ctx.ratio), floor = num(ctx.floor);
+    var kOf = function (mm) { return mm === null ? 0.6 : mm >= 30 ? 1 : mm >= 5 ? 0.75 : 0.5; };
+    var delta = function (h, pick) {
+      var d;
+      if (tidal) {
+        var a = tideAt(ctx.tide, now), b = tideAt(ctx.tide, now + h * HOUR), trend = (num(tr.rate24) === null ? 0 : tr.rate24) * h;
+        if (dry) trend = Math.min(trend, 0);
+        return (a !== null && b !== null && ratio !== null ? (b - a) * ratio : 0) + trend;
+      }
+      if (h <= 4) d = r * h;
+      else { var hh = Math.min(h, 24), avg = r + (L24 - r) * (hh - 4) / 40; d = r * 4 + avg * (h - 4); }
+      var d4 = r * Math.min(h, 4);
+      if (h > 4 && d - d4 > 0) d = d4 + (d - d4) * kOf(pick(rainH(h)));
+      if (dry) d = Math.min(d, 0);
+      return d;
+    };
+    var lim = function (v) { return floor !== null && v < floor ? floor : v; };
+    var lo = function (a) { a = clean(a); return a.length ? Math.min.apply(null, a) : null; }, hi = function (a) { a = clean(a); return a.length ? Math.max.apply(null, a) : null; };
+    var steps = (ctx.hours || FC_HOURS).map(function (h) {
+      var v = lim(lvl + delta(h, medOf)), a = lim(lvl + delta(h, lo)), b = lim(lvl + delta(h, hi));
+      var dv = v - lvl;
+      return { h: h, v: Math.round(v * 100) / 100, lo: Math.round(Math.min(a, b, v) * 100) / 100, hi: Math.round(Math.max(a, b, v) * 100) / 100,
+        lv: levelIndex(st, v), dir: dv > 0.02 ? 'up' : dv < -0.02 ? 'down' : 'flat' };
+    });
+    var pj = project(tr, st, Object.assign({ rain4: rainH(4), rain24: rainH(24), obsToday: obsT }, ctx.project || {}));
+    return { level: lvl, dry: dry, tidal: tidal, ratio: ratio, steps: steps, conf: pj && pj.conf !== undefined ? pj.conf : null };
+  }
+  /* rain from now in 1 h .. 14 days, per model: the hours [hour of now, + h); a model counts when it has (nearly) every hour of it.
+     series: [[{ t, v }], ...] one list per model -> [{ h, med, lo, hi, n, cls }] */
+  function rainWindows(series, now, hours) {
+    var from = Math.floor(now / HOUR) * HOUR;
+    return (hours || RAIN_WINDOWS).map(function (h) {
+      var to = from + h * HOUR, sums = [];
+      (series || []).forEach(function (list) {
+        if (!list) return;
+        var a = 0, n = 0;
+        list.forEach(function (p) { if (p.t >= from && p.t < to && num(p.v) !== null) { a += p.v; n++; } });
+        if (n >= Math.max(1, h - 1) && n >= h * 0.95) sums.push(a);
+      });
+      var m = medOf(sums);
+      return { h: h, med: m === null ? null : Math.round(m * 10) / 10, lo: sums.length ? Math.round(Math.min.apply(null, sums) * 10) / 10 : null,
+        hi: sums.length ? Math.round(Math.max.apply(null, sums) * 10) / 10 : null, n: sums.length, cls: rainClass(m, h) };
+    });
+  }
+  /* JPS hourly classes (1-10 light, 11-30 moderate, 31-60 heavy, > 60 very heavy) on the total up to 24 h; on the daily average after */
+  function rainClass(mm, h) {
+    if (mm === null || mm === undefined) return -1;
+    var v = h > 24 ? mm / (h / 24) : mm;
+    return v < 1 ? 0 : v <= 10 ? 1 : v <= 30 ? 2 : v <= 60 ? 3 : 4;
+  }
+  /* GloFAS river flow in 2 .. 14 days against now (middle of the members): [{ d, v, pct, dir, of2, p2 }] */
+  function flowTrend(daily, nowV, t2, days, probs) {
+    var list = (daily || []).filter(function (x) { return x && num(x.v) !== null; });
+    if (!list.length || !(nowV > 0)) return [];
+    return (days || FLOW_DAYS).map(function (d) {
+      var x = list[d]; if (!x) return null;
+      var pct = Math.round((x.v / nowV - 1) * 100);
+      return { d: d, v: Math.round(x.v), date: x.d || x.date, pct: pct, dir: pct >= 5 ? 'up' : pct <= -5 ? 'down' : 'flat',
+        of2: t2 > 0 ? Math.round(100 * x.v / t2) : null, p2: probs && probs[d] !== undefined ? probs[d] : null };
+    }).filter(Boolean);
+  }
   /* the early flood warnings: projected to reach the next level within 4 or 24 hours. Only those at >= minConf ring;
      the others are shown quietly. ctx: { rivers (parseRivers), rain4, rain24, glofas, obs(st) -> mm today, minConf, prevLoud: { key: true } } */
   function earlyFlood(stations, trends, now, ctx) {
@@ -470,6 +566,7 @@
   }
 
   return { LEVELS: LEVELS, level: level, bump: bump, combine: combine, ramp: ramp, seriesUrl: seriesUrl, rainUrl: rainUrl, histPoints: histPoints, slope: slope, fit: fit, trend: trend, project: project, earlyFlood: earlyFlood,
+    FC_HOURS: FC_HOURS, RAIN_WINDOWS: RAIN_WINDOWS, FLOW_DAYS: FLOW_DAYS, tideAt: tideAt, tideRatio: tideRatio, forecastLevel: forecastLevel, rainWindows: rainWindows, rainClass: rainClass, flowTrend: flowTrend,
     KEMAMAN_RIVERS: KEMAMAN_RIVERS, parseRivers: parseRivers, rainAhead: rainAhead, obsRain: obsRain, riverFor: riverFor, isTidal: isTidal, EW_W: EW_W,
     rainScore: rainScore, weatherPart: weatherPart, riverPart: riverPart, coastalPart: coastalPart, landScore: landScore,
     windPart: windPart, seaPart: seaPart, weatherOffPart: weatherOffPart, offScore: offScore, offValues: offValues, earlyOffshore: earlyOffshore, windows: windows, when: when };

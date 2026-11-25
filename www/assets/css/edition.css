@@ -468,3 +468,38 @@ html[data-edition="me"] #cardWater { align-self: stretch; }
 .ck-new line, .ck-new path { stroke: #f5b942; } .ck-new circle { fill: rgba(245, 185, 66, .18); stroke: #f5b942; }
 @media (max-width: 900px) { .vs-split, .vs-split.rep { grid-template-columns: 1fr; } .vs-map, .vs-map iframe, .vs-map webview, .ck { min-height: 420px; } }
 @media (prefers-reduced-motion: reduce) { .vs-pin { transition: none; } }
+
+/* ---- Monsoon EYE 1.1.5: forecasts (Ramalan page, dashboard card, hydrograph) ---- */
+.pd-t { width: 100%; border-collapse: separate; border-spacing: 4px; font-size: 13px; }
+.km-scroll .pd-t { min-width: 640px; } .pd-card .pd-row > div { min-width: 0; overflow-x: auto; }
+.pd-card .pd-t { font-size: 12.5px; border-spacing: 3px; } .pd-card .pd-t td b { font-size: 13px; }
+.pd-t th { color: var(--ink-3); font-weight: 500; font-size: 12px; text-align: center; padding: 2px 4px; white-space: nowrap; }
+.pd-t th:first-child, .pd-t td:first-child { text-align: left; }
+.pd-t td { text-align: center; padding: 6px 4px; border-radius: 8px; font-variant-numeric: tabular-nums; background: var(--fill); }
+.pd-t td.nm { background: none; font-weight: 600; white-space: nowrap; }
+.pd-t td.nm button { all: unset; cursor: pointer; font-weight: 600; } .pd-t td.nm button:hover, .pd-t td.nm button:focus-visible { text-decoration: underline; }
+.pd-t td.nm small, .pd-t td i { display: block; font-weight: 400; font-style: normal; color: var(--ink-3); font-size: 11px; }
+.pd-t td b { display: block; font-size: 14px; }
+.pd-t .n { background: var(--soft-normal); } .pd-t .n b { color: var(--st-normal); }
+.pd-t .a { background: var(--soft-alert); } .pd-t .a b { color: var(--st-alert); }
+.pd-t .w { background: var(--soft-warning); } .pd-t .w b { color: var(--st-warning); }
+.pd-t .d { background: var(--soft-danger); } .pd-t .d b { color: var(--st-danger); }
+.pd-t .r0 b { color: var(--ink-3); }
+.pd-t .r1 { background: color-mix(in srgb, #7cc4ff 14%, var(--surface)); } .pd-t .r1 b { color: #7cc4ff; }
+.pd-t .r2 { background: color-mix(in srgb, #5aa9ff 24%, var(--surface)); } .pd-t .r2 b { color: #5aa9ff; }
+.pd-t .r3 { background: color-mix(in srgb, #a78bfa 28%, var(--surface)); } .pd-t .r3 b { color: #a78bfa; }
+.pd-t .r4 { background: color-mix(in srgb, #e879f9 30%, var(--surface)); } .pd-t .r4 b { color: #e879f9; }
+html[data-theme="light"] .pd-t .r1 b { color: #2f7fc0; } html[data-theme="light"] .pd-t .r2 b { color: #2563eb; } html[data-theme="light"] .pd-t .r3 b { color: #7c3aed; } html[data-theme="light"] .pd-t .r4 b { color: #c026d3; }
+.pd-t .sep { border-left: 2px dashed var(--fill-2); }
+.pd-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11.5px; color: var(--ink-3); margin-top: 6px; }
+.pd-legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; background: var(--c); }
+.pd-ttl { font-size: 13px; color: var(--ink-2); margin: 14px 0 6px; font-weight: 600; }
+.pd-trend { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.pd-tc { background: var(--fill); border-radius: 10px; padding: 8px 10px; font-size: 12.5px; }
+.pd-tc b { display: block; font-size: 18px; margin: 2px 0; } .pd-tc b.up { color: var(--st-warning); } .pd-tc b.down { color: var(--st-normal); } .pd-tc b.flat { color: var(--ink-2); }
+.pd-tc small { color: var(--ink-3); }
+.kc-fan.fc { fill: var(--brand); opacity: .16; }
+.kc-line.fc { opacity: .9; }
+.kc-mark.fc { fill: var(--surface); stroke: var(--brand-text); stroke-width: 2; }
+.pd-card .pd-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 900px) { .pd-card .pd-row { grid-template-columns: 1fr; } }

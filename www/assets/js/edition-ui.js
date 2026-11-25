@@ -227,6 +227,28 @@
     };
     return list.slice().sort(function (a, b) { return pos(a) - pos(b); });
   }
+  /* 1.1.5: Ramalan card - the gauges nearest to Bahaya in 24 h, rain 3 h-14 days, GloFAS flow 3/7/14 days */
+  function predCard() {
+    var host = $('predBody'); if (!host) return;
+    var snap = state.snap || {}, fc = snap.fc, R = window.MCRisk;
+    if (!fc || !R) { host.innerHTML = '<p class="muted">' + esc(L('Ramalan dikira selepas data sungai & 5 model dibaca…')) + '</p>'; return; }
+    var LV = ['n', 'a', 'w', 'd'], LVN = ['Normal', 'Waspada', 'Amaran', 'Bahaya'], f2 = function (v) { return v === null || v === undefined ? '-' : (+v).toFixed(2); };
+    var pctD = function (x) { var d = x.danger, s24 = x.fc.steps.filter(function (q) { return q.h === 24; })[0]; return d && s24 ? s24.v / d : 0; };
+    var top = fc.levels.slice().sort(function (a, b) { return pctD(b) - pctD(a); }).slice(0, 4);
+    var cell = function (q) { return q ? '<td class="' + LV[Math.max(0, q.lv)] + '"><b>' + f2(q.v) + '</b><i>' + esc(q.lv > 0 ? L(LVN[q.lv]) : ({ up: '↑', down: '↓', flat: '→' })[q.dir]) + '</i></td>' : '<td>-</td>'; };
+    var at = function (x, h) { return x.fc.steps.filter(function (q) { return q.h === h; })[0]; };
+    var lvT = '<table class="pd-t"><thead><tr><th>' + esc(L('Stesen')) + '</th><th>' + esc(L('Sekarang')) + '</th><th>' + esc(L('3 j')) + '</th><th>' + esc(L('6 j')) + '</th><th>' + esc(L('24 j')) + '</th></tr></thead><tbody>' +
+      (top.length ? top.map(function (x) {
+        return '<tr><td class="nm">' + esc(String(x.name).replace(/^Sg\. \S+ di /, '').replace(/^Muara Sg\. \S+ di /, '')) + '<small>' + esc(L('keyakinan {c}%', { c: x.fc.conf === null ? '-' : x.fc.conf })) + (x.fc.dry ? ' · ' + esc(L('ramalan kering')) : '') + '</small></td><td class="now"><b>' + f2(x.fc.level) + '</b></td>' + cell(at(x, 3)) + cell(at(x, 6)) + cell(at(x, 24)) + '</tr>';
+      }).join('') : '<tr><td colspan="5" class="muted">' + esc(L('Tiada trend stesen lagi')) + '</td></tr>') + '</tbody></table>';
+    var RC = ['r0', 'r1', 'r2', 'r3', 'r4'], hl = function (h) { return h < 48 ? L('{h} j', { h: h }) : L('{d} hari', { d: h / 24 }); };
+    var rnT = fc.rain ? '<table class="pd-t"><thead><tr>' + fc.rain.map(function (w) { return '<th>' + esc(hl(w.h)) + '</th>'; }).join('') + '</tr></thead><tbody><tr>' +
+      fc.rain.map(function (w) { return '<td class="' + (w.cls < 0 ? '' : RC[w.cls]) + '"><b>' + (w.med === null ? '-' : (+w.med).toFixed(w.med < 10 ? 1 : 0)) + '</b><i>' + (w.lo === null ? '' : esc(Math.round(w.lo) + '–' + Math.round(w.hi) + ' · ' + w.n + ' ' + L('model'))) + '</i></td>'; }).join('') + '</tr></tbody></table>' : '<p class="muted">' + esc(L('5 model belum dibaca')) + '</p>';
+    var flT = fc.flow && fc.flow.length ? '<div class="pd-trend">' + fc.flow.map(function (x) { return '<div class="pd-tc"><span>' + esc(L('{d} hari', { d: x.d })) + '</span><b class="' + x.dir + '">' + ({ up: '↑', down: '↓', flat: '→' })[x.dir] + ' ' + (x.pct > 0 ? '+' : '') + x.pct + '%</b><small>' + x.v + ' m³/s</small></div>'; }).join('') + '</div>' : '';
+    host.innerHTML = '<div class="pd-row"><div><h4 class="pd-ttl">' + esc(L('Paras sungai (paling hampir Bahaya)')) + '</h4>' + lvT + '</div><div><h4 class="pd-ttl">' + esc(L('Hujan dijangka (mm, nilai tengah model)')) + '</h4>' + rnT +
+      (flT ? '<h4 class="pd-ttl">' + esc(L('Aliran sungai GloFAS (bukan paras)')) + '</h4>' + flT : '') + '</div></div>';
+    var sb = $('predSub'); if (sb) sb.textContent = L('Paras 24 jam · hujan & aliran sungai hingga 14 hari') + ' · ' + C.fmtTime(fc.at);
+  }
   function riverBars() {
     var body = $('waterBody'), snap = state.snap || {};
     if (!body) return;
@@ -313,7 +335,7 @@
   var prevDash = MC.EXT.dash;
   MC.EXT.dash = function () {
     if (prevDash) prevDash();
-    if (LAND) { heroLand(); tilesLand(); riverBars(); }
+    if (LAND) { heroLand(); tilesLand(); riverBars(); predCard(); }
     else { Jobs.res = null; heroOff(); JobsCard.render(); }
   };
   MC.EXT.Jobs = Jobs;

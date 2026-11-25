@@ -107,6 +107,10 @@ setTimeout(out,5000);s.addEventListener('click',out);})();</script>
               <div class="card-b" id="waterBody"></div>
               <div class="card-b jpsfull" id="waterFull"></div>
             </section>
+            <section class="card wide land-only pd-card" id="cardPred">
+              <div class="card-h"><h3>🔮 Ramalan</h3><small id="predSub">Paras 24 jam · hujan &amp; aliran sungai hingga 14 hari</small><div class="sp"></div><button class="btn sm" type="button" data-site-go="ramalan">Lihat penuh</button></div>
+              <div class="card-b" id="predBody"></div>
+            </section>
             <section class="card wide" id="cardFc">
               <div class="card-h"><h3>📅 Ramalan</h3><small id="fcSub"></small><div class="sp"></div><div class="seg" id="fcSeg" role="tablist"><button data-days="7">7 hari</button><button data-days="14">14 hari</button><button data-days="28">28 hari</button></div></div>
               <div class="card-b" id="fcBody"></div>
@@ -339,12 +343,12 @@ setTimeout(out,5000);s.addEventListener('click',out);})();</script>
               <ol class="relay-steps">
                 <li>Daftar akaun percuma di <b>dash.cloudflare.com</b> (emel + kata laluan).</li>
                 <li><b>Workers &amp; Pages</b> → <b>Create</b> → <b>Hello World</b> → beri nama (cth <code>cuaca-relay</code>) → <b>Deploy</b>.</li>
-                <li>Taip <b>Kunci relay</b> anda sendiri di bawah (cth <code>2412Aziz-21</code>) → <b>Simpan</b>.</li>
+                <li>Taip <b>Kunci relay</b> anda sendiri di bawah (cth <code>Kunci-Saya-2026</code>) → <b>Simpan</b>.</li>
                 <li>Tekan <b>Salin skrip relay</b> di bawah → dalam Cloudflare: <b>Edit code</b> → padam semua → tampal → <b>Deploy</b>.</li>
                 <li>Salin alamat worker (<code>https://cuaca-relay.….workers.dev</code>) ke <b>Alamat relay</b> → <b>Simpan</b> → <b>Uji relay</b>.</li>
               </ol>
               <div class="fld wide"><label for="f_relayUrl">Alamat relay<small>Alamat worker Cloudflare anda</small></label><input class="inp" id="f_relayUrl" name="relayUrl" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://cuaca-relay.aziz.workers.dev"></div>
-              <div class="fld wide"><label for="f_relayKey">Kunci relay<small>Kata laluan rahsia anda sendiri, sama dalam semua app: 8-64 aksara, huruf, nombor, - _ . ~ (cth 2412Aziz-21). Tukar kunci = salin & tampal skrip sekali lagi.</small></label><div class="relay-key"><input class="inp" id="f_relayKey" name="relayKey" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="64" placeholder="taip kunci anda"><button type="button" id="relayNewKey" hidden aria-hidden="true"></button><!-- kept hidden: scripts of the version before, still on a device for one start, look for it --></div></div>
+              <div class="fld wide"><label for="f_relayKey">Kunci relay<small>Kata laluan rahsia anda sendiri, sama dalam semua app: 8-64 aksara, huruf, nombor, - _ . ~ (cth Kunci-Saya-2026). Tukar kunci = salin & tampal skrip sekali lagi.</small></label><div class="relay-key"><input class="inp" id="f_relayKey" name="relayKey" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="64" placeholder="taip kunci anda"><button type="button" id="relayNewKey" hidden aria-hidden="true"></button><!-- kept hidden: scripts of the version before, still on a device for one start, look for it --></div></div>
               <div class="relay-btns"><button type="button" class="btn sm pri" id="relayCopy">Salin skrip relay</button><button type="button" class="btn sm" id="relayDownload">Muat turun skrip</button><button type="button" class="btn sm" id="relayTest">Uji relay</button></div>
               <div class="fld web-only"><label for="f_relayAds">Buang iklan melalui relay<small>Laman pasang surut &amp; trafik (yang penuh iklan) dibuka melalui relay, tanpa iklan</small></label><div class="sw"><input type="checkbox" id="f_relayAds" name="relayAds"><span></span></div></div>
               <input type="hidden" id="f_relayBad" name="relayBad"><input type="hidden" id="f_relayAltOff" name="relayAltOff">

@@ -23,7 +23,7 @@ if (ME) test('Monsoon EYE: 23 land sites, Kemaman only, BM first, no relay of th
   const { C } = as('monsoon-eye');
   assert.strictEqual(C.VERSION, E['monsoon-eye'].version);
   assert.deepStrictEqual(C.SITES.map(s => s.id).sort(), E['monsoon-eye'].sites.slice().sort());
-  assert.strictEqual(C.SITES.length, 23);
+  assert.strictEqual(C.SITES.length, 24);
   assert.ok(!C.SITES.some(s => ['windywave', 'vesselfinder', 'marinetraffic', 'metmarine'].includes(s.id)));
   assert.deepStrictEqual(C.DEFAULT_PROFILES.map(p => p.id), ['kemaman']);
   assert.strictEqual(C.cleanProfile({ id: 'x', name: 'X', kind: 'offshore', lat: 5, lon: 103 }).kind, 'land');

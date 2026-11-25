@@ -73,7 +73,8 @@ if (E['monsoon-eye']) test.describe('Monsoon EYE', () => {
     await expect(page.locator('#rainStSub')).toHaveClass(/age-warn/);
     /* MET land warning: level and until when */
     await expect(page.locator('#dashTiles')).toContainText(/Waspada.*hingga|Alert.*until/);
-    await expect(page.locator('#dashHero')).not.toContainText(/model mungkin kurang anggar|can be short of heavy monsoon rain/);   /* the models agree (108 mm) */
+    await page.evaluate(() => { MC.state.risk.rain = 50; MC.EXT.dash(); });
+    await expect(page.locator('#dashHero')).not.toContainText(/model mungkin kurang anggar|can be short of heavy monsoon rain/);   /* the models agree (50 mm) */
     await page.evaluate(() => { MC.state.risk.rain = 5; MC.EXT.dash(); });
     await expect(page.locator('#dashHero')).toContainText(/model mungkin kurang anggar|can be short of heavy monsoon rain/);       /* MET warns, models see 5 mm */
     /* Water Level: the GitHub copy shows at once; the live readings come in afterwards */
@@ -89,6 +90,29 @@ if (E['monsoon-eye']) test.describe('Monsoon EYE', () => {
     await page.evaluate(() => MC.Sites.show('infobanjir', true));
     await expect(page.locator('.toast.orig a')).toHaveAttribute('href', /infobanjir\.terengganu\.gov\.my/);
     await expect(page.locator('#view-dashboard')).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+  test('1.1.5: Ramalan - dashboard card, Ramalan Kemaman page (levels 1-24 h, GloFAS 2-14 days, rain 1 h-14 days), dashed forecast on the hydrograph', async ({ page }) => {
+    const errors = await open(page, 'me');
+    await expect(page.locator('#cardPred .pd-t').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#cardPred .pd-t').first().locator('tbody tr')).toHaveCount(4);
+    await expect(page.locator('#cardPred')).toContainText(/3 hari|3 days/);
+    /* the new page, right after Flood Hub Chukai in the site list */
+    const ids = await page.evaluate(() => [].map.call(document.querySelectorAll('[data-site]'), b => b.getAttribute('data-site')));
+    expect(ids.indexOf('ramalan')).toBe(ids.indexOf('floodhub') + 1);
+    await page.click('#cardPred [data-site-go="ramalan"]');
+    const km = page.frameLocator('#siteHost iframe');
+    await expect(km.locator('#kmPredLv tbody tr')).toHaveCount(8, { timeout: 20000 });
+    await expect(km.locator('#kmPredLv thead th')).toHaveText([/Stesen|Gauge/, /Sekarang|Now/, /1 j|1 h/, /3 j|3 h/, /6 j|6 h/, /12 j|12 h/, /24 j|24 h/, /Keyakinan|Confidence/]);
+    await expect(km.locator('#kmPredFlow .pd-tc')).toHaveCount(6);
+    await expect(km.locator('#kmPredRain thead th')).toHaveCount(10);
+    await expect(km.locator('#kmPredRain tbody tr')).toHaveCount(5);
+    const head = await km.locator('#kmPredRain tbody tr').last().innerText();
+    expect(head).toMatch(/Model/);
+    /* a gauge: its sheet with the dashed 24-hour forecast */
+    await km.locator('#kmPredLv [data-wl]').first().click();
+    await expect(km.locator('#kmHyd .kc-line.fc')).toHaveCount(1, { timeout: 15000 });
+    await expect(km.locator('#kmHyd .kc-mark.fc')).toHaveCount(5);
     expect(errors).toEqual([]);
   });
   test('add a district: wrong links are caught, the district becomes a profile', async ({ page }) => {

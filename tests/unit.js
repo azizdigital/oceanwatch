@@ -44,10 +44,10 @@ test('relay key: typed by the user, URL-safe characters only, a bad key is never
   assert.strictEqual(u.pathname.split('/')[1], '2412Azi~21');
 });
 
-test('30 sites (29 + MET marine), unique ids, all https', () => {
-  assert.strictEqual(core.SITES.length, 30);
+test('31 sites (29 + MET marine + Ramalan Kemaman), unique ids, all https', () => {
+  assert.strictEqual(core.SITES.length, 31);
   assert.strictEqual(core.SITES.filter(s => !s.added).length, 16);
-  assert.strictEqual(new Set(core.SITES.map(s => s.id)).size, 30);
+  assert.strictEqual(new Set(core.SITES.map(s => s.id)).size, 31);
   core.SITES.forEach(s => assert.ok(/^https:\/\//.test(s.url), s.id));
   assert.strictEqual(core.CATEGORIES.length, 6);
 });
@@ -651,6 +651,46 @@ test('relay v2 removes ads; ad-heavy sites go through the relay when wanted', as
   assert.strictEqual(core.relayAdsFor(core.siteById('windy'), s), false);
   assert.strictEqual(core.relayAdsFor(core.siteById('tideforecast'), Object.assign({}, s, { relayAds: false })), false);
   assert.strictEqual(core.relayAdsFor(core.siteById('tideforecast'), core.cleanSettings({})), false);
+});
+
+test('1.1.5 forecasts: water level 1-24 h (rate, trend, rain factor, dry, floor, tide), rain windows 1 h-14 days, GloFAS trend', () => {
+  const R = require('../www/assets/js/risk');
+  const H = 3600000, now = Date.UTC(2026, 10, 25, 2, 0), st = { alert: 17, warning: 18, danger: 19, normal: 10 };
+  const tr = { level: 11, rate: 0.1, rate24: 0.02, rate1: 0.1, rate4: 0.1, fit4: 0.9, tidal: false, ageMin: 5, complete: 1 };
+  /* wet: 40 mm in 24 h for all models */
+  const wet = h => [40 * h / 24, 40 * h / 24, 40 * h / 24];
+  const f = R.forecastLevel(tr, st, { now, rainH: wet, obsToday: 12 });
+  const at = h => f.steps.find(x => x.h === h).v;
+  assert.strictEqual(at(1), 11.1); assert.strictEqual(at(3), 11.3);              /* up to 4 h: rate x h */
+  /* 6 h: avg rate 0.1 + (0.02-0.1)*2/40 = 0.096 -> 0.4 + 0.192 = 0.592; rain in 6 h = 10 mm -> k 0.75 on the part after 4 h */
+  assert.ok(Math.abs(at(6) - (11 + 0.4 + 0.192 * 0.75)) < 0.011, String(at(6)));
+  /* 24 h: avg = 0.1 + (0.02-0.1)*20/40 = 0.06 -> 0.4 + 0.06*20 = 1.6, rain 40 mm -> k 1 */
+  assert.ok(Math.abs(at(24) - 12.6) < 0.011, String(at(24)));
+  assert.strictEqual(f.steps.find(x => x.h === 24).dir, 'up'); assert.ok(f.conf !== null);
+  /* dry: no rise at all */
+  const d = R.forecastLevel(tr, st, { now, rainH: () => [0, 1, 2], obsToday: 0 });
+  assert.ok(d.dry && d.steps.every(x => x.v === 11));
+  /* falling, dry: goes down with the trend, never under the lowest of 7 days */
+  const fall = R.forecastLevel(Object.assign({}, tr, { rate: -0.05, rate24: -0.04 }), st, { now, rainH: () => [0, 0], obsToday: 0, floor: 10.5 });
+  assert.strictEqual(fall.steps.find(x => x.h === 3).v, 10.85); assert.strictEqual(fall.steps.find(x => x.h === 24).v, 10.5);
+  /* river mouth: follows the tide (ratio from the last 24 h) */
+  const ev = [{ t: now - 13 * H, sea: 2.8 }, { t: now - 7 * H, sea: 0.2 }, { t: now - H, sea: 2.8 }, { t: now + 5 * H, sea: 0.2 }, { t: now + 11 * H, sea: 2.8 }, { t: now + 17 * H, sea: 0.2 }, { t: now + 23 * H, sea: 2.8 }, { t: now + 29 * H, sea: 0.2 }];
+  assert.strictEqual(R.tideAt(ev, now - H), 2.8); assert.ok(Math.abs(R.tideAt(ev, now + 2 * H) - 1.5) < 0.01);
+  const pts = []; for (let t = now - 24 * H; t <= now; t += H / 2) { const x = R.tideAt(ev, t); if (x !== null) pts.push({ t, v: 1.5 + (x - 1.5) * 0.5 }); }
+  const ratio = R.tideRatio(pts, ev, now); assert.ok(Math.abs(ratio - 0.5) < 0.03, String(ratio));
+  const tl = R.forecastLevel({ level: 2.0, rate: 0.2, rate24: 0, tidal: true, ageMin: 5, complete: 1 }, { alert: 3, warning: 4, danger: 5 }, { now, rainH: wet, tide: ev, ratio });
+  assert.ok(tl.steps.find(x => x.h === 6).v < 2.0 && tl.steps.find(x => x.h === 12).v > tl.steps.find(x => x.h === 6).v);   /* low tide at +5 h, high at +11 h */
+  /* rain windows: hourly 1 mm for 16 days (2 models), 1 model only 7 days; median, range, models counted */
+  const mk = (days, mm) => { const a = []; for (let t = now - 24 * H; t < now + days * 24 * H; t += H) a.push({ t, v: mm }); return a; };
+  const w = R.rainWindows([mk(16, 1), mk(16, 2), mk(7, 4)], now + 20 * 60000);
+  const W = h => w.find(x => x.h === h);
+  assert.deepStrictEqual([W(1).med, W(1).n], [2, 3]); assert.deepStrictEqual([W(24).lo, W(24).hi], [24, 96]);
+  assert.strictEqual(W(168).n, 3); assert.strictEqual(W(336).n, 2); assert.strictEqual(W(336).med, 336);
+  assert.strictEqual(R.rainClass(0.5, 1), 0); assert.strictEqual(R.rainClass(25, 24), 2); assert.strictEqual(R.rainClass(70, 24), 4);
+  assert.strictEqual(R.rainClass(140, 168), 2);                          /* 20 mm a day */
+  /* GloFAS: day 2 / 5 against now, % of the 2-year flow */
+  const fl = R.flowTrend([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(i => ({ d: 'd' + i, v: 100 + i * 10 })), 100, 200);
+  assert.deepStrictEqual(fl.map(x => [x.d, x.pct, x.dir, x.of2]), [[2, 20, 'up', 60], [3, 30, 'up', 65], [5, 50, 'up', 75], [7, 70, 'up', 85], [10, 100, 'up', 100], [14, 140, 'up', 120]]);
 });
 
 test('relay v6: pokes the GitHub mirror of each land app (monsoon-eye, dashboard-cuaca), by itself on a Cron Trigger, once in 10 min', async () => {

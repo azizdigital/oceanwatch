@@ -18,7 +18,7 @@
     if (I18N) return I18N.L(s, v);
     return String(s).replace(/\{(\w+)\}/g, function (m, k) { return v && v[k] !== undefined ? v[k] : m; });
   }
-  var HOUR = 3600000, DAY = 86400000, TZ = 8 * HOUR, DAYS = 14;
+  var HOUR = 3600000, DAY = 86400000, TZ = 8 * HOUR, DAYS = 14, FETCH_DAYS = 15;   /* 1.1.5: models fetched for 15 days so that 14 days from now are covered */
   var RISK = function () { return typeof module === 'object' && module.exports ? require('./risk') : (typeof self !== 'undefined' ? self : this).MCRisk; };
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function dateKey(t) { return new Date(t + TZ).toISOString().slice(0, 10); }
@@ -152,7 +152,7 @@
     var locs = locations(areas);
     if (!locs.length) return [];
     var q = 'latitude=' + locs.map(function (l) { return l.lat.toFixed(3); }).join(',') + '&longitude=' + locs.map(function (l) { return l.lon.toFixed(3); }).join(',') +
-      '&hourly=precipitation&timezone=Asia%2FKuala_Lumpur&forecast_days=' + DAYS;
+      '&hourly=precipitation&timezone=Asia%2FKuala_Lumpur&forecast_days=' + FETCH_DAYS;
     return LAND_MODELS.map(function (m) { return { id: m.id, url: 'https://api.open-meteo.com/v1/forecast?' + q + '&models=' + m.id }; });
   }
   function collectLand(areas, getJson) {
